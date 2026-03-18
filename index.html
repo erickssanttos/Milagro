@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Milagro Stock 360 - Oficial</title>
+    <title>Milagro Stock 360 - Fluxo Oficial</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     
@@ -27,10 +27,10 @@
         th { padding: 12px; text-align: left; color: #7f8c8d; font-size: 0.8em; text-transform: uppercase; }
         td { padding: 15px; background: white; border-top: 1px solid #f1f1f1; border-bottom: 1px solid #f1f1f1; }
         .btn-main { background: var(--success); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-main:hover { filter: brightness(1.1); }
         input, select { padding: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; }
         .progress-container { width: 100%; background: #eee; border-radius: 10px; height: 8px; margin-top: 5px; }
         .progress-bar { height: 100%; border-radius: 10px; transition: width 0.5s; }
-        .badge-alerta { background: var(--danger); color: white; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -45,40 +45,41 @@
     </div>
 
     <div class="dashboard">
-        <div class="card" style="border-color: var(--accent)"><h3>Produtos</h3><p id="dash-itens">0</p></div>
-        <div class="card" style="border-color: var(--success)"><h3>Patrimônio</h3><p id="dash-financeiro">R$ 0,00</p></div>
-        <div class="card" style="border-color: var(--danger)"><h3>Alertas</h3><p id="dash-alertas">0</p></div>
+        <div class="card" style="border-color: var(--accent)"><h3>Produtos Cadastrados</h3><p id="dash-itens">0</p></div>
+        <div class="card" style="border-color: var(--success)"><h3>Patrimônio Total</h3><p id="dash-financeiro">R$ 0,00</p></div>
+        <div class="card" style="border-color: var(--danger)"><h3>Abaixo do Mínimo</h3><p id="dash-alertas">0</p></div>
     </div>
 
     <div class="section admin-only">
-        <h2 style="color: var(--primary); margin-top:0;">🛡️ Painel de Controle</h2>
+        <h2 style="color: var(--primary); margin-top:0;">🛡️ Painel de Gestão</h2>
         
-        <div style="margin-bottom: 25px;">
-            <p><b>1. Cadastrar Novo Item:</b></p>
+        <div style="background: #fcfcfc; padding: 15px; border: 1px dashed #ddd; border-radius: 10px; margin-bottom: 25px;">
+            <p style="margin: 0 0 10px 0;"><b>1. Adicionar Item ao Catálogo</b> <small>(Apenas registro)</small></p>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
-                <input type="text" id="cad-nome" placeholder="Nome">
+                <input type="text" id="cad-nome" placeholder="Nome do Produto">
                 <select id="cad-un"><option>Kg</option><option>LT</option><option>UN</option><option>SC</option></select>
-                <input type="text" id="cad-preco" placeholder="Preço (R$)">
-                <input type="number" id="cad-min" placeholder="Mínimo">
+                <input type="text" id="cad-preco" placeholder="Preço (ex: 29.90)">
+                <input type="number" id="cad-min" placeholder="Estoque Mínimo">
                 <button class="btn-main" onclick="cadastrar()">CADASTRAR</button>
             </div>
         </div>
 
-        <div>
-            <p><b>2. Entrada ou Saída:</b></p>
+        <div style="background: #f4f8fb; padding: 15px; border: 1px solid var(--accent); border-radius: 10px;">
+            <p style="margin: 0 0 10px 0; color: var(--primary);"><b>2. Lançar Movimentação Física</b> <small>(Entrada/Saída)</small></p>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
-                <select id="mov-item"><option value="">Selecione o Item...</option></select>
+                <select id="mov-item"><option value="">Selecionar Item...</option></select>
                 <select id="mov-tipo"><option value="entrada">Entrada (+)</option><option value="saida">Saída (-)</option></select>
-                <input type="number" id="mov-qtd" placeholder="Qtd">
-                <button class="btn-main" style="background:var(--accent)" onclick="lancarMovimentacao()">SALVAR</button>
+                <input type="number" id="mov-qtd" placeholder="Quantidade">
+                <button class="btn-main" style="background:var(--accent)" onclick="lancarMovimentacao()">SALVAR MOVIMENTO</button>
             </div>
         </div>
     </div>
 
     <div class="section">
+        <h2 style="color: var(--dark);">Estoque Disponível</h2>
         <table>
             <thead>
-                <tr><th>Produto</th><th>Status</th><th>Saldo</th><th>Total</th><th class="admin-only">Ações</th></tr>
+                <tr><th>Descrição</th><th>Status</th><th>Saldo Atual</th><th>Subtotal</th><th class="admin-only">Ação</th></tr>
             </thead>
             <tbody id="tabela-estoque"></tbody>
         </table>
@@ -104,37 +105,58 @@
         if(document.getElementById('senha').value === "Milagro@Admin2026") {
             usuarioAutenticado = true;
             document.querySelectorAll('.admin-only').forEach(e => e.style.display = (e.tagName === 'TH' || e.tagName === 'TD') ? 'table-cell' : 'block');
-            document.getElementById('login-area').innerHTML = "<span>✅ GESTOR</span>";
+            document.getElementById('login-area').innerHTML = "<span style='color:var(--success); font-weight:bold'>● GESTOR ONLINE</span>";
         } else { alert("Senha incorreta!"); }
     }
 
+    // CADASTRO: Registra o item com 0 e não pede quantidade
     function cadastrar() {
         if(!usuarioAutenticado) return;
         const nome = document.getElementById('cad-nome').value;
         const preco = parseFloat(document.getElementById('cad-preco').value.replace(',', '.')) || 0;
+        const min = parseInt(document.getElementById('cad-min').value) || 0;
+
         if(nome) {
             db.ref('estoque/').push({
                 nome, un: document.getElementById('cad-un').value, 
-                preco, min: parseInt(document.getElementById('cad-min').value) || 0,
-                qtd: 0, chave_seguranca: CHAVE_INTERNA 
-            }).then(() => { alert("Cadastrado com 0 de saldo!"); document.getElementById('cad-nome').value = ""; });
+                preco, min, qtd: 0, 
+                chave_seguranca: CHAVE_INTERNA 
+            }).then(() => {
+                alert("Item adicionado ao catálogo com saldo zero!");
+                document.getElementById('cad-nome').value = "";
+                document.getElementById('cad-preco').value = "";
+                document.getElementById('cad-min').value = "";
+            });
         }
     }
 
+    // MOVIMENTAÇÃO: Único lugar que altera quantidade
     function lancarMovimentacao() {
+        if(!usuarioAutenticado) return;
         const id = document.getElementById('mov-item').value;
         const qtdMov = parseFloat(document.getElementById('mov-qtd').value) || 0;
-        if(!id || qtdMov <= 0) return alert("Dados inválidos!");
+        const tipo = document.getElementById('mov-tipo').value;
+
+        if(!id || qtdMov <= 0) return alert("Preencha todos os campos!");
+
         db.ref('estoque/' + id).once('value', (s) => {
-            const i = s.val();
-            let novaQtd = document.getElementById('mov-tipo').value === 'entrada' ? (i.qtd + qtdMov) : (i.qtd - qtdMov);
-            if(novaQtd < 0) return alert("Saldo insuficiente!");
-            db.ref('estoque/' + id).update({ qtd: novaQtd, chave_seguranca: CHAVE_INTERNA });
+            const item = s.val();
+            let novaQtd = tipo === 'entrada' ? (item.qtd + qtdMov) : (item.qtd - qtdMov);
+            
+            if(novaQtd < 0) return alert("Erro: Saída excede o saldo disponível!");
+
+            db.ref('estoque/' + id).update({ 
+                qtd: novaQtd, 
+                chave_seguranca: CHAVE_INTERNA 
+            }).then(() => {
+                alert("Movimentação de " + tipo + " concluída!");
+                document.getElementById('mov-qtd').value = "";
+            });
         });
     }
 
     function removerItem(id) {
-        if(confirm("Excluir item permanentemente?")) {
+        if(confirm("Excluir este item do catálogo permanentemente?")) {
             db.ref('estoque/' + id).update({ chave_seguranca: CHAVE_INTERNA })
             .then(() => db.ref('estoque/' + id).remove());
         }
@@ -144,14 +166,27 @@
         const dados = snap.val();
         const tb = document.getElementById('tabela-estoque');
         const sel = document.getElementById('mov-item');
-        tb.innerHTML = ''; sel.innerHTML = '<option value="">Selecionar...</option>';
+        tb.innerHTML = ''; sel.innerHTML = '<option value="">Selecionar Item...</option>';
         let tFin = 0, tItens = 0, tAlerta = 0;
 
         for(let id in dados) {
-            tItens++; let i = dados[id]; let sub = i.qtd * i.preco; tFin += sub;
+            tItens++; let i = dados[id]; let sub = (i.qtd || 0) * (i.preco || 0); tFin += sub;
             let percent = i.min > 0 ? (i.qtd / (i.min * 1.5)) * 100 : 100;
             if(i.qtd <= i.min) tAlerta++;
-            tb.innerHTML += `<tr><td><strong>${i.nome}</strong></td><td><div class="progress-container"><div class="progress-bar" style="width:${percent > 100 ? 100 : percent}%; background:${i.qtd <= i.min ? '#e74c3c' : '#2ecc71'}"></div></div></td><td>${i.qtd} ${i.un}</td><td>R$ ${sub.toFixed(2)}</td><td class="admin-only"><button onclick="removerItem('${id}')">🗑️</button></td></tr>`;
+
+            tb.innerHTML += `
+                <tr>
+                    <td><strong>${i.nome}</strong><br><small style="color:#888">${i.un}</small></td>
+                    <td>
+                        <div class="progress-container"><div class="progress-bar" style="width:${percent > 100 ? 100 : percent}%; background:${i.qtd <= i.min ? '#e74c3c' : '#2ecc71'}"></div></div>
+                    </td>
+                    <td><b>${i.qtd || 0}</b></td>
+                    <td style="color:var(--primary); font-weight:bold">R$ ${sub.toFixed(2)}</td>
+                    <td class="admin-only">
+                        <button onclick="removerItem('${id}')" style="border:none; background:none; cursor:pointer; font-size:1.2em;">🗑️</button>
+                    </td>
+                </tr>
+            `;
             sel.innerHTML += `<option value="${id}">${i.nome}</option>`;
         }
         document.getElementById('dash-itens').innerText = tItens;
