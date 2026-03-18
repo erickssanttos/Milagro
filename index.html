@@ -47,9 +47,9 @@
     </header>
 
     <div class="dash-row">
-        <div class="card" style="border-color: var(--accent)"><h3>Produtos Ativos</h3><p id="dash-itens">0</p></div>
+        <div class="card" style="border-color: var(--accent)"><h3>Mix de Produtos</h3><p id="dash-itens">0</p></div>
         <div class="card" style="border-color: var(--success)"><h3>Patrimônio Total</h3><p id="dash-financeiro">R$ 0,00</p></div>
-        <div class="card" style="border-color: var(--danger)"><h3>Atenção Mínima</h3><p id="dash-alertas">0</p></div>
+        <div class="card" style="border-color: var(--danger)"><h3>Atenção Reposição</h3><p id="dash-alertas">0</p></div>
     </div>
 
     <div class="main-grid">
@@ -59,7 +59,7 @@
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                     <select id="mov-item" style="flex:2; min-width: 150px;"><option value="">Selecione o produto...</option></select>
                     <select id="mov-tipo" style="flex:1"><option value="entrada">ENTRADA (+)</option><option value="saida">SAÍDA (-)</option></select>
-                    <input type="number" id="mov-qtd" placeholder="Quantidade" style="flex:1">
+                    <input type="number" id="mov-qtd" placeholder="Qtd" style="flex:1">
                     <input type="password" id="pass-mov" placeholder="Senha Operação" style="flex:1; background: #fff9e6;">
                     <button class="btn" style="background:var(--accent); flex:1" onclick="lancarMovimentacao()">LANÇAR</button>
                 </div>
@@ -81,12 +81,12 @@
             <div class="section admin-only">
                 <h2><i class="fas fa-plus-circle"></i> Novo Cadastro</h2>
                 <input type="text" id="cad-nome" placeholder="Nome do Item">
-                <input type="number" id="cad-preco" step="0.01" placeholder="Preço (ex: 50.00)">
+                <input type="number" id="cad-preco" step="0.01" placeholder="Preço Unitário">
                 <input type="number" id="cad-min" placeholder="Estoque Mínimo">
                 <button class="btn" style="background:var(--success); width:100%" onclick="cadastrar()">SALVAR ITEM</button>
             </div>
             <div class="section">
-                <h2><i class="fas fa-history"></i> Log Recente</h2>
+                <h2><i class="fas fa-history"></i> Log de Atividade</h2>
                 <div id="log-atividades" style="font-size: 0.8rem; color: #666;"></div>
             </div>
         </div>
@@ -106,6 +106,7 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
+    // Configurações de Senha e Chave
     const _S_ADM = "Milagro@Admin2026"; 
     const _S_MOV = "Milagro123";      
     const _CHAVE = "MILAGRO2026";    
@@ -123,7 +124,7 @@
         const min = parseInt(document.getElementById('cad-min').value) || 0;
         if(nome) {
             db.ref('estoque/').push({ nome, preco, min, qtd: 0, chave_seguranca: _CHAVE })
-            .then(() => { alert("Item Cadastrado!"); document.getElementById('cad-nome').value = ""; });
+            .then(() => { alert("Cadastrado!"); document.getElementById('cad-nome').value = ""; });
         }
     }
 
@@ -134,24 +135,25 @@
         const senha = document.getElementById('pass-mov').value;
 
         if(senha !== _S_MOV) return alert("Senha de Operação Incorreta!");
-        if(!id || qMov <= 0) return alert("Dados inválidos!");
+        if(!id || qMov <= 0) return alert("Verifique os dados!");
 
         db.ref('estoque/' + id).once('value', (s) => {
             const item = s.val();
-            // CÁLCULO MATEMÁTICO REAL
             const sAntigo = parseFloat(item.qtd) || 0;
             let nSaldo = (tipo === 'entrada') ? (sAntigo + qMov) : (sAntigo - qMov);
             
-            if(nSaldo < 0) return alert("Erro: Saldo não pode ser negativo!");
+            if(nSaldo < 0) return alert("Saldo insuficiente!");
 
-            // GRAVAÇÃO NO BANCO
-            db.ref('estoque/' + id).update({ qtd: nSaldo, chave_seguranca: _CHAVE })
-            .then(() => {
+            // AJUSTE DE SEGURANÇA: Enviando a chave em cada atualização
+            db.ref('estoque/' + id).update({ 
+                qtd: nSaldo, 
+                chave_seguranca: _CHAVE 
+            }).then(() => {
                 db.ref('logs/').push({ msg: `${new Date().toLocaleTimeString()} - ${tipo.toUpperCase()}: ${qMov} de ${item.nome}`, cor: tipo === 'entrada' ? 'green' : 'red' });
                 document.getElementById('mov-qtd').value = "";
                 document.getElementById('pass-mov').value = "";
                 alert("Lançamento Realizado! Novo Saldo: " + nSaldo);
-            }).catch(e => alert("Erro ao salvar no Firebase. Verifique as Rules!"));
+            }).catch(e => alert("Erro ao salvar. Verifique as Rules no Firebase!"));
         });
     }
 
@@ -197,9 +199,9 @@
     function gerarPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        doc.text("Relatorio de Inventario - Milagro Stock 360", 14, 15);
+        doc.text("Milagro Stock 360 - Relatorio", 14, 15);
         doc.autoTable({ html: 'table', margin: { top: 25 } });
-        doc.save("estoque-milagro.pdf");
+        doc.save("estoque.pdf");
     }
 </script>
 </body>
