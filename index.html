@@ -3,78 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Milagro Stock 360 - Oficial Pro</title>
+    <title>Milagro Stock 360 - Oficial</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
     <style>
-        :root { --bg: #f4f7f6; --card: #ffffff; --primary: #2c3e50; --accent: #3498db; --success: #27ae60; --danger: #e74c3c; --text: #333; --muted: #7f8c8d; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; color: var(--text); padding: 20px; }
-        .container { max-width: 1300px; margin: auto; }
-        .header { display: flex; justify-content: space-between; align-items: center; background: var(--primary); color: white; padding: 15px 30px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .login-box { display: flex; gap: 10px; }
-        .login-box input { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 8px; border-radius: 5px; outline: none; width: 130px; }
-        .dash-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 25px; }
-        .card { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 5px solid #ddd; }
-        .card h3 { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; margin: 0; }
-        .card p { font-size: 1.6rem; font-weight: 700; margin: 10px 0 0; }
+        :root { --bg: #f4f7f6; --card: #ffffff; --primary: #2c3e50; --accent: #3498db; --success: #27ae60; --danger: #e74c3c; --text: #333; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: var(--primary); color: white; padding: 15px 30px; border-radius: 12px; margin-bottom: 25px; }
+        .card-dash { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border-left: 5px solid var(--accent); }
         .main-grid { display: grid; grid-template-columns: 1fr 350px; gap: 20px; }
-        .section { background: var(--card); padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .section h2 { font-size: 1rem; margin-top: 0; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+        .section { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; font-size: 0.75rem; color: var(--muted); padding: 10px; background: #fafafa; }
-        td { padding: 12px 10px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-        .btn { padding: 10px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; }
-        input, select { padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 10px; width: 100%; box-sizing: border-box; }
+        th { text-align: left; padding: 10px; background: #fafafa; font-size: 0.8rem; color: #7f8c8d; }
+        td { padding: 12px 10px; border-bottom: 1px solid #eee; }
+        .btn { padding: 10px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; }
+        input, select { padding: 10px; border: 1px solid #ddd; border-radius: 6px; width: 100%; margin-bottom: 10px; }
         .admin-only { display: none; }
-        @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
 <div class="container">
     <header class="header">
-        <div style="display:flex; align-items:center; gap:10px">
-            <i class="fas fa-microchip fa-2x"></i>
-            <h1 style="margin:0; font-size: 1.2rem;">MILAGRO <span style="font-weight: 200;">STOCK 360</span></h1>
-        </div>
-        <div id="login-area" class="login-box">
-            <input type="password" id="senha-adm" placeholder="Senha Gestor">
-            <button onclick="logar()" class="btn" style="background:var(--accent)"><i class="fas fa-lock"></i></button>
+        <h2>MILAGRO STOCK 360</h2>
+        <div id="login-area">
+            <input type="password" id="senha-adm" placeholder="Senha ADM" style="width:120px; margin:0">
+            <button onclick="logar()" class="btn" style="background:var(--accent)">ENTRAR</button>
         </div>
     </header>
-
-    <div class="dash-row">
-        <div class="card" style="border-color: var(--accent)"><h3>Produtos no Mix</h3><p id="dash-itens">0</p></div>
-        <div class="card" style="border-color: var(--success)"><h3>Patrimônio Total</h3><p id="dash-financeiro">R$ 0,00</p></div>
-        <div class="card" style="border-color: var(--danger)"><h3>Atenção Compra</h3><p id="dash-alertas">0</p></div>
-    </div>
 
     <div class="main-grid">
         <div class="content">
             <div class="section">
-                <h2><i class="fas fa-exchange-alt"></i> Lançar Movimentação</h2>
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <select id="mov-item" style="flex:2; min-width: 150px;"><option value="">Selecione o produto...</option></select>
-                    <select id="mov-tipo" style="flex:1"><option value="entrada">ENTRADA (+)</option><option value="saida">SAÍDA (-)</option></select>
-                    <input type="number" id="mov-qtd" placeholder="Qtd" style="flex:1">
-                    <input type="password" id="pass-mov" placeholder="Senha Operação" style="flex:1; background: #fff9e6;">
-                    <button class="btn" style="background:var(--accent); flex:1" onclick="lancarMovimentacao()">LANÇAR</button>
+                <h3><i class="fas fa-exchange-alt"></i> Movimentação</h3>
+                <div style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap:10px">
+                    <select id="mov-item"></select>
+                    <select id="mov-tipo"><option value="entrada">ENTRADA (+)</option><option value="saida">SAÍDA (-)</option></select>
+                    <input type="number" id="mov-qtd" placeholder="Qtd">
+                    <input type="password" id="pass-mov" placeholder="Senha Operação">
                 </div>
+                <button class="btn" style="background:var(--accent); width:100%; margin-top:10px" onclick="lancarMovimentacao()">CONFIRMAR LANÇAMENTO</button>
             </div>
 
             <div class="section">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px">
-                    <h2 style="margin:0; border:none"><i class="fas fa-layer-group"></i> Inventário Real</h2>
-                    <button class="btn" style="background:#555; font-size: 0.8rem;" onclick="gerarPDF()"><i class="fas fa-file-pdf"></i> PDF</button>
+                <div style="display:flex; justify-content:space-between; align-items:center">
+                    <h3><i class="fas fa-boxes"></i> Inventário</h3>
+                    <button class="btn" style="background:#555" onclick="gerarPDF()">PDF</button>
                 </div>
                 <table>
-                    <thead>
-                        <tr><th>PRODUTO</th><th>SALDO ATUAL</th><th>PATRIMÔNIO</th><th class="admin-only">AÇÕES</th></tr>
-                    </thead>
+                    <thead><tr><th>PRODUTO</th><th>SALDO</th><th>VALORIZAÇÃO</th><th class="admin-only">AÇÕES</th></tr></thead>
                     <tbody id="tabela-estoque"></tbody>
                 </table>
             </div>
@@ -82,15 +63,15 @@
 
         <div class="sidebar">
             <div class="section admin-only">
-                <h2><i class="fas fa-edit"></i> Novo Cadastro</h2>
-                <input type="text" id="cad-nome" placeholder="Nome do Item">
-                <input type="text" id="cad-preco" placeholder="Preço Unitário (Ex: 50.00)">
-                <input type="number" id="cad-min" placeholder="Estoque Mínimo">
-                <button class="btn" style="background:var(--success); width:100%" onclick="cadastrar()">SALVAR ITEM</button>
+                <h3>Novo Cadastro</h3>
+                <input type="text" id="cad-nome" placeholder="Nome">
+                <input type="text" id="cad-preco" placeholder="Preço (ex: 45.50)">
+                <input type="number" id="cad-min" placeholder="Mínimo">
+                <button class="btn" style="background:var(--success); width:100%" onclick="cadastrar()">CADASTRAR</button>
             </div>
             <div class="section">
-                <h2><i class="fas fa-history"></i> Atividades Recentes</h2>
-                <div id="log-atividades" style="font-size: 0.8rem; color: #666;"></div>
+                <h3>Patrimônio Total</h3>
+                <p id="dash-financeiro" style="font-size:1.5rem; font-weight:bold; color:var(--success)">R$ 0,00</p>
             </div>
         </div>
     </div>
@@ -105,11 +86,9 @@
         storageBucket: "milagro-172c5.firebasestorage.app",
         appId: "1:923027654375:web:d9e24bec8e48d304438442"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    // CONFIGURAÇÕES DE SENHA
     const _S_ADM = "Milagro@Admin2026"; 
     const _S_MOV = "Milagro123";      
     const _CHAVE = "MILAGRO2026";    
@@ -117,17 +96,16 @@
     function logar() {
         if(document.getElementById('senha-adm').value === _S_ADM) {
             document.querySelectorAll('.admin-only').forEach(e => e.style.display = 'block');
-            document.getElementById('login-area').innerHTML = "<span style='color:var(--success); font-weight:bold'>GESTOR LOGADO</span>";
-        } else { alert("Senha ADM incorreta!"); }
+            document.getElementById('login-area').innerHTML = "<b>PAINEL GESTOR</b>";
+        }
     }
 
     function cadastrar() {
         const nome = document.getElementById('cad-nome').value;
-        const preco = parseFloat(document.getElementById('cad-preco').value.replace(',', '.')) || 0;
-        const min = parseInt(document.getElementById('cad-min').value) || 0;
+        const preco = parseFloat(document.getElementById('cad-preco').value) || 0;
         if(nome) {
-            db.ref('estoque/').push({ nome, preco, min, qtd: 0, chave_seguranca: _CHAVE })
-            .then(() => { alert("Item Cadastrado!"); document.getElementById('cad-nome').value = ""; });
+            db.ref('estoque/').push({ nome, preco, min: 0, qtd: 0, chave_seguranca: _CHAVE })
+            .then(() => alert("Cadastrado!"));
         }
     }
 
@@ -137,66 +115,51 @@
         const tipo = document.getElementById('mov-tipo').value;
         const senha = document.getElementById('pass-mov').value;
 
-        if(senha !== _S_MOV) return alert("Senha de Operação Inválida!");
-        if(!id || qtdMov <= 0) return alert("Selecione um item e a quantidade!");
+        if(senha !== _S_MOV) return alert("Senha de Operação Incorreta!");
 
         db.ref('estoque/' + id).once('value', (s) => {
             const item = s.val();
-            const saldoAntigo = parseFloat(item.qtd) || 0;
-            let novoSaldo = tipo === 'entrada' ? (saldoAntigo + qtdMov) : (saldoAntigo - qtdMov);
-            
-            if(novoSaldo < 0) return alert("Erro: Saldo insuficiente!");
+            let saldoAtual = parseFloat(item.qtd || 0);
+            let novoSaldo = tipo === 'entrada' ? (saldoAtual + qtdMov) : (saldoAtual - qtdMov);
 
-            // CORREÇÃO: Atualiza apenas o saldo (qtd) e mantém a chave
+            if(novoSaldo < 0) return alert("Saldo insuficiente!");
+
+            // ATUALIZAÇÃO REAL NO BANCO
             db.ref('estoque/' + id).update({ 
-                qtd: novoSaldo, 
+                qtd: novoSaldo,
                 chave_seguranca: _CHAVE 
             }).then(() => {
-                db.ref('logs/').push({ msg: `${new Date().toLocaleTimeString()} - ${tipo.toUpperCase()}: ${qtdMov} de ${item.nome}`, cor: tipo === 'entrada' ? 'green' : 'red' });
+                alert("Saldo Atualizado para: " + novoSaldo);
                 document.getElementById('mov-qtd').value = "";
                 document.getElementById('pass-mov').value = "";
-                alert("Sucesso: Novo saldo é " + novoSaldo);
-            });
+            }).catch(e => alert("ERRO: Verifique as Rules no Firebase!"));
         });
-    }
-
-    function gerarPDF() {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        doc.text("Relatorio Milagro Stock 360", 14, 15);
-        doc.autoTable({ html: 'table', margin: { top: 25 } });
-        doc.save("estoque-milagro.pdf");
     }
 
     db.ref('estoque/').on('value', (snap) => {
         const dados = snap.val();
         const tb = document.getElementById('tabela-estoque');
         const sel = document.getElementById('mov-item');
-        tb.innerHTML = ''; sel.innerHTML = '<option value="">Selecione o produto...</option>';
-        let tFin = 0, tItens = 0, tAlerta = 0;
+        tb.innerHTML = ''; sel.innerHTML = '<option value="">Selecione...</option>';
+        let totalFin = 0;
 
         for(let id in dados) {
             let i = dados[id];
             sel.innerHTML += `<option value="${id}">${i.nome}</option>`;
-            if(i.qtd > 0) {
-                tItens++; 
-                let sub = parseFloat(i.qtd) * parseFloat(i.preco); 
-                tFin += sub;
-                if(i.qtd <= i.min) tAlerta++;
-                tb.innerHTML += `<tr><td><b>${i.nome}</b></td><td>${i.qtd}</td><td>R$ ${sub.toFixed(2)}</td><td class="admin-only"><button onclick="db.ref('estoque/${id}').remove()" style="color:red; border:none; background:none; cursor:pointer">🗑️</button></td></tr>`;
-            }
+            let sub = i.qtd * i.preco;
+            totalFin += sub;
+            tb.innerHTML += `<tr><td>${i.nome}</td><td><b>${i.qtd}</b></td><td>R$ ${sub.toFixed(2)}</td><td class="admin-only"><button onclick="db.ref('estoque/${id}').remove()">🗑️</button></td></tr>`;
         }
-        document.getElementById('dash-itens').innerText = tItens;
-        document.getElementById('dash-financeiro').innerText = "R$ " + tFin.toLocaleString('pt-BR');
-        document.getElementById('dash-alertas').innerText = tAlerta;
+        document.getElementById('dash-financeiro').innerText = "R$ " + totalFin.toLocaleString('pt-BR');
     });
 
-    db.ref('logs/').limitToLast(8).on('value', (snap) => {
-        const logs = snap.val();
-        const div = document.getElementById('log-atividades');
-        div.innerHTML = '';
-        for(let id in logs) { div.innerHTML = `<p style="border-left: 3px solid ${logs[id].cor}; padding-left: 8px; margin: 5px 0;">${logs[id].msg}</p>` + div.innerHTML; }
-    });
+    function gerarPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.text("Estoque Milagro", 14, 15);
+        doc.autoTable({ html: 'table' });
+        doc.save("estoque.pdf");
+    }
 </script>
 </body>
 </html>
