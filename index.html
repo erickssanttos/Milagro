@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Milagro Stock 360 - Profissional</title>
+    <title>Milagro Stock 360 - Oficial</title>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -30,7 +30,6 @@
         .btn { padding: 10px 15px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; }
         input, select { padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 10px; width: 100%; box-sizing: border-box; }
         .admin-only { display: none; }
-        @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -48,19 +47,19 @@
     </header>
 
     <div class="dash-row">
-        <div class="card" style="border-color: var(--accent)"><h3>Produtos</h3><p id="dash-itens">0</p></div>
+        <div class="card" style="border-color: var(--accent)"><h3>Produtos Ativos</h3><p id="dash-itens">0</p></div>
         <div class="card" style="border-color: var(--success)"><h3>Patrimônio Total</h3><p id="dash-financeiro">R$ 0,00</p></div>
-        <div class="card" style="border-color: var(--danger)"><h3>Alertas</h3><p id="dash-alertas">0</p></div>
+        <div class="card" style="border-color: var(--danger)"><h3>Atenção Mínima</h3><p id="dash-alertas">0</p></div>
     </div>
 
     <div class="main-grid">
         <div class="content">
             <div class="section">
-                <h2><i class="fas fa-exchange-alt"></i> Movimentação</h2>
+                <h2><i class="fas fa-exchange-alt"></i> Lançar Movimentação</h2>
                 <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                    <select id="mov-item" style="flex:2; min-width: 150px;"><option value="">Selecione...</option></select>
+                    <select id="mov-item" style="flex:2; min-width: 150px;"><option value="">Selecione o produto...</option></select>
                     <select id="mov-tipo" style="flex:1"><option value="entrada">ENTRADA (+)</option><option value="saida">SAÍDA (-)</option></select>
-                    <input type="number" id="mov-qtd" placeholder="Qtd" style="flex:1">
+                    <input type="number" id="mov-qtd" placeholder="Quantidade" style="flex:1">
                     <input type="password" id="pass-mov" placeholder="Senha Operação" style="flex:1; background: #fff9e6;">
                     <button class="btn" style="background:var(--accent); flex:1" onclick="lancarMovimentacao()">LANÇAR</button>
                 </div>
@@ -72,7 +71,7 @@
                     <button class="btn" style="background:#555; font-size: 0.8rem;" onclick="gerarPDF()">PDF</button>
                 </div>
                 <table>
-                    <thead><tr><th>PRODUTO</th><th>SALDO ATUAL</th><th>PATRIMÔNIO</th><th class="admin-only">AÇÕES</th></tr></thead>
+                    <thead><tr><th>PRODUTO</th><th>SALDO ATUAL</th><th>VALOR TOTAL</th><th class="admin-only">AÇÕES</th></tr></thead>
                     <tbody id="tabela-estoque"></tbody>
                 </table>
             </div>
@@ -80,14 +79,14 @@
 
         <div class="sidebar">
             <div class="section admin-only">
-                <h2>Novo Cadastro</h2>
+                <h2><i class="fas fa-plus-circle"></i> Novo Cadastro</h2>
                 <input type="text" id="cad-nome" placeholder="Nome do Item">
-                <input type="text" id="cad-preco" placeholder="Preço (Ex: 50.00)">
+                <input type="number" id="cad-preco" step="0.01" placeholder="Preço (ex: 50.00)">
                 <input type="number" id="cad-min" placeholder="Estoque Mínimo">
-                <button class="btn" style="background:var(--success); width:100%" onclick="cadastrar()">SALVAR</button>
+                <button class="btn" style="background:var(--success); width:100%" onclick="cadastrar()">SALVAR ITEM</button>
             </div>
             <div class="section">
-                <h2><i class="fas fa-history"></i> Histórico</h2>
+                <h2><i class="fas fa-history"></i> Log Recente</h2>
                 <div id="log-atividades" style="font-size: 0.8rem; color: #666;"></div>
             </div>
         </div>
@@ -120,11 +119,11 @@
 
     function cadastrar() {
         const nome = document.getElementById('cad-nome').value;
-        const preco = parseFloat(document.getElementById('cad-preco').value.replace(',', '.')) || 0;
+        const preco = parseFloat(document.getElementById('cad-preco').value) || 0;
         const min = parseInt(document.getElementById('cad-min').value) || 0;
         if(nome) {
             db.ref('estoque/').push({ nome, preco, min, qtd: 0, chave_seguranca: _CHAVE })
-            .then(() => { alert("Cadastrado!"); document.getElementById('cad-nome').value = ""; });
+            .then(() => { alert("Item Cadastrado!"); document.getElementById('cad-nome').value = ""; });
         }
     }
 
@@ -132,25 +131,27 @@
         const id = document.getElementById('mov-item').value;
         const qMov = parseFloat(document.getElementById('mov-qtd').value) || 0;
         const tipo = document.getElementById('mov-tipo').value;
-        const s = document.getElementById('pass-mov').value;
+        const senha = document.getElementById('pass-mov').value;
 
-        if(s !== _S_MOV) return alert("Senha incorreta!");
-        if(!id || qMov <= 0) return alert("Verifique os campos!");
+        if(senha !== _S_MOV) return alert("Senha de Operação Incorreta!");
+        if(!id || qMov <= 0) return alert("Dados inválidos!");
 
         db.ref('estoque/' + id).once('value', (s) => {
             const item = s.val();
+            // CÁLCULO MATEMÁTICO REAL
             const sAntigo = parseFloat(item.qtd) || 0;
-            let nSaldo = tipo === 'entrada' ? (sAntigo + qMov) : (sAntigo - qMov);
+            let nSaldo = (tipo === 'entrada') ? (sAntigo + qMov) : (sAntigo - qMov);
             
-            if(nSaldo < 0) return alert("Saldo insuficiente!");
+            if(nSaldo < 0) return alert("Erro: Saldo não pode ser negativo!");
 
+            // GRAVAÇÃO NO BANCO
             db.ref('estoque/' + id).update({ qtd: nSaldo, chave_seguranca: _CHAVE })
             .then(() => {
                 db.ref('logs/').push({ msg: `${new Date().toLocaleTimeString()} - ${tipo.toUpperCase()}: ${qMov} de ${item.nome}`, cor: tipo === 'entrada' ? 'green' : 'red' });
                 document.getElementById('mov-qtd').value = "";
                 document.getElementById('pass-mov').value = "";
-                alert("Novo Saldo: " + nSaldo);
-            }).catch(() => alert("Erro ao cadastrar. Verifique as Rules."));
+                alert("Lançamento Realizado! Novo Saldo: " + nSaldo);
+            }).catch(e => alert("Erro ao salvar no Firebase. Verifique as Rules!"));
         });
     }
 
@@ -158,24 +159,35 @@
         const dados = snap.val();
         const tb = document.getElementById('tabela-estoque');
         const sel = document.getElementById('mov-item');
-        tb.innerHTML = ''; sel.innerHTML = '<option value="">Selecione...</option>';
+        tb.innerHTML = ''; sel.innerHTML = '<option value="">Selecione o produto...</option>';
         let tFin = 0, tItens = 0, tAlerta = 0;
 
         for(let id in dados) {
             let i = dados[id];
             sel.innerHTML += `<option value="${id}">${i.nome}</option>`;
+            
+            const estoqueAtual = parseFloat(i.qtd) || 0;
+            const precoUnitario = parseFloat(i.preco) || 0;
+            const subtotal = estoqueAtual * precoUnitario;
+            
             tItens++; 
-            let sub = (parseFloat(i.qtd) || 0) * (parseFloat(i.preco) || 0); 
-            tFin += sub;
-            if(i.qtd <= i.min) tAlerta++;
-            tb.innerHTML += `<tr><td><b>${i.nome}</b></td><td><b>${i.qtd}</b></td><td>R$ ${sub.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td><td class="admin-only"><button onclick="db.ref('estoque/${id}').remove()" style="color:red; border:none; background:none; cursor:pointer">🗑️</button></td></tr>`;
+            tFin += subtotal;
+            if(estoqueAtual <= (i.min || 0)) tAlerta++;
+
+            tb.innerHTML += `
+                <tr>
+                    <td><b>${i.nome}</b></td>
+                    <td style="color:${estoqueAtual <= i.min ? 'red' : 'black'}"><b>${estoqueAtual}</b></td>
+                    <td>R$ ${subtotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
+                    <td class="admin-only"><button onclick="db.ref('estoque/${id}').remove()" style="color:red; border:none; background:none; cursor:pointer">🗑️</button></td>
+                </tr>`;
         }
         document.getElementById('dash-itens').innerText = tItens;
-        document.getElementById('dash-financeiro').innerText = "R$ " + tFin.toLocaleString('pt-BR',{minimumFractionDigits:2});
+        document.getElementById('dash-financeiro').innerText = "R$ " + tFin.toLocaleString('pt-BR', {minimumFractionDigits: 2});
         document.getElementById('dash-alertas').innerText = tAlerta;
     });
 
-    db.ref('logs/').limitToLast(8).on('value', (snap) => {
+    db.ref('logs/').limitToLast(6).on('value', (snap) => {
         const logs = snap.val();
         const div = document.getElementById('log-atividades');
         div.innerHTML = '';
@@ -185,9 +197,9 @@
     function gerarPDF() {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        doc.text("Relatorio Milagro Stock 360", 14, 15);
+        doc.text("Relatorio de Inventario - Milagro Stock 360", 14, 15);
         doc.autoTable({ html: 'table', margin: { top: 25 } });
-        doc.save("estoque.pdf");
+        doc.save("estoque-milagro.pdf");
     }
 </script>
 </body>
