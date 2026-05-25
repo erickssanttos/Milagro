@@ -1,142 +1,142 @@
+```html
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Milagro Stock 360</title>
+
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background: #f4f6f8;
-      color: #222;
+    body{
+      margin:0;
+      font-family:Arial, sans-serif;
+      background:#f4f6f8;
     }
 
-    header {
-      background: #1f7a3f;
-      color: white;
-      padding: 20px;
-      text-align: center;
+    header{
+      background:#1f7a3f;
+      color:white;
+      padding:20px;
+      text-align:center;
     }
 
-    main {
-      max-width: 1100px;
-      margin: 20px auto;
-      padding: 15px;
+    .container{
+      max-width:1200px;
+      margin:auto;
+      padding:20px;
     }
 
-    .card {
-      background: white;
-      padding: 20px;
-      margin-bottom: 20px;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    .card{
+      background:white;
+      border-radius:12px;
+      padding:20px;
+      margin-bottom:20px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.1);
     }
 
-    h2 {
-      color: #1f7a3f;
+    h2{
+      color:#1f7a3f;
     }
 
-    input, select, textarea, button {
-      width: 100%;
-      padding: 10px;
-      margin: 6px 0;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 15px;
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:10px;
     }
 
-    button {
-      background: #1f7a3f;
-      color: white;
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
+    input, select, textarea, button{
+      width:100%;
+      padding:12px;
+      border-radius:8px;
+      border:1px solid #ccc;
+      font-size:14px;
+      box-sizing:border-box;
     }
 
-    button:hover {
-      background: #155c2f;
+    button{
+      background:#1f7a3f;
+      color:white;
+      border:none;
+      cursor:pointer;
+      font-weight:bold;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
+    button:hover{
+      background:#15592d;
     }
 
-    th, td {
-      padding: 10px;
-      border-bottom: 1px solid #ddd;
-      text-align: left;
-      font-size: 14px;
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:15px;
     }
 
-    th {
-      background: #1f7a3f;
-      color: white;
+    th{
+      background:#1f7a3f;
+      color:white;
+      padding:10px;
+      font-size:14px;
     }
 
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 10px;
+    td{
+      border-bottom:1px solid #ddd;
+      padding:10px;
+      font-size:13px;
     }
   </style>
 </head>
+
 <body>
 
 <header>
-  <h1>Milagro Stock 360</h1>
-  <p>Controle de Sementes, Galpões, Estoque e Vendas</p>
+  <h1>MILAGRO STOCK 360</h1>
+  <p>Controle de Estoque de Sementes</p>
 </header>
 
-<main>
+<div class="container">
 
-  <section class="card">
+  <div class="card">
     <h2>Cadastro de Sementes</h2>
 
     <div class="grid">
-      <input id="variedade" placeholder="Variedade da semente">
-      <input id="lote" placeholder="Lote">
-      <input id="quadra" placeholder="Quadra">
+      <input type="text" id="variedade" placeholder="Variedade">
+      <input type="text" id="lote" placeholder="Lote">
+      <input type="text" id="quadra" placeholder="Quadra">
+
       <select id="galpao">
-        <option value="">Selecione o galpão</option>
+        <option value="">Selecione o Galpão</option>
         <option>Galpão 1</option>
         <option>Galpão 2</option>
         <option>Galpão 3</option>
         <option>Galpão 4</option>
       </select>
-      <input id="quantidade" type="number" placeholder="Quantidade / Sacos">
-      <input id="pureza" placeholder="Pureza (%)">
-      <input id="tz" placeholder="TZ (%)">
+
+      <input type="number" id="quantidade" placeholder="Quantidade">
+      <input type="text" id="pureza" placeholder="Pureza (%)">
+      <input type="text" id="tz" placeholder="TZ (%)">
+
       <select id="status">
-        <option value="Armazenada">Armazenada</option>
-        <option value="Pronta para venda">Pronta para venda</option>
-        <option value="Vendida">Vendida</option>
-        <option value="Bloqueada">Bloqueada</option>
+        <option>Armazenada</option>
+        <option>Pronta para venda</option>
+        <option>Vendida</option>
+        <option>Bloqueada</option>
       </select>
     </div>
 
-    <textarea id="observacao" placeholder="Descrição de contaminação, ajustes ou observações"></textarea>
+    <br>
 
-    <button onclick="salvarSemente()">Salvar Semente</button>
-  </section>
+    <textarea id="observacao" rows="4" placeholder="Contaminação, ajustes ou observações"></textarea>
 
-  <section class="card">
-    <h2>Registrar Venda</h2>
+    <br><br>
 
-    <div class="grid">
-      <input id="clienteVenda" placeholder="Cliente">
-      <input id="sementeVenda" placeholder="Semente / Lote">
-      <input id="quantidadeVenda" type="number" placeholder="Quantidade vendida">
-      <input id="dataVenda" type="date">
-    </div>
+    <button onclick="salvarSemente()">
+      Salvar Semente
+    </button>
+  </div>
 
-    <button onclick="salvarVenda()">Salvar Venda</button>
-  </section>
-
-  <section class="card">
+  <div class="card">
     <h2>Estoque de Sementes</h2>
+
     <table>
       <thead>
         <tr>
@@ -150,89 +150,104 @@
           <th>Status</th>
         </tr>
       </thead>
+
       <tbody id="tabelaEstoque"></tbody>
     </table>
-  </section>
+  </div>
 
-</main>
+</div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, push, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "COLE_AQUI",
-    authDomain: "COLE_AQUI",
-    databaseURL: "https://milagro-172c5-default-rtdb.firebaseio.com",
-    projectId: "milagro-172c5",
-    storageBucket: "COLE_AQUI",
-    messagingSenderId: "COLE_AQUI",
-    appId: "COLE_AQUI"
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+  getDatabase,
+  ref,
+  push,
+  onValue
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyALJ0APzmiU3tTmv6f3kMGYQX1Oc61t0F4",
+  authDomain: "milagro-172c5.firebaseapp.com",
+  databaseURL: "https://milagro-172c5-default-rtdb.firebaseio.com",
+  projectId: "milagro-172c5",
+  storageBucket: "milagro-172c5.firebasestorage.app",
+  messagingSenderId: "923027654375",
+  appId: "1:923027654375:web:d9e24bec8e48d304438442"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+window.salvarSemente = function(){
+
+  const dados = {
+    variedade: document.getElementById("variedade").value,
+    lote: document.getElementById("lote").value,
+    quadra: document.getElementById("quadra").value,
+    galpao: document.getElementById("galpao").value,
+    quantidade: document.getElementById("quantidade").value,
+    pureza: document.getElementById("pureza").value,
+    tz: document.getElementById("tz").value,
+    status: document.getElementById("status").value,
+    observacao: document.getElementById("observacao").value,
+    dataCadastro: new Date().toLocaleString("pt-BR")
   };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+  push(ref(db, "sementes"), dados);
 
-  window.salvarSemente = function () {
-    const dados = {
-      variedade: document.getElementById("variedade").value,
-      lote: document.getElementById("lote").value,
-      quadra: document.getElementById("quadra").value,
-      galpao: document.getElementById("galpao").value,
-      quantidade: document.getElementById("quantidade").value,
-      pureza: document.getElementById("pureza").value,
-      tz: document.getElementById("tz").value,
-      status: document.getElementById("status").value,
-      observacao: document.getElementById("observacao").value,
-      dataCadastro: new Date().toLocaleString("pt-BR")
-    };
+  alert("Semente salva com sucesso!");
 
-    push(ref(db, "sementes"), dados);
-    alert("Semente salva com sucesso!");
+  limparCampos();
+}
 
-    document.querySelectorAll("input, textarea").forEach(campo => campo.value = "");
-  };
+function limparCampos(){
 
-  window.salvarVenda = function () {
-    const venda = {
-      cliente: document.getElementById("clienteVenda").value,
-      semente: document.getElementById("sementeVenda").value,
-      quantidade: document.getElementById("quantidadeVenda").value,
-      data: document.getElementById("dataVenda").value,
-      dataRegistro: new Date().toLocaleString("pt-BR")
-    };
+  document.getElementById("variedade").value = "";
+  document.getElementById("lote").value = "";
+  document.getElementById("quadra").value = "";
+  document.getElementById("galpao").value = "";
+  document.getElementById("quantidade").value = "";
+  document.getElementById("pureza").value = "";
+  document.getElementById("tz").value = "";
+  document.getElementById("status").value = "Armazenada";
+  document.getElementById("observacao").value = "";
+}
 
-    push(ref(db, "vendas"), venda);
-    alert("Venda registrada com sucesso!");
-  };
+function carregarEstoque(){
 
-  function carregarEstoque() {
-    const tabela = document.getElementById("tabelaEstoque");
+  const tabela = document.getElementById("tabelaEstoque");
 
-    onValue(ref(db, "sementes"), (snapshot) => {
-      tabela.innerHTML = "";
+  onValue(ref(db, "sementes"), (snapshot)=>{
 
-      snapshot.forEach((item) => {
-        const s = item.val();
+    tabela.innerHTML = "";
 
-        tabela.innerHTML += `
-          <tr>
-            <td>${s.variedade || ""}</td>
-            <td>${s.lote || ""}</td>
-            <td>${s.quadra || ""}</td>
-            <td>${s.galpao || ""}</td>
-            <td>${s.quantidade || ""}</td>
-            <td>${s.pureza || ""}</td>
-            <td>${s.tz || ""}</td>
-            <td>${s.status || ""}</td>
-          </tr>
-        `;
-      });
+    snapshot.forEach((item)=>{
+
+      const s = item.val();
+
+      tabela.innerHTML += `
+        <tr>
+          <td>${s.variedade || ""}</td>
+          <td>${s.lote || ""}</td>
+          <td>${s.quadra || ""}</td>
+          <td>${s.galpao || ""}</td>
+          <td>${s.quantidade || ""}</td>
+          <td>${s.pureza || ""}</td>
+          <td>${s.tz || ""}</td>
+          <td>${s.status || ""}</td>
+        </tr>
+      `;
     });
-  }
+  });
+}
 
-  carregarEstoque();
+carregarEstoque();
+
 </script>
 
 </body>
 </html>
+```
