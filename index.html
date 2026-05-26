@@ -1,283 +1,615 @@
 ```html
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Milagro Stock 360</title>
 
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:Arial,sans-serif;background:#eef2f7}
-header{background:linear-gradient(135deg,#1f7a3f,#15592d);color:white;padding:20px;text-align:center}
-.container{width:95%;max-width:1400px;margin:20px auto}
-.login-box{max-width:400px;margin:80px auto;background:white;padding:30px;border-radius:15px;box-shadow:0 4px 15px rgba(0,0,0,.1)}
-.hidden{display:none}
-.card,.card-info{background:white;padding:20px;border-radius:15px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px}
-.card-info h3{color:#777;margin-bottom:10px}
-.card-info p{font-size:28px;font-weight:bold;color:#1f7a3f}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-input,select,textarea{width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;font-size:14px}
-button{background:#1f7a3f;color:white;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:bold;margin:2px}
-button:hover{background:#15592d}
-.btn-danger{background:#d62828}
-.btn-danger:hover{background:#a61e1e}
-.btn-edit{background:#0077b6}
-.btn-edit:hover{background:#005f8f}
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th{background:#1f7a3f;color:white;padding:12px;text-align:left}
-td{padding:12px;border-bottom:1px solid #ddd;font-size:13px}
-.status{padding:6px 10px;border-radius:20px;font-size:12px;font-weight:bold;color:white}
-.armazenada{background:#1f7a3f}
-.venda{background:#0077b6}
-.bloqueada{background:#d62828}
-.vendido{background:#555}
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+}
+
+body{
+font-family:Arial,sans-serif;
+background:#eef2f7;
+}
+
+header{
+background:linear-gradient(135deg,#1f7a3f,#15592d);
+color:white;
+padding:20px;
+text-align:center;
+}
+
+.container{
+width:95%;
+max-width:1400px;
+margin:20px auto;
+}
+
+.login-box{
+max-width:400px;
+margin:80px auto;
+background:white;
+padding:30px;
+border-radius:15px;
+box-shadow:0 4px 15px rgba(0,0,0,.1);
+}
+
+.hidden{
+display:none;
+}
+
+.card,.card-info{
+background:white;
+padding:20px;
+border-radius:15px;
+margin-bottom:20px;
+box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+.cards{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:15px;
+}
+
+.card-info h3{
+color:#777;
+margin-bottom:10px;
+}
+
+.card-info p{
+font-size:28px;
+font-weight:bold;
+color:#1f7a3f;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:12px;
+}
+
+input,select{
+width:100%;
+padding:12px;
+border:1px solid #ccc;
+border-radius:10px;
+font-size:14px;
+}
+
+button{
+background:#1f7a3f;
+color:white;
+border:none;
+padding:10px 14px;
+border-radius:10px;
+cursor:pointer;
+font-weight:bold;
+margin:2px;
+}
+
+button:hover{
+background:#15592d;
+}
+
+.btn-danger{
+background:#d62828;
+}
+
+.btn-danger:hover{
+background:#a61e1e;
+}
+
+.btn-edit{
+background:#0077b6;
+}
+
+.btn-edit:hover{
+background:#005f8f;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:10px;
+}
+
+th{
+background:#1f7a3f;
+color:white;
+padding:12px;
+text-align:left;
+}
+
+td{
+padding:12px;
+border-bottom:1px solid #ddd;
+font-size:13px;
+}
+
+.status{
+padding:6px 10px;
+border-radius:20px;
+font-size:12px;
+font-weight:bold;
+color:white;
+}
+
+.armazenada{
+background:#1f7a3f;
+}
+
+.venda{
+background:#0077b6;
+}
+
+.bloqueada{
+background:#d62828;
+}
+
+.vendido{
+background:#555;
+}
+
 </style>
+
 </head>
 
 <body>
 
 <header>
+
 <h1>MILAGRO STOCK 360</h1>
+
 <p>Gestão Inteligente de Estoque</p>
+
 </header>
 
 <div id="loginTela" class="login-box">
-<h2 style="text-align:center;color:#1f7a3f;margin-bottom:20px;">Login do Sistema</h2>
+
+<h2 style="text-align:center;color:#1f7a3f;margin-bottom:20px;">
+
+Login do Sistema
+
+</h2>
+
 <input type="email" id="emailLogin" placeholder="E-mail">
+
 <br><br>
+
 <input type="password" id="senhaLogin" placeholder="Senha">
+
 <br><br>
-<button onclick="entrar()">Entrar</button>
+
+<button onclick="entrar()">
+
+Entrar
+
+</button>
+
 </div>
 
 <div id="sistemaTela" class="container hidden">
 
 <div class="cards">
+
 <div class="card-info">
+
 <h3>Total de Registros</h3>
+
 <p id="totalRegistros">0</p>
+
 </div>
+
 <div class="card-info">
+
 <h3>Total em Estoque</h3>
+
 <p id="totalQuantidade">0</p>
+
 </div>
+
 </div>
 
 <div class="card">
-<h2 id="tituloFormulario">Cadastro de Sementes</h2>
+
+<h2 id="tituloFormulario">
+
+Cadastro de Sementes
+
+</h2>
 
 <input type="hidden" id="idEdicao">
 
 <div class="grid">
+
 <input type="text" id="variedade" placeholder="Variedade">
+
 <input type="text" id="lote" placeholder="Lote">
+
 <input type="number" id="quantidade" placeholder="Quantidade">
 
 <select id="status">
+
 <option>Armazenada</option>
+
 <option>Pronta para venda</option>
+
 <option>Bloqueada</option>
+
 <option>Vendido</option>
+
 </select>
+
 </div>
 
 <br>
 
-<button onclick="salvarSemente()" id="btnSalvar">Salvar Semente</button>
-<button onclick="cancelarEdicao()" id="btnCancelar" class="btn-danger hidden">Cancelar Edição</button>
+<button onclick="salvarSemente()" id="btnSalvar">
+
+Salvar Semente
+
+</button>
+
+<button onclick="cancelarEdicao()" id="btnCancelar" class="btn-danger hidden">
+
+Cancelar Edição
+
+</button>
+
 </div>
 
 <div class="card">
+
 <h2>Estoque</h2>
 
 <table>
+
 <thead>
+
 <tr>
+
 <th>Variedade</th>
+
 <th>Lote</th>
+
 <th>Quantidade</th>
+
 <th>Status</th>
+
 <th>Ações</th>
+
 </tr>
+
 </thead>
+
 <tbody id="tabelaEstoque"></tbody>
+
 </table>
+
 </div>
 
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import { initializeApp }
+
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
+
 getDatabase,
 ref,
 push,
 onValue,
 update,
 remove
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+}
+
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 import {
+
 getAuth,
 signInWithEmailAndPassword,
 onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+}
+
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
+
 apiKey: "AIzaSyALJ0APzmiU3tTmv6f3kMGYQX1Oc61t0F4",
+
 authDomain: "milagro-172c5.firebaseapp.com",
+
 databaseURL: "https://milagro-172c5-default-rtdb.firebaseio.com",
+
 projectId: "milagro-172c5",
+
 storageBucket: "milagro-172c5.firebasestorage.app",
+
 messagingSenderId: "923027654375",
+
 appId: "1:923027654375:web:d9e24bec8e48d304438442"
+
 };
 
 const app = initializeApp(firebaseConfig);
+
 const db = getDatabase(app);
+
 const auth = getAuth(app);
 
 let sementesCache = {};
 
 window.entrar = function(){
+
 const email = document.getElementById("emailLogin").value;
+
 const senha = document.getElementById("senhaLogin").value;
 
 signInWithEmailAndPassword(auth,email,senha)
-.then(()=>alert("Login realizado!"))
+
+.then((userCredential)=>{
+
+alert("Login realizado com sucesso!");
+
+console.log(userCredential.user);
+
+})
+
 .catch((erro)=>{
-  alert("Erro no login: " + erro.code);
-  console.log(erro);
+
+alert("Erro no login: " + erro.code);
+
+console.log("ERRO FIREBASE:", erro);
+
 });
+
 }
 
 onAuthStateChanged(auth,(user)=>{
+
 if(user){
-document.getElementById("loginTela").classList.add("hidden");
-document.getElementById("sistemaTela").classList.remove("hidden");
+
+document.getElementById("loginTela")
+.classList.add("hidden");
+
+document.getElementById("sistemaTela")
+.classList.remove("hidden");
+
 carregarDados();
+
 }else{
-document.getElementById("loginTela").classList.remove("hidden");
-document.getElementById("sistemaTela").classList.add("hidden");
+
+document.getElementById("loginTela")
+.classList.remove("hidden");
+
+document.getElementById("sistemaTela")
+.classList.add("hidden");
+
 }
+
 });
 
 window.salvarSemente = function(){
+
 const idEdicao = document.getElementById("idEdicao").value;
 
 const dados = {
+
 variedade: document.getElementById("variedade").value,
+
 lote: document.getElementById("lote").value,
+
 quantidade: Number(document.getElementById("quantidade").value),
+
 status: document.getElementById("status").value,
+
 dataAtualizacao: new Date().toLocaleString("pt-BR")
+
 };
 
 if(!dados.variedade || !dados.lote || !dados.quantidade){
+
 alert("Preencha variedade, lote e quantidade.");
+
 return;
+
 }
 
 if(idEdicao){
+
 update(ref(db,"sementes/"+idEdicao),dados);
+
 alert("Lançamento atualizado com sucesso!");
+
 cancelarEdicao();
+
 }else{
+
 dados.dataCadastro = new Date().toLocaleString("pt-BR");
+
 push(ref(db,"sementes"),dados);
+
 alert("Semente salva!");
+
 limparCampos();
+
 }
+
 }
 
 function carregarDados(){
+
 const tabela = document.getElementById("tabelaEstoque");
 
 onValue(ref(db,"sementes"),(snapshot)=>{
+
 tabela.innerHTML="";
+
 sementesCache = {};
 
 let total=0;
+
 let quantidade=0;
 
 snapshot.forEach((item)=>{
+
 const id = item.key;
+
 const dados = item.val();
 
 sementesCache[id] = dados;
 
 total++;
+
 quantidade += Number(dados.quantidade || 0);
 
 tabela.innerHTML += `
+
 <tr>
+
 <td>${dados.variedade || ""}</td>
+
 <td>${dados.lote || ""}</td>
+
 <td>${dados.quantidade || 0}</td>
+
 <td>
+
 <span class="status ${
-dados.status === "Pronta para venda" ? "venda" :
-dados.status === "Bloqueada" ? "bloqueada" :
-dados.status === "Vendido" ? "vendido" :
-"armazenada"
+dados.status === "Pronta para venda"
+? "venda"
+: dados.status === "Bloqueada"
+? "bloqueada"
+: dados.status === "Vendido"
+? "vendido"
+: "armazenada"
 }">
+
 ${dados.status || "Armazenada"}
+
 </span>
+
 </td>
+
 <td>
-<button class="btn-edit" onclick="editarSemente('${id}')">Editar</button>
-<button class="btn-danger" onclick="excluirSemente('${id}')">Excluir</button>
+
+<button class="btn-edit"
+onclick="editarSemente('${id}')">
+
+Editar
+
+</button>
+
+<button class="btn-danger"
+onclick="excluirSemente('${id}')">
+
+Excluir
+
+</button>
+
 </td>
+
 </tr>
+
 `;
+
 });
 
-document.getElementById("totalRegistros").innerText=total;
-document.getElementById("totalQuantidade").innerText=quantidade;
+document.getElementById("totalRegistros")
+.innerText=total;
+
+document.getElementById("totalQuantidade")
+.innerText=quantidade;
+
 });
+
 }
 
 window.editarSemente = function(id){
+
 const dados = sementesCache[id];
 
-document.getElementById("idEdicao").value = id;
-document.getElementById("variedade").value = dados.variedade || "";
-document.getElementById("lote").value = dados.lote || "";
-document.getElementById("quantidade").value = dados.quantidade || "";
-document.getElementById("status").value = dados.status || "Armazenada";
+document.getElementById("idEdicao").value=id;
 
-document.getElementById("tituloFormulario").innerText = "Editar Lançamento";
-document.getElementById("btnSalvar").innerText = "Atualizar Lançamento";
-document.getElementById("btnCancelar").classList.remove("hidden");
+document.getElementById("variedade").value=dados.variedade || "";
+
+document.getElementById("lote").value=dados.lote || "";
+
+document.getElementById("quantidade").value=dados.quantidade || "";
+
+document.getElementById("status").value=dados.status || "Armazenada";
+
+document.getElementById("tituloFormulario")
+.innerText="Editar Lançamento";
+
+document.getElementById("btnSalvar")
+.innerText="Atualizar Lançamento";
+
+document.getElementById("btnCancelar")
+.classList.remove("hidden");
 
 window.scrollTo({top:0,behavior:"smooth"});
+
 }
 
 window.cancelarEdicao = function(){
-document.getElementById("idEdicao").value = "";
-document.getElementById("tituloFormulario").innerText = "Cadastro de Sementes";
-document.getElementById("btnSalvar").innerText = "Salvar Semente";
-document.getElementById("btnCancelar").classList.add("hidden");
+
+document.getElementById("idEdicao").value="";
+
+document.getElementById("tituloFormulario")
+.innerText="Cadastro de Sementes";
+
+document.getElementById("btnSalvar")
+.innerText="Salvar Semente";
+
+document.getElementById("btnCancelar")
+.classList.add("hidden");
+
 limparCampos();
+
 }
 
 window.excluirSemente = function(id){
+
 if(confirm("Deseja excluir este lançamento?")){
+
 remove(ref(db,"sementes/"+id));
+
 }
+
 }
 
 function limparCampos(){
+
 document.getElementById("variedade").value="";
+
 document.getElementById("lote").value="";
+
 document.getElementById("quantidade").value="";
+
 document.getElementById("status").value="Armazenada";
+
 }
+
 </script>
 
 </body>
+
 </html>
 ```
