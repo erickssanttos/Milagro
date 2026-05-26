@@ -148,7 +148,10 @@ const senha = document.getElementById("senhaLogin").value;
 
 signInWithEmailAndPassword(auth,email,senha)
 .then(()=>alert("Login realizado!"))
-.catch(()=>alert("Erro no login."));
+.catch((erro)=>{
+  alert("Erro no login: " + erro.code);
+  console.log(erro);
+});
 }
 
 onAuthStateChanged(auth,(user)=>{
