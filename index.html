@@ -1,11 +1,783 @@
-MILAGRO STOCK 360
-Gestão Inteligente de Estoque de Sementes
 
-Login do Sistema
-E-mail
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Milagro Stock 360</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:#eef2f7;color:#333}
+header{background:linear-gradient(135deg,#1f7a3f,#15592d);color:white;padding:22px;text-align:center}
+.container{width:95%;max-width:1450px;margin:20px auto}
+.hidden{display:none!important}
+.login-box{max-width:420px;margin:80px auto;background:white;padding:30px;border-radius:18px;box-shadow:0 4px 18px rgba(0,0,0,.12)}
+.login-box h2{text-align:center;color:#1f7a3f;margin-bottom:20px}
+.card,.card-info{background:white;border-radius:16px;padding:20px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;margin-bottom:20px}
+.card-info h3{color:#666;margin-bottom:10px;font-size:15px}
+.card-info p{font-size:28px;font-weight:bold;color:#1f7a3f}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+input,select,textarea{width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;font-size:14px}
+textarea{resize:none}
+button{background:#1f7a3f;color:white;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:bold;margin:2px}
+button:hover{background:#15592d}
+.btn-danger{background:#d62828}
+.btn-edit{background:#0077b6}
+.btn-dark{background:#333}
+.btn-gray{background:#666}
+.top-bar{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.search{max-width:320px}
+table{width:100%;border-collapse:collapse;margin-top:10px}
+th{background:#1f7a3f;color:white;padding:12px;text-align:left;font-size:14px}
+td{padding:12px;border-bottom:1px solid #ddd;font-size:13px}
+tr:hover{background:#f6f6f6}
+.status{padding:6px 10px;border-radius:20px;font-size:12px;font-weight:bold;color:white}
+.armazenada{background:#1f7a3f}
+.venda{background:#0077b6}
+.bloqueada{background:#d62828}
+.vendido{background:#555}
+.user-area{text-align:right;margin-top:10px}
+@media(max-width:768px){table{display:block;overflow-x:auto}.user-area{text-align:center}.top-bar{flex-direction:column;align-items:stretch}}
+
+.report-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#e8f5ee;color:#15592d;font-size:12px;font-weight:bold}
+.chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.chart-box{background:#f9fafb;border:1px solid #e5e7eb;border-radius:14px;padding:14px}
+.bar-row{display:grid;grid-template-columns:110px 1fr 55px;gap:8px;align-items:center;margin:8px 0;font-size:13px}
+.bar-wrap{background:#e5e7eb;border-radius:999px;height:14px;overflow:hidden}
+.bar-fill{height:100%;background:#1f7a3f;border-radius:999px}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:flex-start;justify-content:center;padding:30px;z-index:9999;overflow:auto}
+.modal-content{background:white;width:100%;max-width:1100px;border-radius:16px;padding:22px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.modal-header{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:15px}
+.small-note{font-size:12px;color:#666;margin-top:6px}
+.kpi-line{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
+.kpi-line span{background:#eef2f7;border-radius:10px;padding:8px 10px;font-weight:bold;color:#15592d}
+@media print{
+  body *{visibility:hidden}
+  #relatorioModal,#relatorioModal *{visibility:visible}
+  #relatorioModal{position:absolute;inset:0;background:white;padding:0}
+  .modal-content{box-shadow:none;border-radius:0;max-width:100%;padding:10px}
+  .no-print{display:none!important}
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>MILAGRO STOCK 360</h1>
+<p>Gestão Inteligente de Estoque de Sementes</p>
+<div id="areaUsuario" class="user-area hidden">
+<span id="usuarioLogado"></span>
+<button class="btn-dark" onclick="sair()">Sair</button>
+</div>
+</header>
+
+<div id="loginTela" class="login-box">
+<h2>Login do Sistema</h2>
+<input type="email" id="emailLogin" placeholder="E-mail">
+<br><br>
+<input type="password" id="senhaLogin" placeholder="Senha">
+<br><br>
+<button onclick="entrar()">Entrar</button>
+</div>
+
+<div id="sistemaTela" class="container hidden">
+
+<div class="cards">
+<div class="card-info"><h3>Total de Lotes</h3><p id="totalRegistros">0</p></div>
+<div class="card-info"><h3>Total em Estoque</h3><p id="totalQuantidade">0</p></div>
+<div class="card-info"><h3>Prontas para Venda</h3><p id="totalProntas">0</p></div>
+<div class="card-info"><h3>Total Vendido</h3><p id="totalVendido">0</p></div>
+</div>
+
+<div class="card">
+<div class="top-bar">
+<h2>Ferramentas e Relatórios</h2>
+<span class="badge">Versão completa</span>
+</div>
+<div class="report-actions">
+<button onclick="gerarRelatorioEstoque()">Relatório de Estoque / PDF</button>
+<button onclick="gerarRelatorioVendas()">Relatório de Vendas / PDF</button>
+<button onclick="exportarCSV('estoque')">Exportar Estoque CSV</button>
+<button onclick="exportarCSV('vendas')">Exportar Vendas CSV</button>
+<button onclick="fazerBackup()">Backup JSON</button>
+<button class="btn-gray" onclick="restaurarBackupPrompt()">Restaurar Backup</button>
+</div>
+<p class="small-note">PDF: abra o relatório e escolha “Imprimir / Salvar PDF”. CSV abre no Excel.</p>
+</div>
+
+<div class="card">
+<h2>Dashboard por Galpão e Status</h2>
+<div class="chart-grid">
+<div class="chart-box">
+<h3>Estoque por Galpão</h3>
+<div id="graficoGalpao"></div>
+</div>
+<div class="chart-box">
+<h3>Lotes por Status</h3>
+<div id="graficoStatus"></div>
+</div>
+</div>
+</div>
+
+<div class="card">
+<h2 id="tituloFormulario">Cadastro de Sementes</h2>
+<input type="hidden" id="idEdicao">
+
+<div class="grid">
+<input type="text" id="variedade" placeholder="Variedade">
+<input type="text" id="lote" placeholder="Lote">
+<input type="text" id="quadra" placeholder="Quadra">
+
+<select id="galpao">
+<option value="">Selecione o Galpão</option>
+<option>Galpão 1</option>
+<option>Galpão 2</option>
+<option>Galpão 3</option>
+<option>Galpão 4</option>
+</select>
+
+<input type="number" id="quantidade" placeholder="Quantidade">
+<input type="text" id="pureza" placeholder="Pureza (%)">
+<input type="text" id="tz" placeholder="TZ (%)">
+
+<select id="status">
+<option>Armazenada</option>
+<option>Pronta para venda</option>
+<option>Bloqueada</option>
+<option>Vendido</option>
+</select>
+</div>
+
+<br>
+<textarea id="observacao" rows="3" placeholder="Observações, contaminação ou ajustes"></textarea>
+<br><br>
+
+<button onclick="salvarSemente()" id="btnSalvar">Salvar Semente</button>
+<button onclick="cancelarEdicao()" id="btnCancelar" class="btn-danger hidden">Cancelar Edição</button>
+</div>
+
+<div class="card">
+<h2>Registrar Venda com Baixa de Estoque</h2>
+
+<div class="grid">
+<input type="text" id="clienteVenda" placeholder="Cliente">
+<select id="sementeVenda">
+<option value="">Selecione o lote vendido</option>
+</select>
+<input type="number" id="quantidadeVenda" placeholder="Quantidade vendida">
+<input type="date" id="dataVenda">
+</div>
+
+<br>
+<textarea id="observacaoVenda" rows="3" placeholder="Observação da venda"></textarea>
+<br><br>
+
+<button onclick="registrarVenda()">Registrar Venda e Dar Baixa</button>
+</div>
+
+<div class="card">
+<div class="top-bar">
+<h2>Estoque de Sementes</h2>
+<input type="text" id="buscaEstoque" class="search" placeholder="Buscar no estoque..." onkeyup="filtrarTabela('buscaEstoque','tabelaEstoque')">
+</div>
+
+<table>
+<thead>
+<tr>
+<th>Variedade</th>
+<th>Lote</th>
+<th>Quadra</th>
+<th>Galpão</th>
+<th>Qtd</th>
+<th>Pureza</th>
+<th>TZ</th>
+<th>Status</th>
+<th>Ações</th>
+</tr>
+</thead>
+<tbody id="tabelaEstoque"></tbody>
+</table>
+</div>
+
+<div class="card">
+<div class="top-bar">
+<h2>Histórico de Vendas</h2>
+<input type="text" id="buscaVendas" class="search" placeholder="Buscar vendas..." onkeyup="filtrarTabela('buscaVendas','tabelaVendas')">
+</div>
+
+<table>
+<thead>
+<tr>
+<th>Cliente</th>
+<th>Variedade</th>
+<th>Lote</th>
+<th>Qtd Vendida</th>
+<th>Data</th>
+<th>Usuário</th>
+<th>Observação</th>
+<th>Ação</th>
+</tr>
+</thead>
+<tbody id="tabelaVendas"></tbody>
+</table>
+</div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+getDatabase,
+ref,
+push,
+onValue,
+update,
+remove,
+get
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+import {
+getAuth,
+signInWithEmailAndPassword,
+onAuthStateChanged,
+signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const firebaseConfig = {
+apiKey: "AIzaSyALJOAPzmil3tTmv6f3kMGYQX1Oc61t0F4",
+authDomain: "milagro-172c5.firebaseapp.com",
+databaseURL: "https://milagro-172c5-default-rtdb.firebaseio.com",
+projectId: "milagro-172c5",
+storageBucket: "milagro-172c5.firebasestorage.app",
+messagingSenderId: "923027654375",
+appId: "1:923027654375:web:d9e24bec8e48d304438442",
+measurementId: "G-CVWBH7LJM5"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+let sementesCache = {};
+let vendasCache = {};
+let dadosIniciados = false;
+
+window.entrar = function(){
+const email = document.getElementById("emailLogin").value.trim();
+const senha = document.getElementById("senhaLogin").value;
+
+if(!email || !senha){
+alert("Informe e-mail e senha.");
+return;
+}
+
+signInWithEmailAndPassword(auth,email,senha)
+.then(()=>alert("Login realizado com sucesso!"))
+.catch((erro)=>{
+alert("Erro no login: " + erro.code);
+console.log("ERRO FIREBASE:", erro);
+});
+}
+
+window.sair = function(){
+signOut(auth);
+}
+
+onAuthStateChanged(auth,(user)=>{
+if(user){
+document.getElementById("loginTela").classList.add("hidden");
+document.getElementById("sistemaTela").classList.remove("hidden");
+document.getElementById("areaUsuario").classList.remove("hidden");
+document.getElementById("usuarioLogado").innerText = "Usuário: " + user.email;
+
+if(!dadosIniciados){
+carregarDados();
+carregarVendas();
+dadosIniciados = true;
+}
+
+}else{
+document.getElementById("loginTela").classList.remove("hidden");
+document.getElementById("sistemaTela").classList.add("hidden");
+document.getElementById("areaUsuario").classList.add("hidden");
+dadosIniciados = false;
+}
+});
+
+window.salvarSemente = function(){
+const idEdicao = document.getElementById("idEdicao").value;
+
+const dados = {
+variedade: document.getElementById("variedade").value.trim(),
+lote: document.getElementById("lote").value.trim(),
+quadra: document.getElementById("quadra").value.trim(),
+galpao: document.getElementById("galpao").value,
+quantidade: Number(document.getElementById("quantidade").value),
+pureza: document.getElementById("pureza").value.trim(),
+tz: document.getElementById("tz").value.trim(),
+status: document.getElementById("status").value,
+observacao: document.getElementById("observacao").value.trim(),
+usuarioAtualizacao: auth.currentUser ? auth.currentUser.email : "",
+dataAtualizacao: new Date().toLocaleString("pt-BR")
+};
+
+if(!dados.variedade || !dados.lote || dados.quantidade <= 0){
+alert("Preencha variedade, lote e quantidade maior que zero.");
+return;
+}
+
+if(idEdicao){
+update(ref(db,"sementes/"+idEdicao),dados);
+alert("Lançamento atualizado com sucesso!");
+cancelarEdicao();
+}else{
+dados.usuarioCadastro = auth.currentUser ? auth.currentUser.email : "";
+dados.dataCadastro = new Date().toLocaleString("pt-BR");
+push(ref(db,"sementes"),dados);
+alert("Semente salva com sucesso!");
+limparCampos();
+}
+}
+
+function carregarDados(){
+const tabela = document.getElementById("tabelaEstoque");
+const selectVenda = document.getElementById("sementeVenda");
+
+onValue(ref(db,"sementes"),(snapshot)=>{
+tabela.innerHTML="";
+selectVenda.innerHTML='<option value="">Selecione o lote vendido</option>';
+sementesCache = {};
+
+let total=0;
+let quantidade=0;
+let prontas=0;
+
+snapshot.forEach((item)=>{
+const id = item.key;
+const dados = item.val();
+sementesCache[id] = dados;
+
+total++;
+quantidade += Number(dados.quantidade || 0);
+
+if(dados.status === "Pronta para venda") prontas++;
+
+if(Number(dados.quantidade || 0) > 0 && dados.status !== "Bloqueada" && dados.status !== "Vendido"){
+selectVenda.innerHTML += `<option value="${id}">${dados.variedade || ""} | Lote: ${dados.lote || ""} | Qtd: ${dados.quantidade || 0}</option>`;
+}
+
+tabela.innerHTML += `
+<tr>
+<td>${dados.variedade || ""}</td>
+<td>${dados.lote || ""}</td>
+<td>${dados.quadra || ""}</td>
+<td>${dados.galpao || ""}</td>
+<td>${dados.quantidade || 0}</td>
+<td>${dados.pureza || ""}</td>
+<td>${dados.tz || ""}</td>
+<td>
+<span class="status ${
+dados.status === "Pronta para venda" ? "venda" :
+dados.status === "Bloqueada" ? "bloqueada" :
+dados.status === "Vendido" ? "vendido" :
+"armazenada"
+}">
+${dados.status || "Armazenada"}
+</span>
+</td>
+<td>
+<button class="btn-edit" onclick="editarSemente('${id}')">Editar</button>
+<button class="btn-danger" onclick="excluirSemente('${id}')">Excluir</button>
+</td>
+</tr>
+`;
+});
+
+document.getElementById("totalRegistros").innerText=total;
+document.getElementById("totalQuantidade").innerText=quantidade;
+document.getElementById("totalProntas").innerText=prontas;
+atualizarGraficos();
+});
+}
+
+window.registrarVenda = function(){
+const cliente = document.getElementById("clienteVenda").value.trim();
+const idSemente = document.getElementById("sementeVenda").value;
+const qtdVenda = Number(document.getElementById("quantidadeVenda").value);
+const dataVenda = document.getElementById("dataVenda").value;
+const observacao = document.getElementById("observacaoVenda").value.trim();
+
+if(!cliente || !idSemente || qtdVenda <= 0 || !dataVenda){
+alert("Preencha cliente, lote, quantidade e data.");
+return;
+}
+
+const semente = sementesCache[idSemente];
+
+if(!semente){
+alert("Lote não encontrado.");
+return;
+}
+
+const estoqueAtual = Number(semente.quantidade || 0);
+
+if(qtdVenda > estoqueAtual){
+alert("Quantidade vendida maior que o estoque disponível.");
+return;
+}
+
+const novoEstoque = estoqueAtual - qtdVenda;
+
+push(ref(db,"vendas"),{
+cliente,
+sementeId: idSemente,
+variedade: semente.variedade || "",
+lote: semente.lote || "",
+quadra: semente.quadra || "",
+galpao: semente.galpao || "",
+quantidadeVendida: qtdVenda,
+estoqueAntes: estoqueAtual,
+estoqueDepois: novoEstoque,
+dataVenda,
+observacao,
+usuarioVenda: auth.currentUser ? auth.currentUser.email : "",
+dataRegistro: new Date().toLocaleString("pt-BR")
+});
+
+update(ref(db,"sementes/"+idSemente),{
+quantidade: novoEstoque,
+status: novoEstoque === 0 ? "Vendido" : semente.status
+});
+
+alert("Venda registrada e estoque baixado com sucesso!");
+
+document.getElementById("clienteVenda").value="";
+document.getElementById("sementeVenda").value="";
+document.getElementById("quantidadeVenda").value="";
+document.getElementById("dataVenda").value="";
+document.getElementById("observacaoVenda").value="";
+}
+
+function carregarVendas(){
+const tabela = document.getElementById("tabelaVendas");
+
+onValue(ref(db,"vendas"),(snapshot)=>{
+tabela.innerHTML="";
+vendasCache = {};
+let totalVendido=0;
+
+snapshot.forEach((item)=>{
+const id = item.key;
+const venda = item.val();
+vendasCache[id] = venda;
+totalVendido += Number(venda.quantidadeVendida || 0);
+
+tabela.innerHTML += `
+<tr>
+<td>${venda.cliente || ""}</td>
+<td>${venda.variedade || ""}</td>
+<td>${venda.lote || ""}</td>
+<td>${venda.quantidadeVendida || 0}</td>
+<td>${venda.dataVenda || ""}</td>
+<td>${venda.usuarioVenda || ""}</td>
+<td>${venda.observacao || ""}</td>
+<td><button class="btn-danger" onclick="cancelarVenda('${id}')">Cancelar</button></td>
+</tr>
+`;
+});
+
+document.getElementById("totalVendido").innerText=totalVendido;
+});
+}
+
+window.cancelarVenda = async function(idVenda){
+if(!confirm("Deseja cancelar esta venda e devolver a quantidade ao estoque?")) return;
+
+const vendaSnap = await get(ref(db,"vendas/"+idVenda));
+if(!vendaSnap.exists()){
+alert("Venda não encontrada.");
+return;
+}
+
+const venda = vendaSnap.val();
+const idSemente = venda.sementeId;
+const qtdVendida = Number(venda.quantidadeVendida || 0);
+
+if(idSemente){
+const sementeAtual = sementesCache[idSemente];
+if(sementeAtual){
+const novoEstoque = Number(sementeAtual.quantidade || 0) + qtdVendida;
+update(ref(db,"sementes/"+idSemente),{
+quantidade: novoEstoque,
+status: sementeAtual.status === "Vendido" ? "Armazenada" : sementeAtual.status
+});
+}
+}
+
+remove(ref(db,"vendas/"+idVenda));
+alert("Venda cancelada e estoque restaurado.");
+}
+
+window.editarSemente = function(id){
+const dados = sementesCache[id];
+
+document.getElementById("idEdicao").value=id;
+document.getElementById("variedade").value=dados.variedade || "";
+document.getElementById("lote").value=dados.lote || "";
+document.getElementById("quadra").value=dados.quadra || "";
+document.getElementById("galpao").value=dados.galpao || "";
+document.getElementById("quantidade").value=dados.quantidade || "";
+document.getElementById("pureza").value=dados.pureza || "";
+document.getElementById("tz").value=dados.tz || "";
+document.getElementById("status").value=dados.status || "Armazenada";
+document.getElementById("observacao").value=dados.observacao || "";
+
+document.getElementById("tituloFormulario").innerText="Editar Lançamento";
+document.getElementById("btnSalvar").innerText="Atualizar Lançamento";
+document.getElementById("btnCancelar").classList.remove("hidden");
+
+window.scrollTo({top:0,behavior:"smooth"});
+}
+
+window.cancelarEdicao = function(){
+document.getElementById("idEdicao").value="";
+document.getElementById("tituloFormulario").innerText="Cadastro de Sementes";
+document.getElementById("btnSalvar").innerText="Salvar Semente";
+document.getElementById("btnCancelar").classList.add("hidden");
+limparCampos();
+}
+
+window.excluirSemente = function(id){
+if(confirm("Deseja excluir este lançamento?")){
+remove(ref(db,"sementes/"+id));
+}
+}
+
+window.filtrarTabela = function(inputId,tabelaId){
+const filtro = document.getElementById(inputId).value.toLowerCase();
+const linhas = document.querySelectorAll("#"+tabelaId+" tr");
+
+linhas.forEach((linha)=>{
+const texto = linha.innerText.toLowerCase();
+linha.style.display = texto.includes(filtro) ? "" : "none";
+});
+}
+
+function limparCampos(){
+document.getElementById("variedade").value="";
+document.getElementById("lote").value="";
+document.getElementById("quadra").value="";
+document.getElementById("galpao").value="";
+document.getElementById("quantidade").value="";
+document.getElementById("pureza").value="";
+document.getElementById("tz").value="";
+document.getElementById("status").value="Armazenada";
+document.getElementById("observacao").value="";
+}
+
+function atualizarGraficos(){
+const porGalpao = {};
+const porStatus = {};
+Object.values(sementesCache).forEach((s)=>{
+const galpao = s.galpao || "Sem galpão";
+const status = s.status || "Armazenada";
+porGalpao[galpao] = (porGalpao[galpao] || 0) + Number(s.quantidade || 0);
+porStatus[status] = (porStatus[status] || 0) + 1;
+});
+renderBarras("graficoGalpao", porGalpao, "sacos");
+renderBarras("graficoStatus", porStatus, "lotes");
+}
+
+function renderBarras(containerId, dados, unidade){
+const el = document.getElementById(containerId);
+if(!el) return;
+const entradas = Object.entries(dados);
+if(entradas.length === 0){
+el.innerHTML = "<p class='small-note'>Sem dados para exibir.</p>";
+return;
+}
+const max = Math.max(...entradas.map(([_,v])=>Number(v)||0),1);
+el.innerHTML = entradas.map(([nome,valor])=>{
+const pct = Math.max(3, Math.round((Number(valor)/max)*100));
+return `
+<div class="bar-row">
+<div>${nome}</div>
+<div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div>
+<div>${valor} ${unidade}</div>
+</div>`;
+}).join("");
+}
+
+function montarTabelaHTML(colunas, linhas){
+return `
+<table>
+<thead><tr>${colunas.map(c=>`<th>${c}</th>`).join("")}</tr></thead>
+<tbody>${linhas.map(l=>`<tr>${l.map(c=>`<td>${c ?? ""}</td>`).join("")}</tr>`).join("")}</tbody>
+</table>`;
+}
+
+window.gerarRelatorioEstoque = function(){
+const sementes = Object.values(sementesCache);
+const totalQtd = sementes.reduce((s,x)=>s+Number(x.quantidade||0),0);
+const totalLotes = sementes.length;
+const prontas = sementes.filter(x=>x.status==="Pronta para venda").length;
+const bloqueadas = sementes.filter(x=>x.status==="Bloqueada").length;
+
+const linhas = sementes.map(s=>[
+s.variedade||"",
+s.lote||"",
+s.quadra||"",
+s.galpao||"",
+s.quantidade||0,
+s.pureza||"",
+s.tz||"",
+s.status||"",
+s.observacao||""
+]);
+
+abrirRelatorio("Relatório de Estoque", `
+<h1>Relatório de Estoque - Milagro Stock 360</h1>
+<p>Gerado em: ${new Date().toLocaleString("pt-BR")}</p>
+<div class="kpi-line">
+<span>Total de lotes: ${totalLotes}</span>
+<span>Total em estoque: ${totalQtd}</span>
+<span>Prontas para venda: ${prontas}</span>
+<span>Bloqueadas: ${bloqueadas}</span>
+</div>
+${montarTabelaHTML(["Variedade","Lote","Quadra","Galpão","Qtd","Pureza","TZ","Status","Obs."], linhas)}
+`);
+}
+
+window.gerarRelatorioVendas = function(){
+const vendas = Object.values(vendasCache);
+const totalVendido = vendas.reduce((s,x)=>s+Number(x.quantidadeVendida||0),0);
+const clientes = new Set(vendas.map(v=>v.cliente||"").filter(Boolean)).size;
+
+const linhas = vendas.map(v=>[
+v.cliente||"",
+v.variedade||"",
+v.lote||"",
+v.quantidadeVendida||0,
+v.estoqueAntes||"",
+v.estoqueDepois||"",
+v.dataVenda||"",
+v.usuarioVenda||"",
+v.observacao||""
+]);
+
+abrirRelatorio("Relatório de Vendas", `
+<h1>Relatório de Vendas - Milagro Stock 360</h1>
+<p>Gerado em: ${new Date().toLocaleString("pt-BR")}</p>
+<div class="kpi-line">
+<span>Total vendido: ${totalVendido}</span>
+<span>Registros de venda: ${vendas.length}</span>
+<span>Clientes atendidos: ${clientes}</span>
+</div>
+${montarTabelaHTML(["Cliente","Variedade","Lote","Qtd","Estoque Antes","Estoque Depois","Data","Usuário","Obs."], linhas)}
+`);
+}
+
+function abrirRelatorio(titulo, conteudo){
+document.getElementById("relatorioTitulo").innerText = titulo;
+document.getElementById("relatorioConteudo").innerHTML = conteudo;
+document.getElementById("relatorioModal").classList.remove("hidden");
+}
+
+window.fecharRelatorio = function(){
+document.getElementById("relatorioModal").classList.add("hidden");
+}
+
+window.exportarCSV = function(tipo){
+let nomeArquivo = "";
+let colunas = [];
+let linhas = [];
+
+if(tipo === "estoque"){
+nomeArquivo = "relatorio_estoque_milagro.csv";
+colunas = ["Variedade","Lote","Quadra","Galpao","Quantidade","Pureza","TZ","Status","Observacao"];
+linhas = Object.values(sementesCache).map(s=>[
+s.variedade||"",s.lote||"",s.quadra||"",s.galpao||"",s.quantidade||0,s.pureza||"",s.tz||"",s.status||"",s.observacao||""
+]);
+}else{
+nomeArquivo = "relatorio_vendas_milagro.csv";
+colunas = ["Cliente","Variedade","Lote","Quantidade Vendida","Estoque Antes","Estoque Depois","Data","Usuario","Observacao"];
+linhas = Object.values(vendasCache).map(v=>[
+v.cliente||"",v.variedade||"",v.lote||"",v.quantidadeVendida||0,v.estoqueAntes||"",v.estoqueDepois||"",v.dataVenda||"",v.usuarioVenda||"",v.observacao||""
+]);
+}
+
+const csv = [colunas, ...linhas].map(linha => linha.map(c => `"${String(c).replaceAll('"','""')}"`).join(";")).join("\n");
+baixarArquivo(nomeArquivo, "\ufeff"+csv, "text/csv;charset=utf-8;");
+}
+
+window.fazerBackup = function(){
+const backup = {
+geradoEm: new Date().toISOString(),
+sementes: sementesCache,
+vendas: vendasCache
+};
+baixarArquivo("backup_milagro_stock_360.json", JSON.stringify(backup,null,2), "application/json");
+}
+
+window.restaurarBackupPrompt = function(){
+const input = document.createElement("input");
+input.type = "file";
+input.accept = ".json,application/json";
+input.onchange = async (e)=>{
+const file = e.target.files[0];
+if(!file) return;
+if(!confirm("A restauração vai acrescentar/atualizar dados do backup no Firebase. Deseja continuar?")) return;
+const texto = await file.text();
+const backup = JSON.parse(texto);
+
+if(backup.sementes){
+for(const [id,dados] of Object.entries(backup.sementes)){
+await update(ref(db,"sementes/"+id),dados);
+}
+}
+if(backup.vendas){
+for(const [id,dados] of Object.entries(backup.vendas)){
+await update(ref(db,"vendas/"+id),dados);
+}
+}
+alert("Backup restaurado com sucesso.");
+};
+input.click();
+}
+
+function baixarArquivo(nome, conteudo, tipo){
+const blob = new Blob([conteudo], {type: tipo});
+const url = URL.createObjectURL(blob);
+const a = document.createElement("a");
+a.href = url;
+a.download = nome;
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+URL.revokeObjectURL(url);
+}
+
+</script>
 
 
-Senha
+<div id="relatorioModal" class="modal hidden">
+<div class="modal-content">
+<div class="modal-header no-print">
+<h2 id="relatorioTitulo">Relatório</h2>
+<div>
+<button onclick="window.print()">Imprimir / Salvar PDF</button>
+<button class="btn-danger" onclick="fecharRelatorio()">Fechar</button>
+</div>
+</div>
+<div id="relatorioConteudo"></div>
+</div>
+</div>
 
-
-Entrar
+</body>
+</html>
