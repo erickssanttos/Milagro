@@ -45,15 +45,17 @@ tr:hover{background:#f6f6f6}
 .badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#e8f5ee;color:#15592d;font-size:12px;font-weight:bold}
 .chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
 .chart-box{background:#f9fafb;border:1px solid #e5e7eb;border-radius:14px;padding:14px}
-.bar-row{display:grid;grid-template-columns:110px 1fr 55px;gap:8px;align-items:center;margin:8px 0;font-size:13px}
+.bar-row{display:grid;grid-template-columns:110px 1fr 70px;gap:8px;align-items:center;margin:8px 0;font-size:13px}
 .bar-wrap{background:#e5e7eb;border-radius:999px;height:14px;overflow:hidden}
 .bar-fill{height:100%;background:#1f7a3f;border-radius:999px}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:flex-start;justify-content:center;padding:30px;z-index:9999;overflow:auto}
-.modal-content{background:white;width:100%;max-width:1100px;border-radius:16px;padding:22px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+.modal-content{background:white;width:100%;max-width:1200px;border-radius:16px;padding:22px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
 .modal-header{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:15px}
 .small-note{font-size:12px;color:#666;margin-top:6px}
 .kpi-line{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
 .kpi-line span{background:#eef2f7;border-radius:10px;padding:8px 10px;font-weight:bold;color:#15592d}
+.filtros-box{background:#f9fafb;border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin:12px 0}
+.filtros-box h3{margin-bottom:10px;color:#15592d}
 @media print{
   body *{visibility:hidden}
   #relatorioModal,#relatorioModal *{visibility:visible}
@@ -61,7 +63,6 @@ tr:hover{background:#f6f6f6}
   .modal-content{box-shadow:none;border-radius:0;max-width:100%;padding:10px}
   .no-print{display:none!important}
 }
-
 </style>
 </head>
 
@@ -89,7 +90,8 @@ tr:hover{background:#f6f6f6}
 
 <div class="cards">
 <div class="card-info"><h3>Total de Lotes</h3><p id="totalRegistros">0</p></div>
-<div class="card-info"><h3>Total em Estoque</h3><p id="totalQuantidade">0</p></div>
+<div class="card-info"><h3>Total em Embalagens</h3><p id="totalQuantidade">0</p></div>
+<div class="card-info"><h3>Total em Kg</h3><p id="totalKg">0</p></div>
 <div class="card-info"><h3>Prontas para Venda</h3><p id="totalProntas">0</p></div>
 <div class="card-info"><h3>Total Vendido</h3><p id="totalVendido">0</p></div>
 </div>
@@ -99,9 +101,20 @@ tr:hover{background:#f6f6f6}
 <h2>Ferramentas e Relatórios</h2>
 <span class="badge">Versão completa</span>
 </div>
-<div class="report-actions">
-<button onclick="gerarRelatorioEstoque()">Relatório de Estoque / PDF</button>
+
+<div class="filtros-box">
+<h3>Relatório filtrado por variedade</h3>
+<div class="grid">
+<select id="filtroRelatorioVariedade">
+<option value="">Todas as variedades</option>
+</select>
+<button onclick="gerarRelatorioEstoque()">Gerar Relatório de Estoque / PDF</button>
 <button onclick="gerarRelatorioVendas()">Relatório de Vendas / PDF</button>
+</div>
+<p class="small-note">Escolha uma variedade para gerar relatório específico ou deixe em branco para relatório completo.</p>
+</div>
+
+<div class="report-actions">
 <button onclick="exportarCSV('estoque')">Exportar Estoque CSV</button>
 <button onclick="exportarCSV('vendas')">Exportar Vendas CSV</button>
 <button onclick="fazerBackup()">Backup JSON</button>
@@ -120,6 +133,10 @@ tr:hover{background:#f6f6f6}
 <div class="chart-box">
 <h3>Lotes por Status</h3>
 <div id="graficoStatus"></div>
+</div>
+<div class="chart-box">
+<h3>Kg por Tipo de Embalagem</h3>
+<div id="graficoEmbalagem"></div>
 </div>
 </div>
 </div>
@@ -141,7 +158,15 @@ tr:hover{background:#f6f6f6}
 <option>Galpão 4</option>
 </select>
 
-<input type="number" id="quantidade" placeholder="Quantidade">
+<input type="number" id="quantidade" placeholder="Quantidade de embalagens">
+<input type="number" id="quantidadeKg" placeholder="Quantidade em Kg">
+
+<select id="tipoEmbalagem">
+<option value="">Tipo de embalagem</option>
+<option>Bigbag</option>
+<option>Sacaria de rafia</option>
+</select>
+
 <input type="text" id="pureza" placeholder="Pureza (%)">
 <input type="text" id="tz" placeholder="TZ (%)">
 
@@ -169,7 +194,8 @@ tr:hover{background:#f6f6f6}
 <select id="sementeVenda">
 <option value="">Selecione o lote vendido</option>
 </select>
-<input type="number" id="quantidadeVenda" placeholder="Quantidade vendida">
+<input type="number" id="quantidadeVenda" placeholder="Quantidade de embalagens vendida">
+<input type="number" id="quantidadeKgVenda" placeholder="Quantidade em Kg vendida">
 <input type="date" id="dataVenda">
 </div>
 
@@ -183,7 +209,22 @@ tr:hover{background:#f6f6f6}
 <div class="card">
 <div class="top-bar">
 <h2>Estoque de Sementes</h2>
-<input type="text" id="buscaEstoque" class="search" placeholder="Buscar no estoque..." onkeyup="filtrarTabela('buscaEstoque','tabelaEstoque')">
+<input type="text" id="buscaEstoque" class="search" placeholder="Buscar geral no estoque..." onkeyup="aplicarFiltrosEstoque()">
+</div>
+
+<div class="filtros-box">
+<h3>Filtros avançados do estoque</h3>
+<div class="grid">
+<input type="text" id="filtroVariedadeEstoque" placeholder="Filtrar por variedade" onkeyup="aplicarFiltrosEstoque()">
+<input type="text" id="filtroPurezaEstoque" placeholder="Filtrar por pureza" onkeyup="aplicarFiltrosEstoque()">
+<input type="text" id="filtroTzEstoque" placeholder="Filtrar por TZ" onkeyup="aplicarFiltrosEstoque()">
+<select id="filtroEmbalagemEstoque" onchange="aplicarFiltrosEstoque()">
+<option value="">Todas as embalagens</option>
+<option>Bigbag</option>
+<option>Sacaria de rafia</option>
+</select>
+<button class="btn-gray" onclick="limparFiltrosEstoque()">Limpar Filtros</button>
+</div>
 </div>
 
 <table>
@@ -193,7 +234,9 @@ tr:hover{background:#f6f6f6}
 <th>Lote</th>
 <th>Quadra</th>
 <th>Galpão</th>
-<th>Qtd</th>
+<th>Emb.</th>
+<th>Kg</th>
+<th>Tipo Embalagem</th>
 <th>Pureza</th>
 <th>TZ</th>
 <th>Status</th>
@@ -216,7 +259,8 @@ tr:hover{background:#f6f6f6}
 <th>Cliente</th>
 <th>Variedade</th>
 <th>Lote</th>
-<th>Qtd Vendida</th>
+<th>Emb. Vendida</th>
+<th>Kg Vendido</th>
 <th>Data</th>
 <th>Usuário</th>
 <th>Observação</th>
@@ -319,6 +363,8 @@ lote: document.getElementById("lote").value.trim(),
 quadra: document.getElementById("quadra").value.trim(),
 galpao: document.getElementById("galpao").value,
 quantidade: Number(document.getElementById("quantidade").value),
+quantidadeKg: Number(document.getElementById("quantidadeKg").value || 0),
+tipoEmbalagem: document.getElementById("tipoEmbalagem").value,
 pureza: document.getElementById("pureza").value.trim(),
 tz: document.getElementById("tz").value.trim(),
 status: document.getElementById("status").value,
@@ -328,7 +374,7 @@ dataAtualizacao: new Date().toLocaleString("pt-BR")
 };
 
 if(!dados.variedade || !dados.lote || dados.quantidade <= 0){
-alert("Preencha variedade, lote e quantidade maior que zero.");
+alert("Preencha variedade, lote e quantidade de embalagens maior que zero.");
 return;
 }
 
@@ -356,6 +402,7 @@ sementesCache = {};
 
 let total=0;
 let quantidade=0;
+let totalKg=0;
 let prontas=0;
 
 snapshot.forEach((item)=>{
@@ -365,20 +412,23 @@ sementesCache[id] = dados;
 
 total++;
 quantidade += Number(dados.quantidade || 0);
+totalKg += Number(dados.quantidadeKg || 0);
 
 if(dados.status === "Pronta para venda") prontas++;
 
 if(Number(dados.quantidade || 0) > 0 && dados.status !== "Bloqueada" && dados.status !== "Vendido"){
-selectVenda.innerHTML += `<option value="${id}">${dados.variedade || ""} | Lote: ${dados.lote || ""} | Qtd: ${dados.quantidade || 0}</option>`;
+selectVenda.innerHTML += `<option value="${id}">${dados.variedade || ""} | Lote: ${dados.lote || ""} | Emb: ${dados.quantidade || 0} | Kg: ${dados.quantidadeKg || 0}</option>`;
 }
 
 tabela.innerHTML += `
-<tr>
+<tr data-variedade="${(dados.variedade || "").toLowerCase()}" data-pureza="${(dados.pureza || "").toLowerCase()}" data-tz="${(dados.tz || "").toLowerCase()}" data-embalagem="${(dados.tipoEmbalagem || "").toLowerCase()}">
 <td>${dados.variedade || ""}</td>
 <td>${dados.lote || ""}</td>
 <td>${dados.quadra || ""}</td>
 <td>${dados.galpao || ""}</td>
 <td>${dados.quantidade || 0}</td>
+<td>${dados.quantidadeKg || 0}</td>
+<td>${dados.tipoEmbalagem || ""}</td>
 <td>${dados.pureza || ""}</td>
 <td>${dados.tz || ""}</td>
 <td>
@@ -401,8 +451,11 @@ ${dados.status || "Armazenada"}
 
 document.getElementById("totalRegistros").innerText=total;
 document.getElementById("totalQuantidade").innerText=quantidade;
+document.getElementById("totalKg").innerText=totalKg;
 document.getElementById("totalProntas").innerText=prontas;
 atualizarGraficos();
+atualizarFiltroRelatorioVariedade();
+aplicarFiltrosEstoque();
 });
 }
 
@@ -410,11 +463,12 @@ window.registrarVenda = function(){
 const cliente = document.getElementById("clienteVenda").value.trim();
 const idSemente = document.getElementById("sementeVenda").value;
 const qtdVenda = Number(document.getElementById("quantidadeVenda").value);
+const qtdKgVenda = Number(document.getElementById("quantidadeKgVenda").value || 0);
 const dataVenda = document.getElementById("dataVenda").value;
 const observacao = document.getElementById("observacaoVenda").value.trim();
 
 if(!cliente || !idSemente || qtdVenda <= 0 || !dataVenda){
-alert("Preencha cliente, lote, quantidade e data.");
+alert("Preencha cliente, lote, quantidade de embalagens e data.");
 return;
 }
 
@@ -426,13 +480,20 @@ return;
 }
 
 const estoqueAtual = Number(semente.quantidade || 0);
+const estoqueKgAtual = Number(semente.quantidadeKg || 0);
 
 if(qtdVenda > estoqueAtual){
 alert("Quantidade vendida maior que o estoque disponível.");
 return;
 }
 
+if(qtdKgVenda > estoqueKgAtual && estoqueKgAtual > 0){
+alert("Quantidade em Kg vendida maior que o Kg disponível.");
+return;
+}
+
 const novoEstoque = estoqueAtual - qtdVenda;
+const novoEstoqueKg = Math.max(0, estoqueKgAtual - qtdKgVenda);
 
 push(ref(db,"vendas"),{
 cliente,
@@ -441,9 +502,13 @@ variedade: semente.variedade || "",
 lote: semente.lote || "",
 quadra: semente.quadra || "",
 galpao: semente.galpao || "",
+tipoEmbalagem: semente.tipoEmbalagem || "",
 quantidadeVendida: qtdVenda,
+quantidadeKgVendida: qtdKgVenda,
 estoqueAntes: estoqueAtual,
 estoqueDepois: novoEstoque,
+estoqueKgAntes: estoqueKgAtual,
+estoqueKgDepois: novoEstoqueKg,
 dataVenda,
 observacao,
 usuarioVenda: auth.currentUser ? auth.currentUser.email : "",
@@ -452,6 +517,7 @@ dataRegistro: new Date().toLocaleString("pt-BR")
 
 update(ref(db,"sementes/"+idSemente),{
 quantidade: novoEstoque,
+quantidadeKg: novoEstoqueKg,
 status: novoEstoque === 0 ? "Vendido" : semente.status
 });
 
@@ -460,6 +526,7 @@ alert("Venda registrada e estoque baixado com sucesso!");
 document.getElementById("clienteVenda").value="";
 document.getElementById("sementeVenda").value="";
 document.getElementById("quantidadeVenda").value="";
+document.getElementById("quantidadeKgVenda").value="";
 document.getElementById("dataVenda").value="";
 document.getElementById("observacaoVenda").value="";
 }
@@ -484,6 +551,7 @@ tabela.innerHTML += `
 <td>${venda.variedade || ""}</td>
 <td>${venda.lote || ""}</td>
 <td>${venda.quantidadeVendida || 0}</td>
+<td>${venda.quantidadeKgVendida || 0}</td>
 <td>${venda.dataVenda || ""}</td>
 <td>${venda.usuarioVenda || ""}</td>
 <td>${venda.observacao || ""}</td>
@@ -508,13 +576,16 @@ return;
 const venda = vendaSnap.val();
 const idSemente = venda.sementeId;
 const qtdVendida = Number(venda.quantidadeVendida || 0);
+const qtdKgVendida = Number(venda.quantidadeKgVendida || 0);
 
 if(idSemente){
 const sementeAtual = sementesCache[idSemente];
 if(sementeAtual){
 const novoEstoque = Number(sementeAtual.quantidade || 0) + qtdVendida;
+const novoEstoqueKg = Number(sementeAtual.quantidadeKg || 0) + qtdKgVendida;
 update(ref(db,"sementes/"+idSemente),{
 quantidade: novoEstoque,
+quantidadeKg: novoEstoqueKg,
 status: sementeAtual.status === "Vendido" ? "Armazenada" : sementeAtual.status
 });
 }
@@ -533,6 +604,8 @@ document.getElementById("lote").value=dados.lote || "";
 document.getElementById("quadra").value=dados.quadra || "";
 document.getElementById("galpao").value=dados.galpao || "";
 document.getElementById("quantidade").value=dados.quantidade || "";
+document.getElementById("quantidadeKg").value=dados.quantidadeKg || "";
+document.getElementById("tipoEmbalagem").value=dados.tipoEmbalagem || "";
 document.getElementById("pureza").value=dados.pureza || "";
 document.getElementById("tz").value=dados.tz || "";
 document.getElementById("status").value=dados.status || "Armazenada";
@@ -569,12 +642,42 @@ linha.style.display = texto.includes(filtro) ? "" : "none";
 });
 }
 
+window.aplicarFiltrosEstoque = function(){
+const geral = document.getElementById("buscaEstoque").value.toLowerCase();
+const variedade = document.getElementById("filtroVariedadeEstoque").value.toLowerCase();
+const pureza = document.getElementById("filtroPurezaEstoque").value.toLowerCase();
+const tz = document.getElementById("filtroTzEstoque").value.toLowerCase();
+const embalagem = document.getElementById("filtroEmbalagemEstoque").value.toLowerCase();
+const linhas = document.querySelectorAll("#tabelaEstoque tr");
+
+linhas.forEach((linha)=>{
+const texto = linha.innerText.toLowerCase();
+const okGeral = !geral || texto.includes(geral);
+const okVariedade = !variedade || (linha.dataset.variedade || "").includes(variedade);
+const okPureza = !pureza || (linha.dataset.pureza || "").includes(pureza);
+const okTz = !tz || (linha.dataset.tz || "").includes(tz);
+const okEmbalagem = !embalagem || (linha.dataset.embalagem || "") === embalagem;
+linha.style.display = okGeral && okVariedade && okPureza && okTz && okEmbalagem ? "" : "none";
+});
+}
+
+window.limparFiltrosEstoque = function(){
+document.getElementById("buscaEstoque").value="";
+document.getElementById("filtroVariedadeEstoque").value="";
+document.getElementById("filtroPurezaEstoque").value="";
+document.getElementById("filtroTzEstoque").value="";
+document.getElementById("filtroEmbalagemEstoque").value="";
+aplicarFiltrosEstoque();
+}
+
 function limparCampos(){
 document.getElementById("variedade").value="";
 document.getElementById("lote").value="";
 document.getElementById("quadra").value="";
 document.getElementById("galpao").value="";
 document.getElementById("quantidade").value="";
+document.getElementById("quantidadeKg").value="";
+document.getElementById("tipoEmbalagem").value="";
 document.getElementById("pureza").value="";
 document.getElementById("tz").value="";
 document.getElementById("status").value="Armazenada";
@@ -584,14 +687,18 @@ document.getElementById("observacao").value="";
 function atualizarGraficos(){
 const porGalpao = {};
 const porStatus = {};
+const porEmbalagem = {};
 Object.values(sementesCache).forEach((s)=>{
 const galpao = s.galpao || "Sem galpão";
 const status = s.status || "Armazenada";
+const embalagem = s.tipoEmbalagem || "Sem embalagem";
 porGalpao[galpao] = (porGalpao[galpao] || 0) + Number(s.quantidade || 0);
 porStatus[status] = (porStatus[status] || 0) + 1;
+porEmbalagem[embalagem] = (porEmbalagem[embalagem] || 0) + Number(s.quantidadeKg || 0);
 });
-renderBarras("graficoGalpao", porGalpao, "sacos");
+renderBarras("graficoGalpao", porGalpao, "emb.");
 renderBarras("graficoStatus", porStatus, "lotes");
+renderBarras("graficoEmbalagem", porEmbalagem, "kg");
 }
 
 function renderBarras(containerId, dados, unidade){
@@ -614,6 +721,15 @@ return `
 }).join("");
 }
 
+function atualizarFiltroRelatorioVariedade(){
+const select = document.getElementById("filtroRelatorioVariedade");
+if(!select) return;
+const valorAtual = select.value;
+const variedades = [...new Set(Object.values(sementesCache).map(s=>s.variedade).filter(Boolean))].sort();
+select.innerHTML = '<option value="">Todas as variedades</option>' + variedades.map(v=>`<option value="${v}">${v}</option>`).join("");
+select.value = valorAtual;
+}
+
 function montarTabelaHTML(colunas, linhas){
 return `
 <table>
@@ -623,8 +739,13 @@ return `
 }
 
 window.gerarRelatorioEstoque = function(){
-const sementes = Object.values(sementesCache);
+const filtroVariedade = document.getElementById("filtroRelatorioVariedade").value;
+let sementes = Object.values(sementesCache);
+if(filtroVariedade){
+sementes = sementes.filter(s => (s.variedade || "") === filtroVariedade);
+}
 const totalQtd = sementes.reduce((s,x)=>s+Number(x.quantidade||0),0);
+const totalKg = sementes.reduce((s,x)=>s+Number(x.quantidadeKg||0),0);
 const totalLotes = sementes.length;
 const prontas = sementes.filter(x=>x.status==="Pronta para venda").length;
 const bloqueadas = sementes.filter(x=>x.status==="Bloqueada").length;
@@ -635,6 +756,8 @@ s.lote||"",
 s.quadra||"",
 s.galpao||"",
 s.quantidade||0,
+s.quantidadeKg||0,
+s.tipoEmbalagem||"",
 s.pureza||"",
 s.tz||"",
 s.status||"",
@@ -644,26 +767,31 @@ s.observacao||""
 abrirRelatorio("Relatório de Estoque", `
 <h1>Relatório de Estoque - Milagro Stock 360</h1>
 <p>Gerado em: ${new Date().toLocaleString("pt-BR")}</p>
+<p><strong>Filtro de variedade:</strong> ${filtroVariedade || "Todas"}</p>
 <div class="kpi-line">
 <span>Total de lotes: ${totalLotes}</span>
-<span>Total em estoque: ${totalQtd}</span>
+<span>Total embalagens: ${totalQtd}</span>
+<span>Total Kg: ${totalKg}</span>
 <span>Prontas para venda: ${prontas}</span>
 <span>Bloqueadas: ${bloqueadas}</span>
 </div>
-${montarTabelaHTML(["Variedade","Lote","Quadra","Galpão","Qtd","Pureza","TZ","Status","Obs."], linhas)}
+${montarTabelaHTML(["Variedade","Lote","Quadra","Galpão","Emb.","Kg","Tipo Embalagem","Pureza","TZ","Status","Obs."], linhas)}
 `);
 }
 
 window.gerarRelatorioVendas = function(){
 const vendas = Object.values(vendasCache);
 const totalVendido = vendas.reduce((s,x)=>s+Number(x.quantidadeVendida||0),0);
+const totalKgVendido = vendas.reduce((s,x)=>s+Number(x.quantidadeKgVendida||0),0);
 const clientes = new Set(vendas.map(v=>v.cliente||"").filter(Boolean)).size;
 
 const linhas = vendas.map(v=>[
 v.cliente||"",
 v.variedade||"",
 v.lote||"",
+v.tipoEmbalagem||"",
 v.quantidadeVendida||0,
+v.quantidadeKgVendida||0,
 v.estoqueAntes||"",
 v.estoqueDepois||"",
 v.dataVenda||"",
@@ -675,11 +803,12 @@ abrirRelatorio("Relatório de Vendas", `
 <h1>Relatório de Vendas - Milagro Stock 360</h1>
 <p>Gerado em: ${new Date().toLocaleString("pt-BR")}</p>
 <div class="kpi-line">
-<span>Total vendido: ${totalVendido}</span>
+<span>Total vendido: ${totalVendido} embalagens</span>
+<span>Total Kg vendido: ${totalKgVendido}</span>
 <span>Registros de venda: ${vendas.length}</span>
 <span>Clientes atendidos: ${clientes}</span>
 </div>
-${montarTabelaHTML(["Cliente","Variedade","Lote","Qtd","Estoque Antes","Estoque Depois","Data","Usuário","Obs."], linhas)}
+${montarTabelaHTML(["Cliente","Variedade","Lote","Tipo Embalagem","Emb.","Kg","Estoque Antes","Estoque Depois","Data","Usuário","Obs."], linhas)}
 `);
 }
 
@@ -700,15 +829,15 @@ let linhas = [];
 
 if(tipo === "estoque"){
 nomeArquivo = "relatorio_estoque_milagro.csv";
-colunas = ["Variedade","Lote","Quadra","Galpao","Quantidade","Pureza","TZ","Status","Observacao"];
+colunas = ["Variedade","Lote","Quadra","Galpao","Embalagens","Kg","Tipo Embalagem","Pureza","TZ","Status","Observacao"];
 linhas = Object.values(sementesCache).map(s=>[
-s.variedade||"",s.lote||"",s.quadra||"",s.galpao||"",s.quantidade||0,s.pureza||"",s.tz||"",s.status||"",s.observacao||""
+s.variedade||"",s.lote||"",s.quadra||"",s.galpao||"",s.quantidade||0,s.quantidadeKg||0,s.tipoEmbalagem||"",s.pureza||"",s.tz||"",s.status||"",s.observacao||""
 ]);
 }else{
 nomeArquivo = "relatorio_vendas_milagro.csv";
-colunas = ["Cliente","Variedade","Lote","Quantidade Vendida","Estoque Antes","Estoque Depois","Data","Usuario","Observacao"];
+colunas = ["Cliente","Variedade","Lote","Tipo Embalagem","Embalagens Vendidas","Kg Vendido","Estoque Antes","Estoque Depois","Data","Usuario","Observacao"];
 linhas = Object.values(vendasCache).map(v=>[
-v.cliente||"",v.variedade||"",v.lote||"",v.quantidadeVendida||0,v.estoqueAntes||"",v.estoqueDepois||"",v.dataVenda||"",v.usuarioVenda||"",v.observacao||""
+v.cliente||"",v.variedade||"",v.lote||"",v.tipoEmbalagem||"",v.quantidadeVendida||0,v.quantidadeKgVendida||0,v.estoqueAntes||"",v.estoqueDepois||"",v.dataVenda||"",v.usuarioVenda||"",v.observacao||""
 ]);
 }
 
@@ -762,9 +891,7 @@ a.click();
 document.body.removeChild(a);
 URL.revokeObjectURL(url);
 }
-
 </script>
-
 
 <div id="relatorioModal" class="modal hidden">
 <div class="modal-content">
