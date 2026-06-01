@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -63,6 +64,14 @@ tr:hover{background:#f6f6f6}
   .modal-content{box-shadow:none;border-radius:0;max-width:100%;padding:10px}
   .no-print{display:none!important}
 }
+
+/* ===== MÓDULO DE INCRUSTAÇÃO - ADICIONADO SEM ALTERAR O SISTEMA EXISTENTE ===== */
+.status-op{padding:6px 10px;border-radius:20px;font-size:12px;font-weight:bold;color:white;display:inline-block}
+.op-espera{background:#666}.op-produzindo{background:#0077b6}.op-aguardando{background:#f77f00}.op-concluido{background:#1f7a3f}.op-cancelado{background:#d62828}
+.ok-estoque{color:#1f7a3f;font-weight:bold}.falta-estoque{color:#d62828;font-weight:bold}.saldo-negativo{background:#ffe5e5}.saldo-positivo{background:#e8f5ee}
+.modulo-incrustacao h2{color:#15592d}.subcard{background:#f9fafb;border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin:12px 0}
+.btn-warning{background:#f77f00}.btn-warning:hover{background:#c96000}
+
 </style>
 </head>
 
@@ -138,6 +147,116 @@ tr:hover{background:#f6f6f6}
 <h3>Kg por Tipo de Embalagem</h3>
 <div id="graficoEmbalagem"></div>
 </div>
+</div>
+</div>
+
+
+
+<!-- ===== MÓDULO DE INCRUSTAÇÃO - ADICIONADO SEM ALTERAR O SISTEMA EXISTENTE ===== -->
+<div class="card modulo-incrustacao">
+<div class="top-bar">
+<h2>Produção de Sementes Incrustadas</h2>
+<span class="badge">Módulo separado</span>
+</div>
+<p class="small-note">Este módulo possui estoques próprios: produtos de incrustação, ordens de produção e sementes incrustadas. Não mistura com o estoque normal de sementes.</p>
+
+<div class="cards">
+<div class="card-info"><h3>Produtos Cadastrados</h3><p id="totalProdutosIncrustacao">0</p></div>
+<div class="card-info"><h3>Ordens de Produção</h3><p id="totalOrdensIncrustacao">0</p></div>
+<div class="card-info"><h3>Kg Incrustados</h3><p id="totalKgIncrustado">0</p></div>
+<div class="card-info"><h3>OPs Pendentes</h3><p id="totalOpsPendentes">0</p></div>
+</div>
+
+<div class="subcard">
+<h3>1. Estoque de Produtos de Incrustação</h3>
+<input type="hidden" id="idProdutoIncrustacaoEdicao">
+<div class="grid">
+<input type="text" id="produtoIncrustacaoNome" placeholder="Nome do produto">
+<select id="produtoIncrustacaoUnidade">
+<option>KG</option>
+<option>L</option>
+<option>G</option>
+<option>ML</option>
+</select>
+<input type="number" step="0.000001" id="produtoIncrustacaoDose" placeholder="Dose por kg produzido">
+<input type="number" step="0.001" id="produtoIncrustacaoEstoque" placeholder="Estoque atual">
+<input type="number" step="0.001" id="produtoIncrustacaoEstoqueMinimo" placeholder="Estoque mínimo">
+<input type="text" id="produtoIncrustacaoFornecedor" placeholder="Fornecedor">
+</div>
+<br>
+<textarea id="produtoIncrustacaoObs" rows="2" placeholder="Observação do produto"></textarea>
+<br><br>
+<button onclick="salvarProdutoIncrustacao()" id="btnSalvarProdutoIncrustacao">Salvar Produto</button>
+<button onclick="carregarReceitaPadraoIncrustacao()" class="btn-edit">Carregar Receita Padrão</button>
+<button onclick="cancelarEdicaoProdutoIncrustacao()" id="btnCancelarProdutoIncrustacao" class="btn-danger hidden">Cancelar Edição</button>
+
+<table>
+<thead>
+<tr>
+<th>Produto</th><th>Unid.</th><th>Dose/Kg</th><th>Estoque</th><th>Estoque Mín.</th><th>Fornecedor</th><th>Status</th><th>Ações</th>
+</tr>
+</thead>
+<tbody id="tabelaProdutosIncrustacao"></tbody>
+</table>
+</div>
+
+<div class="subcard">
+<h3>2. Simulador e Ordem de Produção</h3>
+<input type="hidden" id="idOrdemIncrustacaoEdicao">
+<div class="grid">
+<input type="text" id="opVariedade" placeholder="Variedade da semente incrustada">
+<input type="text" id="opLote" placeholder="Lote da produção">
+<input type="text" id="opQuadra" placeholder="Quadra / identificação">
+<input type="text" id="opGalpao" placeholder="Galpão / local">
+<input type="number" step="0.001" id="opVolumeFinal" placeholder="Volume final a produzir em KG">
+<input type="number" step="0.001" id="opSementeUsada" placeholder="Kg de semente base usada">
+<select id="opStatus">
+<option>Em espera</option>
+<option>Produzindo</option>
+<option>Aguardando</option>
+<option>Concluído</option>
+</select>
+<select id="opStatusEstoqueFinal">
+<option>Armazenada</option>
+<option>Pronta para venda</option>
+<option>Bloqueada</option>
+</select>
+</div>
+<br>
+<textarea id="opObservacao" rows="2" placeholder="Observações da ordem de produção"></textarea>
+<br><br>
+<button onclick="simularIncrustacao()">Simular Consumo</button>
+<button onclick="salvarOrdemIncrustacao()" id="btnSalvarOrdemIncrustacao">Salvar Ordem</button>
+<button onclick="cancelarEdicaoOrdemIncrustacao()" id="btnCancelarOrdemIncrustacao" class="btn-danger hidden">Cancelar Edição</button>
+<button onclick="gerarRelatorioIncrustacao()" class="btn-edit">Relatório / PDF</button>
+<button onclick="exportarCSVIncrustacao()" class="btn-gray">Exportar CSV</button>
+<p class="small-note">Ao marcar uma ordem como Concluído, o sistema baixa os produtos e lança automaticamente no estoque separado de sementes incrustadas.</p>
+
+<div id="resultadoSimulacaoIncrustacao"></div>
+</div>
+
+<div class="subcard">
+<h3>3. Ordens de Produção</h3>
+<table>
+<thead>
+<tr>
+<th>Variedade</th><th>Lote</th><th>Volume Final Kg</th><th>Semente Kg</th><th>Status</th><th>Data</th><th>Usuário</th><th>Ações</th>
+</tr>
+</thead>
+<tbody id="tabelaOrdensIncrustacao"></tbody>
+</table>
+</div>
+
+<div class="subcard">
+<h3>4. Estoque Separado de Sementes Incrustadas</h3>
+<table>
+<thead>
+<tr>
+<th>Variedade</th><th>Lote</th><th>Quadra</th><th>Galpão</th><th>Kg</th><th>Status</th><th>Origem OP</th><th>Data</th><th>Ações</th>
+</tr>
+</thead>
+<tbody id="tabelaSementesIncrustadas"></tbody>
+</table>
 </div>
 </div>
 
@@ -310,6 +429,10 @@ const auth = getAuth(app);
 
 let sementesCache = {};
 let vendasCache = {};
+let produtosIncrustacaoCache = {};
+let ordensIncrustacaoCache = {};
+let sementesIncrustadasCache = {};
+let ultimaSimulacaoIncrustacao = [];
 let dadosIniciados = false;
 
 window.entrar = function(){
@@ -343,6 +466,9 @@ document.getElementById("usuarioLogado").innerText = "Usuário: " + user.email;
 if(!dadosIniciados){
 carregarDados();
 carregarVendas();
+carregarProdutosIncrustacao();
+carregarOrdensIncrustacao();
+carregarSementesIncrustadas();
 dadosIniciados = true;
 }
 
@@ -849,7 +975,10 @@ window.fazerBackup = function(){
 const backup = {
 geradoEm: new Date().toISOString(),
 sementes: sementesCache,
-vendas: vendasCache
+vendas: vendasCache,
+produtosIncrustacao: produtosIncrustacaoCache,
+ordensIncrustacao: ordensIncrustacaoCache,
+sementesIncrustadas: sementesIncrustadasCache
 };
 baixarArquivo("backup_milagro_stock_360.json", JSON.stringify(backup,null,2), "application/json");
 }
@@ -875,9 +1004,170 @@ for(const [id,dados] of Object.entries(backup.vendas)){
 await update(ref(db,"vendas/"+id),dados);
 }
 }
+if(backup.produtosIncrustacao){
+for(const [id,dados] of Object.entries(backup.produtosIncrustacao)){
+await update(ref(db,"produtosIncrustacao/"+id),dados);
+}
+}
+if(backup.ordensIncrustacao){
+for(const [id,dados] of Object.entries(backup.ordensIncrustacao)){
+await update(ref(db,"ordensIncrustacao/"+id),dados);
+}
+}
+if(backup.sementesIncrustadas){
+for(const [id,dados] of Object.entries(backup.sementesIncrustadas)){
+await update(ref(db,"sementesIncrustadas/"+id),dados);
+}
+}
 alert("Backup restaurado com sucesso.");
 };
 input.click();
+}
+
+
+/* ===== FUNÇÕES DO MÓDULO DE INCRUSTAÇÃO - ADICIONADO SEM ALTERAR O SISTEMA EXISTENTE ===== */
+const receitaPadraoIncrustacao = [
+{nome:"Semente", unidade:"KG", dose:0.333330, estoque:0},
+{nome:"Bent. Sódica", unidade:"KG", dose:0.266660, estoque:693316},
+{nome:"Calcário Filler", unidade:"KG", dose:0.213320, estoque:554632},
+{nome:"Gesso", unidade:"KG", dose:0.053330, estoque:138658},
+{nome:"Seed Gel", unidade:"KG", dose:0.063330, estoque:164658},
+{nome:"Fosfato Bicálcio", unidade:"KG", dose:0.063330, estoque:164658},
+{nome:"Óxido de Zinco", unidade:"KG", dose:0.006660, estoque:17316},
+{nome:"Grafite", unidade:"KG", dose:0.014000, estoque:36400},
+{nome:"Maxim XL", unidade:"L", dose:0.000333, estoque:867},
+{nome:"Fipronil", unidade:"L", dose:0.000333, estoque:867},
+{nome:"Dermacor", unidade:"L", dose:0.000067, estoque:174},
+{nome:"Purakelp", unidade:"L", dose:0.000333, estoque:867},
+{nome:"Selvol", unidade:"KG", dose:0.000589, estoque:1531},
+{nome:"GAS", unidade:"KG", dose:0.011731, estoque:30500},
+{nome:"Sulfato de Zinco", unidade:"KG", dose:0.000333, estoque:867},
+{nome:"Sulfato de Manganês", unidade:"KG", dose:0.000100, estoque:260},
+{nome:"Borosol", unidade:"KG", dose:0.000100, estoque:260},
+{nome:"Molibsol", unidade:"KG", dose:0.000100, estoque:260},
+{nome:"Kellus Koper", unidade:"KG", dose:0.000100, estoque:260}
+];
+
+function formatarNumeroBR(valor, casas=3){
+return Number(valor || 0).toLocaleString("pt-BR", {minimumFractionDigits:0, maximumFractionDigits:casas});
+}
+
+window.salvarProdutoIncrustacao = function(){
+const id = document.getElementById("idProdutoIncrustacaoEdicao").value;
+const dados = {
+nome: document.getElementById("produtoIncrustacaoNome").value.trim(),
+unidade: document.getElementById("produtoIncrustacaoUnidade").value,
+dose: Number(document.getElementById("produtoIncrustacaoDose").value || 0),
+estoque: Number(document.getElementById("produtoIncrustacaoEstoque").value || 0),
+estoqueMinimo: Number(document.getElementById("produtoIncrustacaoEstoqueMinimo").value || 0),
+fornecedor: document.getElementById("produtoIncrustacaoFornecedor").value.trim(),
+observacao: document.getElementById("produtoIncrustacaoObs").value.trim(),
+usuarioAtualizacao: auth.currentUser ? auth.currentUser.email : "",
+dataAtualizacao: new Date().toLocaleString("pt-BR")
+};
+if(!dados.nome || dados.dose <= 0){ alert("Informe o produto e a dose por kg produzido."); return; }
+if(id){ update(ref(db,"produtosIncrustacao/"+id),dados); alert("Produto atualizado com sucesso!"); }
+else{ dados.usuarioCadastro = auth.currentUser ? auth.currentUser.email : ""; dados.dataCadastro = new Date().toLocaleString("pt-BR"); push(ref(db,"produtosIncrustacao"),dados); alert("Produto salvo com sucesso!"); }
+cancelarEdicaoProdutoIncrustacao();
+}
+
+window.cancelarEdicaoProdutoIncrustacao = function(){
+["idProdutoIncrustacaoEdicao","produtoIncrustacaoNome","produtoIncrustacaoDose","produtoIncrustacaoEstoque","produtoIncrustacaoEstoqueMinimo","produtoIncrustacaoFornecedor","produtoIncrustacaoObs"].forEach(id=>document.getElementById(id).value="");
+document.getElementById("produtoIncrustacaoUnidade").value="KG";
+document.getElementById("btnSalvarProdutoIncrustacao").innerText="Salvar Produto";
+document.getElementById("btnCancelarProdutoIncrustacao").classList.add("hidden");
+}
+
+window.carregarReceitaPadraoIncrustacao = async function(){
+if(!confirm("Deseja carregar a receita padrão? Produtos com mesmo nome serão atualizados.")) return;
+for(const item of receitaPadraoIncrustacao){
+const existente = Object.entries(produtosIncrustacaoCache).find(([_,p]) => (p.nome || "").toLowerCase() === item.nome.toLowerCase());
+const dados = {nome:item.nome, unidade:item.unidade, dose:item.dose, estoque:item.estoque, estoqueMinimo:0, fornecedor:"", observacao:"Receita padrão inicial", usuarioAtualizacao: auth.currentUser ? auth.currentUser.email : "", dataAtualizacao:new Date().toLocaleString("pt-BR")};
+if(existente){ await update(ref(db,"produtosIncrustacao/"+existente[0]),dados); }
+else{ dados.usuarioCadastro = auth.currentUser ? auth.currentUser.email : ""; dados.dataCadastro = new Date().toLocaleString("pt-BR"); await push(ref(db,"produtosIncrustacao"),dados); }
+}
+alert("Receita padrão carregada com sucesso!");
+}
+
+function carregarProdutosIncrustacao(){
+onValue(ref(db,"produtosIncrustacao"),(snapshot)=>{
+produtosIncrustacaoCache = {}; const tabela=document.getElementById("tabelaProdutosIncrustacao"); if(!tabela) return; tabela.innerHTML="";
+snapshot.forEach(item=>{ const id=item.key; const p=item.val(); produtosIncrustacaoCache[id]=p; const estoque=Number(p.estoque||0); const minimo=Number(p.estoqueMinimo||0); const status = estoque <= minimo ? "Baixo" : "OK";
+tabela.innerHTML += `<tr><td>${p.nome||""}</td><td>${p.unidade||""}</td><td>${formatarNumeroBR(p.dose,6)}</td><td>${formatarNumeroBR(estoque)}</td><td>${formatarNumeroBR(minimo)}</td><td>${p.fornecedor||""}</td><td class="${status==='OK'?'ok-estoque':'falta-estoque'}">${status}</td><td><button class="btn-edit" onclick="editarProdutoIncrustacao('${id}')">Editar</button><button class="btn-danger" onclick="excluirProdutoIncrustacao('${id}')">Excluir</button></td></tr>`;
+});
+atualizarResumoIncrustacao();
+});
+}
+
+window.editarProdutoIncrustacao = function(id){ const p=produtosIncrustacaoCache[id]; if(!p) return; document.getElementById("idProdutoIncrustacaoEdicao").value=id; document.getElementById("produtoIncrustacaoNome").value=p.nome||""; document.getElementById("produtoIncrustacaoUnidade").value=p.unidade||"KG"; document.getElementById("produtoIncrustacaoDose").value=p.dose||""; document.getElementById("produtoIncrustacaoEstoque").value=p.estoque||""; document.getElementById("produtoIncrustacaoEstoqueMinimo").value=p.estoqueMinimo||""; document.getElementById("produtoIncrustacaoFornecedor").value=p.fornecedor||""; document.getElementById("produtoIncrustacaoObs").value=p.observacao||""; document.getElementById("btnSalvarProdutoIncrustacao").innerText="Atualizar Produto"; document.getElementById("btnCancelarProdutoIncrustacao").classList.remove("hidden"); }
+window.excluirProdutoIncrustacao = function(id){ if(confirm("Deseja excluir este produto?")) remove(ref(db,"produtosIncrustacao/"+id)); }
+
+window.simularIncrustacao = function(){
+const volume = Number(document.getElementById("opVolumeFinal").value || 0);
+if(volume <= 0){ alert("Informe o volume final em KG."); return []; }
+ultimaSimulacaoIncrustacao = Object.entries(produtosIncrustacaoCache).map(([id,p])=>{ const necessario = volume * Number(p.dose||0); const estoque = Number(p.estoque||0); return {produtoId:id,nome:p.nome||"",unidade:p.unidade||"",dose:Number(p.dose||0),necessario,estoque,saldo:estoque-necessario}; });
+const linhas = ultimaSimulacaoIncrustacao.map(i=>`<tr class="${i.saldo<0?'saldo-negativo':'saldo-positivo'}"><td>${i.nome}</td><td>${i.unidade}</td><td>${formatarNumeroBR(i.dose,6)}</td><td>${formatarNumeroBR(i.necessario)}</td><td>${formatarNumeroBR(i.estoque)}</td><td>${formatarNumeroBR(i.saldo)}</td><td class="${i.saldo<0?'falta-estoque':'ok-estoque'}">${i.saldo<0?'FALTA':'OK'}</td></tr>`).join("");
+document.getElementById("resultadoSimulacaoIncrustacao").innerHTML = `<h3>Resultado da simulação - ${formatarNumeroBR(volume)} KG</h3><table><thead><tr><th>Produto</th><th>Unid.</th><th>Dose/Kg</th><th>Necessário</th><th>Estoque</th><th>Saldo</th><th>Status</th></tr></thead><tbody>${linhas}</tbody></table>`;
+return ultimaSimulacaoIncrustacao;
+}
+
+window.salvarOrdemIncrustacao = async function(){
+const id = document.getElementById("idOrdemIncrustacaoEdicao").value;
+const volume = Number(document.getElementById("opVolumeFinal").value || 0);
+if(volume <= 0){ alert("Informe o volume final em KG."); return; }
+const consumo = simularIncrustacao();
+const dados = {variedade:document.getElementById("opVariedade").value.trim(), lote:document.getElementById("opLote").value.trim(), quadra:document.getElementById("opQuadra").value.trim(), galpao:document.getElementById("opGalpao").value.trim(), volumeFinal:volume, sementeUsada:Number(document.getElementById("opSementeUsada").value||0), status:document.getElementById("opStatus").value, statusEstoqueFinal:document.getElementById("opStatusEstoqueFinal").value, observacao:document.getElementById("opObservacao").value.trim(), consumo, usuarioAtualizacao:auth.currentUser?auth.currentUser.email:"", dataAtualizacao:new Date().toLocaleString("pt-BR")};
+if(!dados.variedade || !dados.lote){ alert("Informe variedade e lote da produção."); return; }
+if(dados.status === "Concluído" && consumo.some(c=>c.saldo<0)){ alert("Não é possível concluir: existe produto com estoque insuficiente."); return; }
+if(id){ await update(ref(db,"ordensIncrustacao/"+id),dados); if(dados.status === "Concluído") await concluirOrdemIncrustacao(id,dados); alert("Ordem atualizada com sucesso!"); }
+else{ dados.usuarioCadastro=auth.currentUser?auth.currentUser.email:""; dados.dataCadastro=new Date().toLocaleString("pt-BR"); const nova=await push(ref(db,"ordensIncrustacao"),dados); if(dados.status === "Concluído") await concluirOrdemIncrustacao(nova.key,dados); alert("Ordem salva com sucesso!"); }
+cancelarEdicaoOrdemIncrustacao();
+}
+
+async function concluirOrdemIncrustacao(idOrdem, ordem){
+if(ordem.baixaRealizada) return;
+for(const c of ordem.consumo || []){ const p=produtosIncrustacaoCache[c.produtoId]; if(p){ await update(ref(db,"produtosIncrustacao/"+c.produtoId),{estoque:Number(p.estoque||0)-Number(c.necessario||0), dataAtualizacao:new Date().toLocaleString("pt-BR"), usuarioAtualizacao:auth.currentUser?auth.currentUser.email:""}); }}
+await push(ref(db,"sementesIncrustadas"),{variedade:ordem.variedade,lote:ordem.lote,quadra:ordem.quadra,galpao:ordem.galpao,quantidadeKg:ordem.volumeFinal,status:ordem.statusEstoqueFinal||"Armazenada",ordemId:idOrdem,observacao:"Produzida via módulo de incrustação. "+(ordem.observacao||""),usuarioCadastro:auth.currentUser?auth.currentUser.email:"",dataCadastro:new Date().toLocaleString("pt-BR")});
+await update(ref(db,"ordensIncrustacao/"+idOrdem),{baixaRealizada:true,dataConclusao:new Date().toLocaleString("pt-BR")});
+}
+
+function carregarOrdensIncrustacao(){
+onValue(ref(db,"ordensIncrustacao"),(snapshot)=>{ ordensIncrustacaoCache={}; const tabela=document.getElementById("tabelaOrdensIncrustacao"); if(!tabela) return; tabela.innerHTML=""; snapshot.forEach(item=>{ const id=item.key; const op=item.val(); ordensIncrustacaoCache[id]=op; const cls=op.status==="Concluído"?"op-concluido":op.status==="Produzindo"?"op-produzindo":op.status==="Aguardando"?"op-aguardando":"op-espera"; tabela.innerHTML+=`<tr><td>${op.variedade||""}</td><td>${op.lote||""}</td><td>${formatarNumeroBR(op.volumeFinal)}</td><td>${formatarNumeroBR(op.sementeUsada)}</td><td><span class="status-op ${cls}">${op.status||""}</span></td><td>${op.dataCadastro||op.dataAtualizacao||""}</td><td>${op.usuarioCadastro||op.usuarioAtualizacao||""}</td><td><button class="btn-edit" onclick="editarOrdemIncrustacao('${id}')">Editar</button><button class="btn-warning" onclick="marcarOrdemConcluida('${id}')">Concluir</button><button class="btn-danger" onclick="excluirOrdemIncrustacao('${id}')">Excluir</button></td></tr>`; }); atualizarResumoIncrustacao(); });
+}
+
+window.editarOrdemIncrustacao = function(id){ const op=ordensIncrustacaoCache[id]; if(!op) return; document.getElementById("idOrdemIncrustacaoEdicao").value=id; document.getElementById("opVariedade").value=op.variedade||""; document.getElementById("opLote").value=op.lote||""; document.getElementById("opQuadra").value=op.quadra||""; document.getElementById("opGalpao").value=op.galpao||""; document.getElementById("opVolumeFinal").value=op.volumeFinal||""; document.getElementById("opSementeUsada").value=op.sementeUsada||""; document.getElementById("opStatus").value=op.status||"Em espera"; document.getElementById("opStatusEstoqueFinal").value=op.statusEstoqueFinal||"Armazenada"; document.getElementById("opObservacao").value=op.observacao||""; document.getElementById("btnSalvarOrdemIncrustacao").innerText="Atualizar Ordem"; document.getElementById("btnCancelarOrdemIncrustacao").classList.remove("hidden"); simularIncrustacao(); }
+window.cancelarEdicaoOrdemIncrustacao = function(){ ["idOrdemIncrustacaoEdicao","opVariedade","opLote","opQuadra","opGalpao","opVolumeFinal","opSementeUsada","opObservacao"].forEach(id=>document.getElementById(id).value=""); document.getElementById("opStatus").value="Em espera"; document.getElementById("opStatusEstoqueFinal").value="Armazenada"; document.getElementById("resultadoSimulacaoIncrustacao").innerHTML=""; document.getElementById("btnSalvarOrdemIncrustacao").innerText="Salvar Ordem"; document.getElementById("btnCancelarOrdemIncrustacao").classList.add("hidden"); }
+window.excluirOrdemIncrustacao = function(id){ if(confirm("Deseja excluir esta ordem? A exclusão não desfaz baixas já realizadas.")) remove(ref(db,"ordensIncrustacao/"+id)); }
+window.marcarOrdemConcluida = async function(id){ const op=ordensIncrustacaoCache[id]; if(!op) return; if(op.baixaRealizada){ alert("Esta ordem já foi concluída e a baixa já foi realizada."); return; } if(!confirm("Concluir produção, baixar produtos e lançar no estoque de sementes incrustadas?")) return; const consumo=(op.consumo||[]).map(c=>{ const p=produtosIncrustacaoCache[c.produtoId]||{}; return {...c, estoque:Number(p.estoque||0), saldo:Number(p.estoque||0)-Number(c.necessario||0)}; }); if(consumo.some(c=>c.saldo<0)){ alert("Não é possível concluir: existe produto com estoque insuficiente."); return; } op.consumo=consumo; op.status="Concluído"; await update(ref(db,"ordensIncrustacao/"+id),op); await concluirOrdemIncrustacao(id,op); alert("Produção concluída com sucesso!"); }
+
+function carregarSementesIncrustadas(){
+onValue(ref(db,"sementesIncrustadas"),(snapshot)=>{ sementesIncrustadasCache={}; const tabela=document.getElementById("tabelaSementesIncrustadas"); if(!tabela) return; tabela.innerHTML=""; snapshot.forEach(item=>{ const id=item.key; const s=item.val(); sementesIncrustadasCache[id]=s; tabela.innerHTML+=`<tr><td>${s.variedade||""}</td><td>${s.lote||""}</td><td>${s.quadra||""}</td><td>${s.galpao||""}</td><td>${formatarNumeroBR(s.quantidadeKg)}</td><td>${s.status||""}</td><td>${s.ordemId||""}</td><td>${s.dataCadastro||""}</td><td><button class="btn-danger" onclick="excluirSementeIncrustada('${id}')">Excluir</button></td></tr>`; }); atualizarResumoIncrustacao(); });
+}
+window.excluirSementeIncrustada = function(id){ if(confirm("Deseja excluir esta semente incrustada do estoque separado?")) remove(ref(db,"sementesIncrustadas/"+id)); }
+
+function atualizarResumoIncrustacao(){
+const el1=document.getElementById("totalProdutosIncrustacao"); if(!el1) return;
+el1.innerText=Object.keys(produtosIncrustacaoCache).length;
+document.getElementById("totalOrdensIncrustacao").innerText=Object.keys(ordensIncrustacaoCache).length;
+document.getElementById("totalKgIncrustado").innerText=formatarNumeroBR(Object.values(sementesIncrustadasCache).reduce((s,x)=>s+Number(x.quantidadeKg||0),0));
+document.getElementById("totalOpsPendentes").innerText=Object.values(ordensIncrustacaoCache).filter(op=>op.status!=="Concluído").length;
+}
+
+window.gerarRelatorioIncrustacao = function(){
+const produtos = Object.values(produtosIncrustacaoCache).map(p=>[p.nome||"",p.unidade||"",formatarNumeroBR(p.dose,6),formatarNumeroBR(p.estoque),formatarNumeroBR(p.estoqueMinimo)]);
+const ordens = Object.values(ordensIncrustacaoCache).map(o=>[o.variedade||"",o.lote||"",formatarNumeroBR(o.volumeFinal),formatarNumeroBR(o.sementeUsada),o.status||"",o.dataCadastro||""]);
+const incrustadas = Object.values(sementesIncrustadasCache).map(s=>[s.variedade||"",s.lote||"",s.quadra||"",s.galpao||"",formatarNumeroBR(s.quantidadeKg),s.status||"",s.dataCadastro||""]);
+abrirRelatorio("Relatório de Incrustação", `<h1>Relatório de Incrustação - Milagro Stock 360</h1><p>Gerado em: ${new Date().toLocaleString("pt-BR")}</p><h2>Produtos de Incrustação</h2>${montarTabelaHTML(["Produto","Unidade","Dose/Kg","Estoque","Estoque Mín."], produtos)}<h2>Ordens de Produção</h2>${montarTabelaHTML(["Variedade","Lote","Volume Kg","Semente Kg","Status","Data"], ordens)}<h2>Estoque de Sementes Incrustadas</h2>${montarTabelaHTML(["Variedade","Lote","Quadra","Galpão","Kg","Status","Data"], incrustadas)}`);
+}
+
+window.exportarCSVIncrustacao = function(){
+const colunas=["Tipo","Produto/Variedade","Lote","Unidade/Status","Dose/Volume","Estoque/Kg","Data"];
+const linhas=[];
+Object.values(produtosIncrustacaoCache).forEach(p=>linhas.push(["Produto",p.nome||"","",p.unidade||"",p.dose||0,p.estoque||0,p.dataAtualizacao||""]));
+Object.values(ordensIncrustacaoCache).forEach(o=>linhas.push(["Ordem",o.variedade||"",o.lote||"",o.status||"",o.volumeFinal||0,o.sementeUsada||0,o.dataCadastro||""]));
+Object.values(sementesIncrustadasCache).forEach(s=>linhas.push(["Semente Incrustada",s.variedade||"",s.lote||"",s.status||"",s.quantidadeKg||0,"",s.dataCadastro||""]));
+const csv=[colunas,...linhas].map(linha=>linha.map(c=>`"${String(c).replaceAll('"','""')}"`).join(";")).join("\n");
+baixarArquivo("relatorio_incrustacao_milagro.csv", "\ufeff"+csv, "text/csv;charset=utf-8;");
 }
 
 function baixarArquivo(nome, conteudo, tipo){
