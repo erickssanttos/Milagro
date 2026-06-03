@@ -345,7 +345,7 @@ input[readonly]{background:#f1f5f9;color:#15592d;font-weight:bold;cursor:not-all
 <table>
 <thead>
 <tr>
-<th>Produto</th><th>Unid.</th><th>Dose/Kg</th><th>Estoque</th><th>Estoque Mín.</th><th>Fornecedor</th><th>Status</th><th>Ações</th>
+<th>Produto</th><th>Unid.</th><th>Dose/Kg</th><th>Estoque</th><th>Pode Produzir</th><th>Estoque Mín.</th><th>Fornecedor</th><th>Status</th><th>Ações</th>
 </tr>
 </thead>
 <tbody id="tabelaProdutosIncrustacao"></tbody>
@@ -1105,6 +1105,13 @@ function formatarNumeroBR(valor, casas=3){
 return Number(valor || 0).toLocaleString("pt-BR", {minimumFractionDigits:0, maximumFractionDigits:casas});
 }
 
+function calcularProducaoPossivelPorInsumo(produto){
+const estoque = Number(produto.estoque || 0);
+const dose = Number(produto.dose || 0);
+if(dose <= 0) return 0;
+return estoque / dose;
+}
+
 function obterDoseSementeIncrustacao(){
 const produtoSemente = Object.values(produtosIncrustacaoCache).find(p => (p.nome || "").trim().toLowerCase() === "semente");
 if(produtoSemente && Number(produtoSemente.dose || 0) > 0){
@@ -1190,7 +1197,8 @@ function carregarProdutosIncrustacao(){
 onValue(ref(db,"produtosIncrustacao"),(snapshot)=>{
 produtosIncrustacaoCache = {}; const tabela=document.getElementById("tabelaProdutosIncrustacao"); if(!tabela) return; tabela.innerHTML="";
 snapshot.forEach(item=>{ const id=item.key; const p=item.val(); produtosIncrustacaoCache[id]=p; const estoque=Number(p.estoque||0); const minimo=Number(p.estoqueMinimo||0); const status = estoque <= minimo ? "Baixo" : "OK";
-tabela.innerHTML += `<tr><td>${p.nome||""}</td><td>${p.unidade||""}</td><td>${formatarNumeroBR(p.dose,6)}</td><td>${formatarNumeroBR(estoque)}</td><td>${formatarNumeroBR(minimo)}</td><td>${p.fornecedor||""}</td><td class="${status==='OK'?'ok-estoque':'falta-estoque'}">${status}</td><td><button class="btn-edit" onclick="editarProdutoIncrustacao('${id}')">Editar</button><button class="btn-danger" onclick="excluirProdutoIncrustacao('${id}')">Excluir</button></td></tr>`;
+const podeProduzir = calcularProducaoPossivelPorInsumo(p);
+tabela.innerHTML += `<tr><td>${p.nome||""}</td><td>${p.unidade||""}</td><td>${formatarNumeroBR(p.dose,6)}</td><td>${formatarNumeroBR(estoque)}</td><td><strong>${formatarNumeroBR(podeProduzir)}</strong> kg</td><td>${formatarNumeroBR(minimo)}</td><td>${p.fornecedor||""}</td><td class="${status==='OK'?'ok-estoque':'falta-estoque'}">${status}</td><td><button class="btn-edit" onclick="editarProdutoIncrustacao('${id}')">Editar</button><button class="btn-danger" onclick="excluirProdutoIncrustacao('${id}')">Excluir</button></td></tr>`;
 });
 atualizarResumoIncrustacao();
 calcularSementeAutomatica();
@@ -1278,18 +1286,18 @@ document.getElementById("totalOpsPendentes").innerText=Object.values(ordensIncru
 }
 
 window.gerarRelatorioIncrustacao = function(){
-const produtos = Object.values(produtosIncrustacaoCache).map(p=>[p.nome||"",p.unidade||"",formatarNumeroBR(p.dose,6),formatarNumeroBR(p.estoque),formatarNumeroBR(p.estoqueMinimo)]);
+const produtos = Object.values(produtosIncrustacaoCache).map(p=>[p.nome||"",p.unidade||"",formatarNumeroBR(p.dose,6),formatarNumeroBR(p.estoque),formatarNumeroBR(calcularProducaoPossivelPorInsumo(p)),formatarNumeroBR(p.estoqueMinimo)]);
 const ordens = Object.values(ordensIncrustacaoCache).map(o=>[o.variedade||"",o.lote||"",formatarNumeroBR(o.volumeFinal),formatarNumeroBR(o.sementeUsada),o.status||"",o.dataCadastro||""]);
 const incrustadas = Object.values(sementesIncrustadasCache).map(s=>[s.variedade||"",s.lote||"",s.quadra||"",s.galpao||"",formatarNumeroBR(s.quantidadeKg),s.status||"",s.dataCadastro||""]);
-abrirRelatorio("Relatório de Incrustamento", `<h1>Relatório de Incrustamento - AgroSeed</h1><p>Gerado em: ${new Date().toLocaleString("pt-BR")}</p><h2>Produtos de Incrustamento</h2>${montarTabelaHTML(["Produto","Unidade","Dose/Kg","Estoque","Estoque Mín."], produtos)}<h2>Ordens de Produção</h2>${montarTabelaHTML(["Variedade","Lote","Volume Kg","Semente Kg","Status","Data"], ordens)}<h2>Estoque de Sementes Incrustadas</h2>${montarTabelaHTML(["Variedade","Lote","Quadra","Galpão","Kg","Status","Data"], incrustadas)}`);
+abrirRelatorio("Relatório de Incrustamento", `<h1>Relatório de Incrustamento - AgroSeed</h1><p>Gerado em: ${new Date().toLocaleString("pt-BR")}</p><h2>Produtos de Incrustamento</h2>${montarTabelaHTML(["Produto","Unidade","Dose/Kg","Estoque","Pode Produzir Kg","Estoque Mín."], produtos)}<h2>Ordens de Produção</h2>${montarTabelaHTML(["Variedade","Lote","Volume Kg","Semente Kg","Status","Data"], ordens)}<h2>Estoque de Sementes Incrustadas</h2>${montarTabelaHTML(["Variedade","Lote","Quadra","Galpão","Kg","Status","Data"], incrustadas)}`);
 }
 
 window.exportarCSVIncrustacao = function(){
-const colunas=["Tipo","Produto/Variedade","Lote","Unidade/Status","Dose/Volume","Estoque/Kg","Data"];
+const colunas=["Tipo","Produto/Variedade","Lote","Unidade/Status","Dose/Volume","Estoque/Kg","Pode Produzir Kg","Data"];
 const linhas=[];
-Object.values(produtosIncrustacaoCache).forEach(p=>linhas.push(["Produto",p.nome||"","",p.unidade||"",p.dose||0,p.estoque||0,p.dataAtualizacao||""]));
-Object.values(ordensIncrustacaoCache).forEach(o=>linhas.push(["Ordem",o.variedade||"",o.lote||"",o.status||"",o.volumeFinal||0,o.sementeUsada||0,o.dataCadastro||""]));
-Object.values(sementesIncrustadasCache).forEach(s=>linhas.push(["Semente Incrustada",s.variedade||"",s.lote||"",s.status||"",s.quantidadeKg||0,"",s.dataCadastro||""]));
+Object.values(produtosIncrustacaoCache).forEach(p=>linhas.push(["Produto",p.nome||"","",p.unidade||"",p.dose||0,p.estoque||0,calcularProducaoPossivelPorInsumo(p),p.dataAtualizacao||""]));
+Object.values(ordensIncrustacaoCache).forEach(o=>linhas.push(["Ordem",o.variedade||"",o.lote||"",o.status||"",o.volumeFinal||0,o.sementeUsada||0,"",o.dataCadastro||""]));
+Object.values(sementesIncrustadasCache).forEach(s=>linhas.push(["Semente Incrustada",s.variedade||"",s.lote||"",s.status||"",s.quantidadeKg||0,"","",s.dataCadastro||""]));
 const csv=[colunas,...linhas].map(linha=>linha.map(c=>`"${String(c).replaceAll('"','""')}"`).join(";")).join("\n");
 baixarArquivo("relatorio_incrustamento_agroseed.csv", "\ufeff"+csv, "text/csv;charset=utf-8;");
 }
