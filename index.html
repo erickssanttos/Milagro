@@ -5,7 +5,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Milagro Stock 360</title>
+<title>AgroSeed</title>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -65,11 +65,11 @@ tr:hover{background:#f6f6f6}
   .no-print{display:none!important}
 }
 
-/* ===== MÓDULO DE INCRUSTAÇÃO - ADICIONADO SEM ALTERAR O SISTEMA EXISTENTE ===== */
+/* ===== MÓDULO DE INCRUSTAMENTO - ADICIONADO SEM ALTERAR O SISTEMA EXISTENTE ===== */
 .status-op{padding:6px 10px;border-radius:20px;font-size:12px;font-weight:bold;color:white;display:inline-block}
 .op-espera{background:#666}.op-produzindo{background:#0077b6}.op-aguardando{background:#f77f00}.op-concluido{background:#1f7a3f}.op-cancelado{background:#d62828}
 .ok-estoque{color:#1f7a3f;font-weight:bold}.falta-estoque{color:#d62828;font-weight:bold}.saldo-negativo{background:#ffe5e5}.saldo-positivo{background:#e8f5ee}
-.modulo-incrustacao h2{color:#15592d}.subcard{background:#f9fafb;border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin:12px 0}
+.modulo-incrustamento h2{color:#15592d}.subcard{background:#f9fafb;border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin:12px 0}
 .btn-warning{background:#f77f00}.btn-warning:hover{background:#c96000}
 input[readonly]{background:#f1f5f9;color:#15592d;font-weight:bold;cursor:not-allowed}
 
@@ -85,7 +85,7 @@ input[readonly]{background:#f1f5f9;color:#15592d;font-weight:bold;cursor:not-all
 <body>
 
 <header>
-<h1>MILAGRO STOCK 360</h1>
+<h1>AgroSeed</h1>
 <p>Gestão Inteligente de Estoque de Sementes</p>
 <div id="areaUsuario" class="user-area hidden">
 <span id="usuarioLogado"></span>
@@ -109,9 +109,9 @@ input[readonly]{background:#f1f5f9;color:#15592d;font-weight:bold;cursor:not-all
 <button class="aba-btn" onclick="abrirAbaSistema('abaCadastroSementes', this)">Cadastro de Sementes</button>
 <button class="aba-btn" onclick="abrirAbaSistema('abaEstoqueSementes', this)">Estoque de Sementes</button>
 <button class="aba-btn" onclick="abrirAbaSistema('abaVendas', this)">Vendas</button>
-<button class="aba-btn" onclick="abrirAbaSistema('abaProdutosIncrustacao', this)">Produtos da Incrustação</button>
-<button class="aba-btn" onclick="abrirAbaSistema('abaOrdensIncrustacao', this)">Ordens de Produção</button>
-<button class="aba-btn" onclick="abrirAbaSistema('abaSementesIncrustadas', this)">Sementes Incrustadas</button>
+<button class="aba-btn" onclick="abrirAbaSistema('abaProdutosIncrustamento', this)">Produtos do Incrustamentp</button>
+<button class="aba-btn" onclick="abrirAbaSistema('abaOrdensIncrustamento', this)">Ordens de Produção</button>
+<button class="aba-btn" onclick="abrirAbaSistema('abaSementesIncrustamento', this)">Sementes Incrustadas</button>
 </div>
 
 
@@ -169,7 +169,7 @@ input[readonly]{background:#f1f5f9;color:#15592d;font-weight:bold;cursor:not-all
 </div>
 </div>
 <div class="card modulo-incrustacao">
-<div class="top-bar"><h2>Resumo da Incrustação</h2><span class="badge">Módulo separado</span></div>
+<div class="top-bar"><h2>Resumo da Incrustamento</h2><span class="badge">Módulo separado</span></div>
 <p class="small-note">Resumo dos produtos, ordens e sementes incrustadas. Use o menu acima para abrir cada setor.</p>
 <div class="cards">
 <div class="card-info"><h3>Produtos Cadastrados</h3><p id="totalProdutosIncrustacao">0</p></div>
@@ -202,7 +202,7 @@ input[readonly]{background:#f1f5f9;color:#15592d;font-weight:bold;cursor:not-all
 <input type="number" id="quantidadeKg" placeholder="Quantidade em Kg">
 
 <select id="tipoEmbalagem">
-<option value="">Tipo de embalagem</option>
+<option value="">Tipo de Sacaria</option>
 <option>Bigbag</option>
 <option>Sacaria de rafia</option>
 </select>
@@ -315,32 +315,32 @@ input[readonly]{background:#f1f5f9;color:#15592d;font-weight:bold;cursor:not-all
 </div>
 </div>
 
-<div id="abaProdutosIncrustacao" class="aba-setor">
-<div class="card modulo-incrustacao">
-<div class="top-bar"><h2>Produtos da Incrustação</h2><span class="badge">Estoque físico dos insumos</span></div>
+<div id="abaProdutosIncrustamento" class="aba-setor">
+<div class="card modulo-incrustamento">
+<div class="top-bar"><h2>Produtos da Incrustamento</h2><span class="badge">Estoque físico dos insumos</span></div>
 <p class="small-note">Cadastre aqui os produtos, dose por kg produzido e estoque físico disponível.</p>
 <div class="subcard">
-<h3>1. Estoque de Produtos de Incrustação</h3>
-<input type="hidden" id="idProdutoIncrustacaoEdicao">
+<h3>1. Estoque de Produtos de Incrustamento</h3>
+<input type="hidden" id="idProdutoIncrustamentoEdicao">
 <div class="grid">
-<input type="text" id="produtoIncrustacaoNome" placeholder="Nome do produto">
-<select id="produtoIncrustacaoUnidade">
+<input type="text" id="produtoIncrustamentoNome" placeholder="Nome do produto">
+<select id="produtoIncrustamentoUnidade">
 <option>KG</option>
 <option>L</option>
 <option>G</option>
 <option>ML</option>
 </select>
-<input type="number" step="0.000001" id="produtoIncrustacaoDose" placeholder="Dose por kg produzido">
-<input type="number" step="0.001" id="produtoIncrustacaoEstoque" placeholder="Estoque atual">
-<input type="number" step="0.001" id="produtoIncrustacaoEstoqueMinimo" placeholder="Estoque mínimo">
-<input type="text" id="produtoIncrustacaoFornecedor" placeholder="Fornecedor">
+<input type="number" step="0.000001" id="produtoIncrustamentoDose" placeholder="Dose por kg produzido">
+<input type="number" step="0.001" id="produtoIncrustamentoEstoque" placeholder="Estoque atual">
+<input type="number" step="0.001" id="produtoIncrustamentoEstoqueMinimo" placeholder="Estoque mínimo">
+<input type="text" id="produtoIncrustamentoFornecedor" placeholder="Fornecedor">
 </div>
 <br>
-<textarea id="produtoIncrustacaoObs" rows="2" placeholder="Observação do produto"></textarea>
+<textarea id="produtoIncrustamentoObs" rows="2" placeholder="Observação do produto"></textarea>
 <br><br>
-<button onclick="salvarProdutoIncrustacao()" id="btnSalvarProdutoIncrustacao">Salvar Produto</button>
-<button onclick="carregarReceitaPadraoIncrustacao()" class="btn-edit">Carregar Receita Padrão</button>
-<button onclick="cancelarEdicaoProdutoIncrustacao()" id="btnCancelarProdutoIncrustacao" class="btn-danger hidden">Cancelar Edição</button>
+<button onclick="salvarProdutoIncrustamento()" id="btnSalvarProdutoIncrustamento">Salvar Produto</button>
+<button onclick="carregarReceitaPadraoIncrustamento()" class="btn-edit">Carregar Receita Padrão</button>
+<button onclick="cancelarEdicaoProdutoIncrustamento()" id="btnCancelarProdutoIncrustamento" class="btn-danger hidden">Cancelar Edição</button>
 
 <table>
 <thead>
@@ -348,19 +348,19 @@ input[readonly]{background:#f1f5f9;color:#15592d;font-weight:bold;cursor:not-all
 <th>Produto</th><th>Unid.</th><th>Dose/Kg</th><th>Estoque</th><th>Estoque Mín.</th><th>Fornecedor</th><th>Status</th><th>Ações</th>
 </tr>
 </thead>
-<tbody id="tabelaProdutosIncrustacao"></tbody>
+<tbody id="tabelaProdutosIncrustamento"></tbody>
 </table>
 </div>
 </div>
 </div>
 
-<div id="abaOrdensIncrustacao" class="aba-setor">
-<div class="card modulo-incrustacao">
+<div id="abaOrdensIncrustamento" class="aba-setor">
+<div class="card modulo-incrustamento">
 <div class="top-bar"><h2>Ordens de Produção</h2><span class="badge">Produção incrustada</span></div>
 <p class="small-note">Simule o consumo, salve a OP e conclua para baixar os insumos e lançar no estoque separado de sementes incrustadas.</p>
 <div class="subcard">
 <h3>2. Simulador e Ordem de Produção</h3>
-<input type="hidden" id="idOrdemIncrustacaoEdicao">
+<input type="hidden" id="idOrdemIncrustamentoEdicao">
 <div class="grid">
 <input type="text" id="opVariedade" placeholder="Variedade da semente incrustada">
 <input type="text" id="opLote" placeholder="Lote da produção">
@@ -386,15 +386,15 @@ input[readonly]{background:#f1f5f9;color:#15592d;font-weight:bold;cursor:not-all
 <br>
 <textarea id="opObservacao" rows="2" placeholder="Observações da ordem de produção"></textarea>
 <br><br>
-<button onclick="simularIncrustacao()">Simular Consumo</button>
-<button onclick="salvarOrdemIncrustacao()" id="btnSalvarOrdemIncrustacao">Salvar Ordem</button>
-<button onclick="cancelarEdicaoOrdemIncrustacao()" id="btnCancelarOrdemIncrustacao" class="btn-danger hidden">Cancelar Edição</button>
-<button onclick="gerarRelatorioIncrustacao()" class="btn-edit">Relatório / PDF</button>
-<button onclick="exportarCSVIncrustacao()" class="btn-gray">Exportar CSV</button>
+<button onclick="simularIncrustamento()">Simular Consumo</button>
+<button onclick="salvarOrdemIncrustamento()" id="btnSalvarOrdemIncrustacao">Salvar Ordem</button>
+<button onclick="cancelarEdicaoOrdemIncrustamento()" id="btnCancelarOrdemIncrustacao" class="btn-danger hidden">Cancelar Edição</button>
+<button onclick="gerarRelatorioIncrustamento()" class="btn-edit">Relatório / PDF</button>
+<button onclick="exportarCSVIncrustamento()" class="btn-gray">Exportar CSV</button>
 <p class="small-note">Ao marcar uma ordem como Concluído, o sistema baixa os produtos, baixa a semente base selecionada do estoque normal e lança automaticamente no estoque separado de sementes incrustadas.</p>
 <p class="small-note"><strong>Semente base:</strong> selecione o lote do estoque normal. A quantidade é calculada automaticamente pelo volume final usando a dose do item “Semente”.</p>
 
-<div id="resultadoSimulacaoIncrustacao"></div>
+<div id="resultadoSimulacaoIncrustamento"></div>
 </div>
 <div class="subcard">
 <h3>3. Ordens de Produção</h3>
@@ -404,16 +404,16 @@ input[readonly]{background:#f1f5f9;color:#15592d;font-weight:bold;cursor:not-all
 <th>Variedade</th><th>Lote</th><th>Volume Final Kg</th><th>Semente Kg</th><th>Status</th><th>Data</th><th>Usuário</th><th>Ações</th>
 </tr>
 </thead>
-<tbody id="tabelaOrdensIncrustacao"></tbody>
+<tbody id="tabelaOrdensIncrustamento"></tbody>
 </table>
 </div>
 </div>
 </div>
 
 <div id="abaSementesIncrustadas" class="aba-setor">
-<div class="card modulo-incrustacao">
+<div class="card modulo-incrustamento">
 <div class="top-bar"><h2>Estoque de Sementes Incrustadas</h2><span class="badge">Separado do estoque normal</span></div>
-<p class="small-note">Aqui aparecem apenas as sementes produzidas pela incrustação.</p>
+<p class="small-note">Aqui aparecem apenas as sementes produzidas pelo incrustamento.</p>
 <div class="subcard">
 <h3>4. Estoque Separado de Sementes Incrustadas</h3>
 <table>
@@ -466,10 +466,10 @@ const auth = getAuth(app);
 
 let sementesCache = {};
 let vendasCache = {};
-let produtosIncrustacaoCache = {};
-let ordensIncrustacaoCache = {};
+let produtosIncrustamentoCache = {};
+let ordensIncrustamentoCache = {};
 let sementesIncrustadasCache = {};
-let ultimaSimulacaoIncrustacao = [];
+let ultimaSimulacaoIncrustamento = [];
 let dadosIniciados = false;
 
 window.entrar = function(){
