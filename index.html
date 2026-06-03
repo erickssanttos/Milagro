@@ -276,6 +276,10 @@ input[readonly]{background:#f1f5f9;color:#15592d;font-weight:bold;cursor:not-all
 
 <div class="grid">
 <input type="text" id="clienteVenda" placeholder="Cliente">
+<select id="tipoProdutoVenda" onchange="atualizarSelectVenda()">
+<option value="sementes">Semente normal</option>
+<option value="sementesIncrustadas">Semente incrustada</option>
+</select>
 <select id="sementeVenda">
 <option value="">Selecione o lote vendido</option>
 </select>
@@ -300,6 +304,7 @@ input[readonly]{background:#f1f5f9;color:#15592d;font-weight:bold;cursor:not-all
 <thead>
 <tr>
 <th>Cliente</th>
+<th>Tipo</th>
 <th>Variedade</th>
 <th>Lote</th>
 <th>Emb. Vendida</th>
@@ -564,12 +569,10 @@ limparCampos();
 
 function carregarDados(){
 const tabela = document.getElementById("tabelaEstoque");
-const selectVenda = document.getElementById("sementeVenda");
 const selectSementeBase = document.getElementById("opSementeBaseId");
 
 onValue(ref(db,"sementes"),(snapshot)=>{
 tabela.innerHTML="";
-selectVenda.innerHTML='<option value="">Selecione o lote vendido</option>';
 if(selectSementeBase){
 selectSementeBase.innerHTML='<option value="">Selecione o lote da semente base</option>';
 }
@@ -591,9 +594,6 @@ totalKg += Number(dados.quantidadeKg || 0);
 
 if(dados.status === "Pronta para venda") prontas++;
 
-if(Number(dados.quantidade || 0) > 0 && dados.status !== "Bloqueada" && dados.status !== "Vendido"){
-selectVenda.innerHTML += `<option value="${id}">${dados.variedade || ""} | Lote: ${dados.lote || ""} | Emb: ${dados.quantidade || 0} | Kg: ${dados.quantidadeKg || 0}</option>`;
-}
 if(selectSementeBase && Number(dados.quantidadeKg || 0) > 0 && dados.status !== "Bloqueada" && dados.status !== "Vendido"){
 selectSementeBase.innerHTML += `<option value="${id}">${dados.variedade || ""} | Lote: ${dados.lote || ""} | Kg: ${formatarNumeroBR(dados.quantidadeKg || 0)}</option>`;
 }
@@ -634,34 +634,61 @@ document.getElementById("totalProntas").innerText=prontas;
 atualizarGraficos();
 atualizarFiltroRelatorioVariedade();
 aplicarFiltrosEstoque();
+atualizarSelectVenda();
 });
 }
 
-window.registrarVenda = function(){
+window.atualizarSelectVenda = function(){
+const selectVenda = document.getElementById("sementeVenda");
+const tipo = document.getElementById("tipoProdutoVenda") ? document.getElementById("tipoProdutoVenda").value : "sementes";
+if(!selectVenda) return;
+selectVenda.innerHTML = '<option value="">Selecione o lote vendido</option>';
+
+if(tipo === "sementesIncrustadas"){
+Object.entries(sementesIncrustadasCache).forEach(([id,dados])=>{
+const kg = Number(dados.quantidadeKg || 0);
+if(kg > 0 && dados.status !== "Bloqueada" && dados.status !== "Vendido"){
+selectVenda.innerHTML += `<option value="${id}">${dados.variedade || ""} | Lote: ${dados.lote || ""} | Kg: ${formatarNumeroBR(kg)}</option>`;
+}
+});
+}else{
+Object.entries(sementesCache).forEach(([id,dados])=>{
+if(Number(dados.quantidade || 0) > 0 && dados.status !== "Bloqueada" && dados.status !== "Vendido"){
+selectVenda.innerHTML += `<option value="${id}">${dados.variedade || ""} | Lote: ${dados.lote || ""} | Emb: ${dados.quantidade || 0} | Kg: ${formatarNumeroBR(dados.quantidadeKg || 0)}</option>`;
+}
+});
+}
+}
+
+window.registrarVenda = async function(){
 const cliente = document.getElementById("clienteVenda").value.trim();
+const tipoOrigem = document.getElementById("tipoProdutoVenda") ? document.getElementById("tipoProdutoVenda").value : "sementes";
+const tipoProduto = tipoOrigem === "sementesIncrustadas" ? "Semente incrustada" : "Semente normal";
 const idSemente = document.getElementById("sementeVenda").value;
-const qtdVenda = Number(document.getElementById("quantidadeVenda").value);
+const qtdVenda = Number(document.getElementById("quantidadeVenda").value || 0);
 const qtdKgVenda = Number(document.getElementById("quantidadeKgVenda").value || 0);
 const dataVenda = document.getElementById("dataVenda").value;
 const observacao = document.getElementById("observacaoVenda").value.trim();
 
-if(!cliente || !idSemente || qtdVenda <= 0 || !dataVenda){
-alert("Preencha cliente, lote, quantidade de embalagens e data.");
+if(!cliente || !idSemente || !dataVenda || (qtdVenda <= 0 && qtdKgVenda <= 0)){
+alert("Preencha cliente, lote, data e quantidade vendida em embalagens ou kg.");
 return;
 }
 
-const semente = sementesCache[idSemente];
+const cacheOrigem = tipoOrigem === "sementesIncrustadas" ? sementesIncrustadasCache : sementesCache;
+const caminhoOrigem = tipoOrigem === "sementesIncrustadas" ? "sementesIncrustadas" : "sementes";
+const semente = cacheOrigem[idSemente];
 
 if(!semente){
-alert("Lote não encontrado.");
+alert("Lote não encontrado no estoque selecionado.");
 return;
 }
 
 const estoqueAtual = Number(semente.quantidade || 0);
 const estoqueKgAtual = Number(semente.quantidadeKg || 0);
 
-if(qtdVenda > estoqueAtual){
-alert("Quantidade vendida maior que o estoque disponível.");
+if(tipoOrigem === "sementes" && qtdVenda > estoqueAtual){
+alert("Quantidade vendida maior que o estoque disponível em embalagens.");
 return;
 }
 
@@ -670,11 +697,13 @@ alert("Quantidade em Kg vendida maior que o Kg disponível.");
 return;
 }
 
-const novoEstoque = estoqueAtual - qtdVenda;
+const novoEstoque = Math.max(0, estoqueAtual - qtdVenda);
 const novoEstoqueKg = Math.max(0, estoqueKgAtual - qtdKgVenda);
 
-push(ref(db,"vendas"),{
+await push(ref(db,"vendas"),{
 cliente,
+tipoProduto,
+estoqueOrigem: caminhoOrigem,
 sementeId: idSemente,
 variedade: semente.variedade || "",
 lote: semente.lote || "",
@@ -693,11 +722,18 @@ usuarioVenda: auth.currentUser ? auth.currentUser.email : "",
 dataRegistro: new Date().toLocaleString("pt-BR")
 });
 
-update(ref(db,"sementes/"+idSemente),{
-quantidade: novoEstoque,
+const atualizacao = {
 quantidadeKg: novoEstoqueKg,
-status: novoEstoque === 0 ? "Vendido" : semente.status
-});
+status: novoEstoqueKg <= 0 ? "Vendido" : (semente.status || "Armazenada"),
+usuarioAtualizacao: auth.currentUser ? auth.currentUser.email : "",
+dataAtualizacao: new Date().toLocaleString("pt-BR")
+};
+if(tipoOrigem === "sementes"){
+atualizacao.quantidade = novoEstoque;
+atualizacao.status = (novoEstoque <= 0 && novoEstoqueKg <= 0) ? "Vendido" : (semente.status || "Armazenada");
+}
+
+await update(ref(db,caminhoOrigem+"/"+idSemente),atualizacao);
 
 alert("Venda registrada e estoque baixado com sucesso!");
 
@@ -707,6 +743,7 @@ document.getElementById("quantidadeVenda").value="";
 document.getElementById("quantidadeKgVenda").value="";
 document.getElementById("dataVenda").value="";
 document.getElementById("observacaoVenda").value="";
+atualizarSelectVenda();
 }
 
 function carregarVendas(){
@@ -726,6 +763,7 @@ totalVendido += Number(venda.quantidadeVendida || 0);
 tabela.innerHTML += `
 <tr>
 <td>${venda.cliente || ""}</td>
+<td>${venda.tipoProduto || "Semente normal"}</td>
 <td>${venda.variedade || ""}</td>
 <td>${venda.lote || ""}</td>
 <td>${venda.quantidadeVendida || 0}</td>
@@ -743,7 +781,7 @@ document.getElementById("totalVendido").innerText=totalVendido;
 }
 
 window.cancelarVenda = async function(idVenda){
-if(!confirm("Deseja cancelar esta venda e devolver a quantidade ao estoque?")) return;
+if(!confirm("Deseja cancelar esta venda e devolver a quantidade ao estoque correto?")) return;
 
 const vendaSnap = await get(ref(db,"vendas/"+idVenda));
 if(!vendaSnap.exists()){
@@ -755,21 +793,26 @@ const venda = vendaSnap.val();
 const idSemente = venda.sementeId;
 const qtdVendida = Number(venda.quantidadeVendida || 0);
 const qtdKgVendida = Number(venda.quantidadeKgVendida || 0);
+const caminhoOrigem = venda.estoqueOrigem || "sementes";
+const cacheOrigem = caminhoOrigem === "sementesIncrustadas" ? sementesIncrustadasCache : sementesCache;
 
 if(idSemente){
-const sementeAtual = sementesCache[idSemente];
+const sementeAtual = cacheOrigem[idSemente];
 if(sementeAtual){
 const novoEstoque = Number(sementeAtual.quantidade || 0) + qtdVendida;
 const novoEstoqueKg = Number(sementeAtual.quantidadeKg || 0) + qtdKgVendida;
-update(ref(db,"sementes/"+idSemente),{
-quantidade: novoEstoque,
+const atualizacao = {
 quantidadeKg: novoEstoqueKg,
-status: sementeAtual.status === "Vendido" ? "Armazenada" : sementeAtual.status
-});
+status: sementeAtual.status === "Vendido" ? "Armazenada" : sementeAtual.status,
+usuarioAtualizacao: auth.currentUser ? auth.currentUser.email : "",
+dataAtualizacao: new Date().toLocaleString("pt-BR")
+};
+if(caminhoOrigem === "sementes") atualizacao.quantidade = novoEstoque;
+await update(ref(db,caminhoOrigem+"/"+idSemente),atualizacao);
 }
 }
 
-remove(ref(db,"vendas/"+idVenda));
+await remove(ref(db,"vendas/"+idVenda));
 alert("Venda cancelada e estoque restaurado.");
 }
 
@@ -965,6 +1008,7 @@ const clientes = new Set(vendas.map(v=>v.cliente||"").filter(Boolean)).size;
 
 const linhas = vendas.map(v=>[
 v.cliente||"",
+v.tipoProduto||"Semente normal",
 v.variedade||"",
 v.lote||"",
 v.tipoEmbalagem||"",
@@ -986,7 +1030,7 @@ abrirRelatorio("Relatório de Vendas", `
 <span>Registros de venda: ${vendas.length}</span>
 <span>Clientes atendidos: ${clientes}</span>
 </div>
-${montarTabelaHTML(["Cliente","Variedade","Lote","Tipo Embalagem","Emb.","Kg","Estoque Antes","Estoque Depois","Data","Usuário","Obs."], linhas)}
+${montarTabelaHTML(["Cliente","Tipo","Variedade","Lote","Tipo Embalagem","Emb.","Kg","Estoque Antes","Estoque Depois","Data","Usuário","Obs."], linhas)}
 `);
 }
 
@@ -1013,9 +1057,9 @@ s.variedade||"",s.lote||"",s.quadra||"",s.galpao||"",s.quantidade||0,s.quantidad
 ]);
 }else{
 nomeArquivo = "relatorio_vendas_agroseed.csv";
-colunas = ["Cliente","Variedade","Lote","Tipo Embalagem","Embalagens Vendidas","Kg Vendido","Estoque Antes","Estoque Depois","Data","Usuario","Observacao"];
+colunas = ["Cliente","Tipo","Variedade","Lote","Tipo Embalagem","Embalagens Vendidas","Kg Vendido","Estoque Antes","Estoque Depois","Data","Usuario","Observacao"];
 linhas = Object.values(vendasCache).map(v=>[
-v.cliente||"",v.variedade||"",v.lote||"",v.tipoEmbalagem||"",v.quantidadeVendida||0,v.quantidadeKgVendida||0,v.estoqueAntes||"",v.estoqueDepois||"",v.dataVenda||"",v.usuarioVenda||"",v.observacao||""
+v.cliente||"",v.tipoProduto||"Semente normal",v.variedade||"",v.lote||"",v.tipoEmbalagem||"",v.quantidadeVendida||0,v.quantidadeKgVendida||0,v.estoqueAntes||"",v.estoqueDepois||"",v.dataVenda||"",v.usuarioVenda||"",v.observacao||""
 ]);
 }
 
@@ -1273,7 +1317,7 @@ window.excluirOrdemIncrustacao = function(id){ if(confirm("Deseja excluir esta o
 window.marcarOrdemConcluida = async function(id){ const op=ordensIncrustacaoCache[id]; if(!op) return; if(op.baixaRealizada){ alert("Esta ordem já foi concluída e a baixa já foi realizada."); return; } if(!confirm("Concluir produção, baixar produtos, baixar a semente base do estoque normal e lançar no estoque de sementes incrustadas?")) return; const sementeBase=sementesCache[op.sementeBaseId]; if(!sementeBase){ alert("Semente base não encontrada no estoque normal."); return; } if(Number(sementeBase.quantidadeKg||0) < Number(op.sementeUsada||0)){ alert("Não é possível concluir: semente base insuficiente no estoque normal."); return; } const consumo=(op.consumo||[]).map(c=>{ const p=produtosIncrustacaoCache[c.produtoId]||{}; return {...c, estoque:Number(p.estoque||0), saldo:Number(p.estoque||0)-Number(c.necessario||0)}; }); if(consumo.some(c=>c.saldo<0)){ alert("Não é possível concluir: existe produto com estoque insuficiente."); return; } op.consumo=consumo; op.status="Concluído"; await update(ref(db,"ordensIncrustacao/"+id),op); await concluirOrdemIncrustacao(id,op); alert("Produção concluída com sucesso!"); }
 
 function carregarSementesIncrustadas(){
-onValue(ref(db,"sementesIncrustadas"),(snapshot)=>{ sementesIncrustadasCache={}; const tabela=document.getElementById("tabelaSementesIncrustadas"); if(!tabela) return; tabela.innerHTML=""; snapshot.forEach(item=>{ const id=item.key; const s=item.val(); sementesIncrustadasCache[id]=s; tabela.innerHTML+=`<tr><td>${s.variedade||""}</td><td>${s.lote||""}</td><td>${s.quadra||""}</td><td>${s.galpao||""}</td><td>${formatarNumeroBR(s.quantidadeKg)}</td><td>${s.status||""}</td><td>${s.ordemId||""}</td><td>${s.dataCadastro||""}</td><td><button class="btn-danger" onclick="excluirSementeIncrustada('${id}')">Excluir</button></td></tr>`; }); atualizarResumoIncrustacao(); });
+onValue(ref(db,"sementesIncrustadas"),(snapshot)=>{ sementesIncrustadasCache={}; const tabela=document.getElementById("tabelaSementesIncrustadas"); if(!tabela) return; tabela.innerHTML=""; snapshot.forEach(item=>{ const id=item.key; const s=item.val(); sementesIncrustadasCache[id]=s; tabela.innerHTML+=`<tr><td>${s.variedade||""}</td><td>${s.lote||""}</td><td>${s.quadra||""}</td><td>${s.galpao||""}</td><td>${formatarNumeroBR(s.quantidadeKg)}</td><td>${s.status||""}</td><td>${s.ordemId||""}</td><td>${s.dataCadastro||""}</td><td><button class="btn-danger" onclick="excluirSementeIncrustada('${id}')">Excluir</button></td></tr>`; }); atualizarResumoIncrustacao(); atualizarSelectVenda(); });
 }
 window.excluirSementeIncrustada = function(id){ if(confirm("Deseja excluir esta semente incrustada do estoque separado?")) remove(ref(db,"sementesIncrustadas/"+id)); }
 
