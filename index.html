@@ -58,12 +58,22 @@ tr:hover{background:#f6f6f6}
 .kpi-line span{background:#eef2f7;border-radius:10px;padding:8px 10px;font-weight:bold;color:#15592d}
 .filtros-box{background:#f9fafb;border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin:12px 0}
 .filtros-box h3{margin-bottom:10px;color:#15592d}
+@page{size:A4 landscape;margin:10mm}
 @media print{
   body *{visibility:hidden}
   #relatorioModal,#relatorioModal *{visibility:visible}
-  #relatorioModal{position:absolute;inset:0;background:white;padding:0}
-  .modal-content{box-shadow:none;border-radius:0;max-width:100%;padding:10px}
+  #relatorioModal{position:absolute;inset:0;background:white;padding:0;overflow:visible}
+  .modal-content{box-shadow:none;border-radius:0;max-width:100%;width:100%;padding:8px}
   .no-print{display:none!important}
+  #relatorioConteudo{font-size:10px;color:#111}
+  #relatorioConteudo h1{font-size:18px;margin-bottom:6px}
+  #relatorioConteudo p{margin:3px 0}
+  #relatorioConteudo .kpi-line{gap:5px;margin:6px 0}
+  #relatorioConteudo .kpi-line span{padding:5px 6px;font-size:10px}
+  #relatorioConteudo table{width:100%;border-collapse:collapse;table-layout:fixed;page-break-inside:auto}
+  #relatorioConteudo tr{page-break-inside:avoid;page-break-after:auto}
+  #relatorioConteudo th,#relatorioConteudo td{font-size:8.5px;padding:4px;border:1px solid #ccc;white-space:normal;word-break:break-word;overflow-wrap:anywhere}
+  #relatorioConteudo th{background:#1f7a3f!important;color:white!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 
 /* ===== MÓDULO DE INCRUSTAÇÃO - ADICIONADO SEM ALTERAR O SISTEMA EXISTENTE ===== */
@@ -137,10 +147,13 @@ input[readonly]{background:#f1f5f9;color:#15592d;font-weight:bold;cursor:not-all
 <select id="filtroRelatorioVariedade">
 <option value="">Todas as variedades</option>
 </select>
+<select id="filtroRelatorioGalpao">
+<option value="">Todos os galpões</option>
+</select>
 <button onclick="gerarRelatorioEstoque()">Gerar Relatório de Estoque / PDF</button>
 <button onclick="gerarRelatorioVendas()">Relatório de Vendas / PDF</button>
 </div>
-<p class="small-note">Escolha uma variedade para gerar relatório específico ou deixe em branco para relatório completo.</p>
+<p class="small-note">Escolha uma variedade e/ou um galpão para gerar relatório específico. Deixe em branco para relatório completo.</p>
 </div>
 
 <div class="report-actions">
@@ -950,17 +963,25 @@ return `
 }
 
 function atualizarFiltroRelatorioVariedade(){
-const select = document.getElementById("filtroRelatorioVariedade");
-if(!select) return;
-const valorAtual = select.value;
+const selectVariedade = document.getElementById("filtroRelatorioVariedade");
+const selectGalpao = document.getElementById("filtroRelatorioGalpao");
+if(selectVariedade){
+const valorAtual = selectVariedade.value;
 const variedades = [...new Set(Object.values(sementesCache).map(s=>s.variedade).filter(Boolean))].sort();
-select.innerHTML = '<option value="">Todas as variedades</option>' + variedades.map(v=>`<option value="${v}">${v}</option>`).join("");
-select.value = valorAtual;
+selectVariedade.innerHTML = '<option value="">Todas as variedades</option>' + variedades.map(v=>`<option value="${v}">${v}</option>`).join("");
+selectVariedade.value = valorAtual;
+}
+if(selectGalpao){
+const valorAtualGalpao = selectGalpao.value;
+const galpoes = [...new Set(Object.values(sementesCache).map(s=>s.galpao).filter(Boolean))].sort();
+selectGalpao.innerHTML = '<option value="">Todos os galpões</option>' + galpoes.map(g=>`<option value="${g}">${g}</option>`).join("");
+selectGalpao.value = valorAtualGalpao;
+}
 }
 
 function montarTabelaHTML(colunas, linhas){
 return `
-<table>
+<table class="tabela-relatorio">
 <thead><tr>${colunas.map(c=>`<th>${c}</th>`).join("")}</tr></thead>
 <tbody>${linhas.map(l=>`<tr>${l.map(c=>`<td>${c ?? ""}</td>`).join("")}</tr>`).join("")}</tbody>
 </table>`;
@@ -968,9 +989,13 @@ return `
 
 window.gerarRelatorioEstoque = function(){
 const filtroVariedade = document.getElementById("filtroRelatorioVariedade").value;
+const filtroGalpao = document.getElementById("filtroRelatorioGalpao") ? document.getElementById("filtroRelatorioGalpao").value : "";
 let sementes = Object.values(sementesCache);
 if(filtroVariedade){
 sementes = sementes.filter(s => (s.variedade || "") === filtroVariedade);
+}
+if(filtroGalpao){
+sementes = sementes.filter(s => (s.galpao || "") === filtroGalpao);
 }
 const totalQtd = sementes.reduce((s,x)=>s+Number(x.quantidade||0),0);
 const totalKg = sementes.reduce((s,x)=>s+Number(x.quantidadeKg||0),0);
@@ -995,7 +1020,7 @@ s.observacao||""
 abrirRelatorio("Relatório de Estoque", `
 <h1>Relatório de Estoque - AgroSeed</h1>
 <p>Gerado em: ${new Date().toLocaleString("pt-BR")}</p>
-<p><strong>Filtro de variedade:</strong> ${filtroVariedade || "Todas"}</p>
+<p><strong>Filtro de variedade:</strong> ${filtroVariedade || "Todas"} &nbsp; | &nbsp; <strong>Filtro de galpão:</strong> ${filtroGalpao || "Todos"}</p>
 <div class="kpi-line">
 <span>Total de lotes: ${totalLotes}</span>
 <span>Total embalagens: ${totalQtd}</span>
@@ -1429,7 +1454,7 @@ URL.revokeObjectURL(url);
 <div class="modal-header no-print">
 <h2 id="relatorioTitulo">Relatório</h2>
 <div>
-<button onclick="window.print()">Imprimir / Salvar PDF</button>
+<button onclick="window.print()">Gerar PDF Completo</button>
 <button class="btn-danger" onclick="fecharRelatorio()">Fechar</button>
 </div>
 </div>
