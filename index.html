@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -330,12 +331,18 @@ input[readonly]{background:#f1f5f9;color:#15592d;font-weight:bold;cursor:not-all
 <div class="grid">
 <input type="text" id="produtoIncrustacaoNome" placeholder="Nome do produto">
 <select id="produtoIncrustacaoUnidade">
-<option>KG</option>
-<option>L</option>
-<option>G</option>
-<option>ML</option>
+<option value="KG">KG - Quilograma</option>
+<option value="G">G - Grama</option>
+<option value="L">L - Litro</option>
+<option value="ML">mL - Mililitro</option>
 </select>
-<input type="number" step="0.000001" id="produtoIncrustacaoDose" placeholder="Dose por kg produzido">
+<input type="number" step="0.001" id="produtoIncrustacaoDose" placeholder="Dose">
+<select id="produtoIncrustacaoUnidadeDose">
+<option value="KG">kg/kg produzido</option>
+<option value="G">g/kg produzido</option>
+<option value="L">L/kg produzido</option>
+<option value="ML">mL/kg produzido</option>
+</select>
 <input type="number" step="0.001" id="produtoIncrustacaoEstoque" placeholder="Estoque atual">
 <input type="number" step="0.001" id="produtoIncrustacaoEstoqueMinimo" placeholder="Estoque mínimo">
 <input type="text" id="produtoIncrustacaoFornecedor" placeholder="Fornecedor">
@@ -350,7 +357,7 @@ input[readonly]{background:#f1f5f9;color:#15592d;font-weight:bold;cursor:not-all
 <table>
 <thead>
 <tr>
-<th>Produto</th><th>Unid.</th><th>Dose/Kg</th><th>Estoque</th><th>Pode Produzir</th><th>Estoque Mín.</th><th>Fornecedor</th><th>Status</th><th>Ações</th>
+<th>Produto</th><th>Unid. Estoque</th><th>Dose</th><th>Estoque</th><th>Pode Produzir</th><th>Estoque Mín.</th><th>Fornecedor</th><th>Status</th><th>Ações</th>
 </tr>
 </thead>
 <tbody id="tabelaProdutosIncrustacao"></tbody>
@@ -1124,42 +1131,98 @@ input.click();
 /* ===== FUNÇÕES DO MÓDULO DE INCRUSTAÇÃO - ADICIONADO SEM ALTERAR O SISTEMA EXISTENTE ===== */
 const BASE_RECEITA_INCRUSTACAO_KG = 2600000;
 const receitaPadraoIncrustacao = [
-{nome:"Semente", unidade:"KG", dose:866660/BASE_RECEITA_INCRUSTACAO_KG, estoque:0},
-{nome:"Bent. Sódica", unidade:"KG", dose:693316/BASE_RECEITA_INCRUSTACAO_KG, estoque:693316},
-{nome:"Calcário Filler", unidade:"KG", dose:554632/BASE_RECEITA_INCRUSTACAO_KG, estoque:554632},
-{nome:"Gesso", unidade:"KG", dose:138658/BASE_RECEITA_INCRUSTACAO_KG, estoque:138658},
-{nome:"Seed Gel", unidade:"KG", dose:164658/BASE_RECEITA_INCRUSTACAO_KG, estoque:164658},
-{nome:"Fosfato Bicálcio", unidade:"KG", dose:164658/BASE_RECEITA_INCRUSTACAO_KG, estoque:164658},
-{nome:"Óxido de Zinco", unidade:"KG", dose:17316/BASE_RECEITA_INCRUSTACAO_KG, estoque:17316},
-{nome:"Grafite", unidade:"KG", dose:36400/BASE_RECEITA_INCRUSTACAO_KG, estoque:36400},
-{nome:"Maxim XL", unidade:"L", dose:867/BASE_RECEITA_INCRUSTACAO_KG, estoque:867},
-{nome:"Fipronil", unidade:"L", dose:867/BASE_RECEITA_INCRUSTACAO_KG, estoque:867},
-{nome:"Dermacor", unidade:"L", dose:174/BASE_RECEITA_INCRUSTACAO_KG, estoque:174},
-{nome:"Purakelp", unidade:"L", dose:867/BASE_RECEITA_INCRUSTACAO_KG, estoque:867},
-{nome:"Selvol", unidade:"KG", dose:1531/BASE_RECEITA_INCRUSTACAO_KG, estoque:1531},
-{nome:"GAS", unidade:"KG", dose:30500/BASE_RECEITA_INCRUSTACAO_KG, estoque:30500},
-{nome:"Sulfato de Zinco", unidade:"KG", dose:867/BASE_RECEITA_INCRUSTACAO_KG, estoque:867},
-{nome:"Sulfato de Manganês", unidade:"KG", dose:260/BASE_RECEITA_INCRUSTACAO_KG, estoque:260},
-{nome:"Borosol", unidade:"KG", dose:260/BASE_RECEITA_INCRUSTACAO_KG, estoque:260},
-{nome:"Molibsol", unidade:"KG", dose:260/BASE_RECEITA_INCRUSTACAO_KG, estoque:260},
-{nome:"Kellus Koper", unidade:"KG", dose:260/BASE_RECEITA_INCRUSTACAO_KG, estoque:260}
+{nome:"Semente", unidade:"KG", dose:866660/BASE_RECEITA_INCRUSTACAO_KG, unidadeDose:"KG", estoque:0},
+{nome:"Bent. Sódica", unidade:"KG", dose:(693316/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:693316},
+{nome:"Calcário Filler", unidade:"KG", dose:(554632/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:554632},
+{nome:"Gesso", unidade:"KG", dose:(138658/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:138658},
+{nome:"Seed Gel", unidade:"KG", dose:(164658/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:164658},
+{nome:"Fosfato Bicálcio", unidade:"KG", dose:(164658/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:164658},
+{nome:"Óxido de Zinco", unidade:"KG", dose:(17316/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:17316},
+{nome:"Grafite", unidade:"KG", dose:(36400/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:36400},
+{nome:"Maxim XL", unidade:"L", dose:(867/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"ML", estoque:867},
+{nome:"Fipronil", unidade:"L", dose:(867/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"ML", estoque:867},
+{nome:"Dermacor", unidade:"L", dose:(174/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"ML", estoque:174},
+{nome:"Purakelp", unidade:"L", dose:(867/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"ML", estoque:867},
+{nome:"Selvol", unidade:"KG", dose:(1531/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:1531},
+{nome:"Gás Industrial", unidade:"KG", dose:(30500/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:30500},
+{nome:"Sulfato de Zinco", unidade:"KG", dose:(867/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:867},
+{nome:"Sulfato de Manganês", unidade:"KG", dose:(260/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:260},
+{nome:"Borosol", unidade:"KG", dose:(260/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:260},
+{nome:"Molibsol", unidade:"KG", dose:(260/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:260},
+{nome:"Kellus Koper", unidade:"KG", dose:(260/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:260},
+{nome:"Bombardeio", unidade:"KG", dose:0, unidadeDose:"G", estoque:0},
+{nome:"Biomagno", unidade:"KG", dose:0, unidadeDose:"G", estoque:0},
+{nome:"Bioasis", unidade:"KG", dose:0, unidadeDose:"G", estoque:0}
 ];
 
 function formatarNumeroBR(valor, casas=3){
 return Number(valor || 0).toLocaleString("pt-BR", {minimumFractionDigits:0, maximumFractionDigits:casas});
 }
 
+function normalizarUnidade(unidade){
+const u = String(unidade || "KG").trim().toUpperCase();
+if(u === "ML" || u === "M L" || u === "MILILITRO") return "ML";
+if(u === "G" || u === "GR" || u === "GRAMA") return "G";
+if(u === "L" || u === "LT" || u === "LITRO") return "L";
+return "KG";
+}
+
+function rotuloUnidade(unidade){
+const u = normalizarUnidade(unidade);
+return u === "ML" ? "mL" : u;
+}
+
+function categoriaUnidade(unidade){
+const u = normalizarUnidade(unidade);
+return (u === "KG" || u === "G") ? "massa" : "volume";
+}
+
+function fatorUnidadeBase(unidade){
+const u = normalizarUnidade(unidade);
+if(u === "KG" || u === "L") return 1000;
+return 1;
+}
+
+function obterUnidadeDoseProduto(produto){
+return normalizarUnidade(produto.unidadeDose || produto.unidadeDoseProduto || produto.unidade || "KG");
+}
+
+function converterDoseParaUnidadeEstoque(produto){
+const dose = Number(produto.dose || 0);
+const unidadeDose = obterUnidadeDoseProduto(produto);
+const unidadeEstoque = normalizarUnidade(produto.unidade || unidadeDose);
+if(dose <= 0) return 0;
+if(categoriaUnidade(unidadeDose) !== categoriaUnidade(unidadeEstoque)) return dose;
+return (dose * fatorUnidadeBase(unidadeDose)) / fatorUnidadeBase(unidadeEstoque);
+}
+
+function formatarDoseProduto(produto){
+const dose = Number(produto.dose || 0);
+const unidadeDose = obterUnidadeDoseProduto(produto);
+return `${formatarNumeroBR(dose, dose < 1 ? 3 : 3)} ${rotuloUnidade(unidadeDose)}/kg`;
+}
+
+function formatarMedida(valor, unidade, casas=3){
+return `${formatarNumeroBR(valor, casas)} ${rotuloUnidade(unidade)}`;
+}
+
+function formatarProducaoPossivel(valorKg){
+const v = Number(valorKg || 0);
+if(v >= 1000) return `${formatarNumeroBR(v/1000,1)} t`;
+return `${formatarNumeroBR(v,0)} kg`;
+}
+
 function calcularProducaoPossivelPorInsumo(produto){
 const estoque = Number(produto.estoque || 0);
-const dose = Number(produto.dose || 0);
-if(dose <= 0) return 0;
-return estoque / dose;
+const doseConvertida = converterDoseParaUnidadeEstoque(produto);
+if(doseConvertida <= 0) return 0;
+return estoque / doseConvertida;
 }
 
 function obterDoseSementeIncrustacao(){
 const produtoSemente = Object.values(produtosIncrustacaoCache).find(p => (p.nome || "").trim().toLowerCase() === "semente");
 if(produtoSemente && Number(produtoSemente.dose || 0) > 0){
-return Number(produtoSemente.dose || 0);
+return converterDoseParaUnidadeEstoque({...produtoSemente, unidade:"KG"});
 }
 return 866660 / BASE_RECEITA_INCRUSTACAO_KG;
 }
@@ -1202,6 +1265,7 @@ const dados = {
 nome: document.getElementById("produtoIncrustacaoNome").value.trim(),
 unidade: document.getElementById("produtoIncrustacaoUnidade").value,
 dose: Number(document.getElementById("produtoIncrustacaoDose").value || 0),
+unidadeDose: document.getElementById("produtoIncrustacaoUnidadeDose").value,
 estoque: Number(document.getElementById("produtoIncrustacaoEstoque").value || 0),
 estoqueMinimo: Number(document.getElementById("produtoIncrustacaoEstoqueMinimo").value || 0),
 fornecedor: document.getElementById("produtoIncrustacaoFornecedor").value.trim(),
@@ -1222,6 +1286,7 @@ alert("Erro ao salvar produto: " + erro.message);
 window.cancelarEdicaoProdutoIncrustacao = function(){
 ["idProdutoIncrustacaoEdicao","produtoIncrustacaoNome","produtoIncrustacaoDose","produtoIncrustacaoEstoque","produtoIncrustacaoEstoqueMinimo","produtoIncrustacaoFornecedor","produtoIncrustacaoObs"].forEach(id=>document.getElementById(id).value="");
 document.getElementById("produtoIncrustacaoUnidade").value="KG";
+document.getElementById("produtoIncrustacaoUnidadeDose").value="G";
 document.getElementById("btnSalvarProdutoIncrustacao").innerText="Salvar Produto";
 document.getElementById("btnCancelarProdutoIncrustacao").classList.add("hidden");
 }
@@ -1230,7 +1295,7 @@ window.carregarReceitaPadraoIncrustacao = async function(){
 if(!confirm("Deseja carregar a receita padrão? Produtos com mesmo nome serão atualizados.")) return;
 for(const item of receitaPadraoIncrustacao){
 const existente = Object.entries(produtosIncrustacaoCache).find(([_,p]) => (p.nome || "").toLowerCase() === item.nome.toLowerCase());
-const dados = {nome:item.nome, unidade:item.unidade, dose:item.dose, estoque:item.estoque, estoqueMinimo:0, fornecedor:"", observacao:"Receita padrão inicial", usuarioAtualizacao: auth.currentUser ? auth.currentUser.email : "", dataAtualizacao:new Date().toLocaleString("pt-BR")};
+const dados = {nome:item.nome, unidade:item.unidade, dose:item.dose, unidadeDose:item.unidadeDose || item.unidade, estoque:item.estoque, estoqueMinimo:0, fornecedor:"", observacao:"Receita padrão inicial", usuarioAtualizacao: auth.currentUser ? auth.currentUser.email : "", dataAtualizacao:new Date().toLocaleString("pt-BR")};
 if(existente){ await update(ref(db,"produtosIncrustacao/"+existente[0]),dados); }
 else{ dados.usuarioCadastro = auth.currentUser ? auth.currentUser.email : ""; dados.dataCadastro = new Date().toLocaleString("pt-BR"); await push(ref(db,"produtosIncrustacao"),dados); }
 }
@@ -1242,14 +1307,14 @@ onValue(ref(db,"produtosIncrustacao"),(snapshot)=>{
 produtosIncrustacaoCache = {}; const tabela=document.getElementById("tabelaProdutosIncrustacao"); if(!tabela) return; tabela.innerHTML="";
 snapshot.forEach(item=>{ const id=item.key; const p=item.val(); produtosIncrustacaoCache[id]=p; const estoque=Number(p.estoque||0); const minimo=Number(p.estoqueMinimo||0); const status = estoque <= minimo ? "Baixo" : "OK";
 const podeProduzir = calcularProducaoPossivelPorInsumo(p);
-tabela.innerHTML += `<tr><td>${p.nome||""}</td><td>${p.unidade||""}</td><td>${formatarNumeroBR(p.dose,6)}</td><td>${formatarNumeroBR(estoque)}</td><td><strong>${formatarNumeroBR(podeProduzir)}</strong> kg</td><td>${formatarNumeroBR(minimo)}</td><td>${p.fornecedor||""}</td><td class="${status==='OK'?'ok-estoque':'falta-estoque'}">${status}</td><td><button class="btn-edit" onclick="editarProdutoIncrustacao('${id}')">Editar</button><button class="btn-danger" onclick="excluirProdutoIncrustacao('${id}')">Excluir</button></td></tr>`;
+tabela.innerHTML += `<tr><td>${p.nome||""}</td><td>${rotuloUnidade(p.unidade)}</td><td>${formatarDoseProduto(p)}</td><td>${formatarMedida(estoque,p.unidade)}</td><td><strong>${formatarProducaoPossivel(podeProduzir)}</strong></td><td>${formatarMedida(minimo,p.unidade)}</td><td>${p.fornecedor||""}</td><td class="${status==='OK'?'ok-estoque':'falta-estoque'}">${status}</td><td><button class="btn-edit" onclick="editarProdutoIncrustacao('${id}')">Editar</button><button class="btn-danger" onclick="excluirProdutoIncrustacao('${id}')">Excluir</button></td></tr>`;
 });
 atualizarResumoIncrustacao();
 calcularSementeAutomatica();
 });
 }
 
-window.editarProdutoIncrustacao = function(id){ const p=produtosIncrustacaoCache[id]; if(!p) return; document.getElementById("idProdutoIncrustacaoEdicao").value=id; document.getElementById("produtoIncrustacaoNome").value=p.nome||""; document.getElementById("produtoIncrustacaoUnidade").value=p.unidade||"KG"; document.getElementById("produtoIncrustacaoDose").value=p.dose||""; document.getElementById("produtoIncrustacaoEstoque").value=p.estoque||""; document.getElementById("produtoIncrustacaoEstoqueMinimo").value=p.estoqueMinimo||""; document.getElementById("produtoIncrustacaoFornecedor").value=p.fornecedor||""; document.getElementById("produtoIncrustacaoObs").value=p.observacao||""; document.getElementById("btnSalvarProdutoIncrustacao").innerText="Atualizar Produto"; document.getElementById("btnCancelarProdutoIncrustacao").classList.remove("hidden"); }
+window.editarProdutoIncrustacao = function(id){ const p=produtosIncrustacaoCache[id]; if(!p) return; document.getElementById("idProdutoIncrustacaoEdicao").value=id; document.getElementById("produtoIncrustacaoNome").value=p.nome||""; document.getElementById("produtoIncrustacaoUnidade").value=normalizarUnidade(p.unidade||"KG"); document.getElementById("produtoIncrustacaoDose").value=p.dose||""; document.getElementById("produtoIncrustacaoUnidadeDose").value=obterUnidadeDoseProduto(p); document.getElementById("produtoIncrustacaoEstoque").value=p.estoque||""; document.getElementById("produtoIncrustacaoEstoqueMinimo").value=p.estoqueMinimo||""; document.getElementById("produtoIncrustacaoFornecedor").value=p.fornecedor||""; document.getElementById("produtoIncrustacaoObs").value=p.observacao||""; document.getElementById("btnSalvarProdutoIncrustacao").innerText="Atualizar Produto"; document.getElementById("btnCancelarProdutoIncrustacao").classList.remove("hidden"); }
 window.excluirProdutoIncrustacao = function(id){ if(confirm("Deseja excluir este produto?")) remove(ref(db,"produtosIncrustacao/"+id)); }
 
 window.simularIncrustacao = function(){
@@ -1258,9 +1323,9 @@ if(volume <= 0){ alert("Informe o volume final em KG."); return []; }
 const sementeCalculada = calcularSementeAutomatica();
 ultimaSimulacaoIncrustacao = Object.entries(produtosIncrustacaoCache)
 .filter(([_,p]) => (p.nome || "").trim().toLowerCase() !== "semente")
-.map(([id,p])=>{ const necessario = volume * Number(p.dose||0); const estoque = Number(p.estoque||0); return {produtoId:id,nome:p.nome||"",unidade:p.unidade||"",dose:Number(p.dose||0),necessario,estoque,saldo:estoque-necessario}; });
-const linhas = ultimaSimulacaoIncrustacao.map(i=>`<tr class="${i.saldo<0?'saldo-negativo':'saldo-positivo'}"><td>${i.nome}</td><td>${i.unidade}</td><td>${formatarNumeroBR(i.dose,6)}</td><td>${formatarNumeroBR(i.necessario)}</td><td>${formatarNumeroBR(i.estoque)}</td><td>${formatarNumeroBR(i.saldo)}</td><td class="${i.saldo<0?'falta-estoque':'ok-estoque'}">${i.saldo<0?'FALTA':'OK'}</td></tr>`).join("");
-document.getElementById("resultadoSimulacaoIncrustacao").innerHTML = `<h3>Resultado da simulação - ${formatarNumeroBR(volume)} KG</h3><div class="kpi-line"><span>Semente base calculada: ${formatarNumeroBR(sementeCalculada)} KG</span></div><p class="small-note">${montarResumoSementeBase(sementeCalculada)}</p><table><thead><tr><th>Produto</th><th>Unid.</th><th>Dose/Kg</th><th>Necessário</th><th>Estoque</th><th>Saldo</th><th>Status</th></tr></thead><tbody>${linhas}</tbody></table>`;
+.map(([id,p])=>{ const doseConvertida = converterDoseParaUnidadeEstoque(p); const necessario = volume * doseConvertida; const estoque = Number(p.estoque||0); return {produtoId:id,nome:p.nome||"",unidade:p.unidade||"",unidadeDose:obterUnidadeDoseProduto(p),dose:Number(p.dose||0),doseConvertida,necessario,estoque,saldo:estoque-necessario}; });
+const linhas = ultimaSimulacaoIncrustacao.map(i=>`<tr class="${i.saldo<0?'saldo-negativo':'saldo-positivo'}"><td>${i.nome}</td><td>${rotuloUnidade(i.unidade)}</td><td>${formatarDoseProduto(i)}</td><td>${formatarMedida(i.necessario,i.unidade)}</td><td>${formatarMedida(i.estoque,i.unidade)}</td><td>${formatarMedida(i.saldo,i.unidade)}</td><td class="${i.saldo<0?'falta-estoque':'ok-estoque'}">${i.saldo<0?'FALTA':'OK'}</td></tr>`).join("");
+document.getElementById("resultadoSimulacaoIncrustacao").innerHTML = `<h3>Resultado da simulação - ${formatarNumeroBR(volume)} KG</h3><div class="kpi-line"><span>Semente base calculada: ${formatarNumeroBR(sementeCalculada)} KG</span></div><p class="small-note">${montarResumoSementeBase(sementeCalculada)}</p><table><thead><tr><th>Produto</th><th>Unid.</th><th>Dose</th><th>Necessário</th><th>Estoque</th><th>Saldo</th><th>Status</th></tr></thead><tbody>${linhas}</tbody></table>`;
 return ultimaSimulacaoIncrustacao;
 }
 
@@ -1330,16 +1395,16 @@ document.getElementById("totalOpsPendentes").innerText=Object.values(ordensIncru
 }
 
 window.gerarRelatorioIncrustacao = function(){
-const produtos = Object.values(produtosIncrustacaoCache).map(p=>[p.nome||"",p.unidade||"",formatarNumeroBR(p.dose,6),formatarNumeroBR(p.estoque),formatarNumeroBR(calcularProducaoPossivelPorInsumo(p)),formatarNumeroBR(p.estoqueMinimo)]);
+const produtos = Object.values(produtosIncrustacaoCache).map(p=>[p.nome||"",rotuloUnidade(p.unidade),formatarDoseProduto(p),formatarMedida(p.estoque,p.unidade),formatarProducaoPossivel(calcularProducaoPossivelPorInsumo(p)),formatarMedida(p.estoqueMinimo,p.unidade)]);
 const ordens = Object.values(ordensIncrustacaoCache).map(o=>[o.variedade||"",o.lote||"",formatarNumeroBR(o.volumeFinal),formatarNumeroBR(o.sementeUsada),o.status||"",o.dataCadastro||""]);
 const incrustadas = Object.values(sementesIncrustadasCache).map(s=>[s.variedade||"",s.lote||"",s.quadra||"",s.galpao||"",formatarNumeroBR(s.quantidadeKg),s.status||"",s.dataCadastro||""]);
-abrirRelatorio("Relatório de Incrustamento", `<h1>Relatório de Incrustamento - AgroSeed</h1><p>Gerado em: ${new Date().toLocaleString("pt-BR")}</p><h2>Produtos de Incrustamento</h2>${montarTabelaHTML(["Produto","Unidade","Dose/Kg","Estoque","Pode Produzir Kg","Estoque Mín."], produtos)}<h2>Ordens de Produção</h2>${montarTabelaHTML(["Variedade","Lote","Volume Kg","Semente Kg","Status","Data"], ordens)}<h2>Estoque de Sementes Incrustadas</h2>${montarTabelaHTML(["Variedade","Lote","Quadra","Galpão","Kg","Status","Data"], incrustadas)}`);
+abrirRelatorio("Relatório de Incrustamento", `<h1>Relatório de Incrustamento - AgroSeed</h1><p>Gerado em: ${new Date().toLocaleString("pt-BR")}</p><h2>Produtos de Incrustamento</h2>${montarTabelaHTML(["Produto","Unid. Estoque","Dose","Estoque","Pode Produzir","Estoque Mín."], produtos)}<h2>Ordens de Produção</h2>${montarTabelaHTML(["Variedade","Lote","Volume Kg","Semente Kg","Status","Data"], ordens)}<h2>Estoque de Sementes Incrustadas</h2>${montarTabelaHTML(["Variedade","Lote","Quadra","Galpão","Kg","Status","Data"], incrustadas)}`);
 }
 
 window.exportarCSVIncrustacao = function(){
-const colunas=["Tipo","Produto/Variedade","Lote","Unidade/Status","Dose/Volume","Estoque/Kg","Pode Produzir Kg","Data"];
+const colunas=["Tipo","Produto/Variedade","Lote","Unidade/Status","Dose/Volume","Estoque/Kg","Pode Produzir","Data"];
 const linhas=[];
-Object.values(produtosIncrustacaoCache).forEach(p=>linhas.push(["Produto",p.nome||"","",p.unidade||"",p.dose||0,p.estoque||0,calcularProducaoPossivelPorInsumo(p),p.dataAtualizacao||""]));
+Object.values(produtosIncrustacaoCache).forEach(p=>linhas.push(["Produto",p.nome||"","",rotuloUnidade(p.unidade),formatarDoseProduto(p),formatarMedida(p.estoque,p.unidade),formatarProducaoPossivel(calcularProducaoPossivelPorInsumo(p)),p.dataAtualizacao||""]));
 Object.values(ordensIncrustacaoCache).forEach(o=>linhas.push(["Ordem",o.variedade||"",o.lote||"",o.status||"",o.volumeFinal||0,o.sementeUsada||0,"",o.dataCadastro||""]));
 Object.values(sementesIncrustadasCache).forEach(s=>linhas.push(["Semente Incrustada",s.variedade||"",s.lote||"",s.status||"",s.quantidadeKg||0,"","",s.dataCadastro||""]));
 const csv=[colunas,...linhas].map(linha=>linha.map(c=>`"${String(c).replaceAll('"','""')}"`).join(";")).join("\n");
