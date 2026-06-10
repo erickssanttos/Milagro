@@ -1,6 +1,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -1175,9 +1176,9 @@ const receitaPadraoIncrustacao = [
 {nome:"Borosol", unidade:"KG", dose:(260/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:260},
 {nome:"Molibsol", unidade:"KG", dose:(260/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:260},
 {nome:"Kellus Koper", unidade:"KG", dose:(260/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:260},
-{nome:"Bombardeio", unidade:"KG", dose:0, unidadeDose:"G", estoque:0},
-{nome:"Biomagno", unidade:"KG", dose:0, unidadeDose:"G", estoque:0},
-{nome:"Bioasis", unidade:"KG", dose:0, unidadeDose:"G", estoque:0}
+{nome:"Bombardeio", unidade:"L", dose:0.033333, unidadeDose:"ML", estoque:0},
+{nome:"Biomagno", unidade:"L", dose:0.033333, unidadeDose:"ML", estoque:0},
+{nome:"Bioasis", unidade:"L", dose:0.033333, unidadeDose:"ML", estoque:0}
 ];
 
 function formatarNumeroBR(valor, casas=3){
@@ -1224,10 +1225,38 @@ return (dose * fatorUnidadeBase(unidadeDose)) / fatorUnidadeBase(unidadeEstoque)
 function formatarDoseProduto(produto){
 const dose = Number(produto.dose || 0);
 const unidadeDose = obterUnidadeDoseProduto(produto);
-return `${formatarNumeroBR(dose, dose < 1 ? 3 : 3)} ${rotuloUnidade(unidadeDose)}/kg`;
+
+if(unidadeDose === "ML"){
+return `${formatarNumeroBR(dose,3)} mL/kg`;
+}
+
+if(unidadeDose === "G"){
+return `${formatarNumeroBR(dose,3)} g/kg`;
+}
+
+if(unidadeDose === "L"){
+return `${formatarNumeroBR(dose,6)} L/kg`;
+}
+
+if(unidadeDose === "KG"){
+return `${formatarNumeroBR(dose,6)} KG/kg`;
+}
+
+return `${formatarNumeroBR(dose,6)} ${unidadeDose}/kg`;
 }
 
 function formatarMedida(valor, unidade, casas=3){
+valor = Number(valor || 0);
+unidade = normalizarUnidade(unidade);
+
+if(unidade === "L" && valor < 1){
+return `${formatarNumeroBR(valor * 1000,0)} mL`;
+}
+
+if(unidade === "KG" && valor < 1){
+return `${formatarNumeroBR(valor * 1000,0)} g`;
+}
+
 return `${formatarNumeroBR(valor, casas)} ${rotuloUnidade(unidade)}`;
 }
 
