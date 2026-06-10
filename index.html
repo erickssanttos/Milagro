@@ -392,9 +392,11 @@ input[readonly]{background:#f1f5f9;color:#15592d;font-weight:bold;cursor:not-all
 <input type="text" id="opLote" placeholder="Lote da produção">
 <input type="text" id="opQuadra" placeholder="Quadra / identificação">
 <input type="text" id="opGalpao" placeholder="Galpão / local">
-<select id="opSementeBaseId" onchange="calcularSementeAutomatica()">
+<select id="opSementeBaseId">
 <option value="">Selecione o lote da semente base</option>
 </select>
+<input type="number" step="0.001" id="opSementeBaseKg" placeholder="Kg deste lote para usar">
+<button type="button" onclick="adicionarLoteSementeBase()">Adicionar Lote Base</button>
 <input type="number" step="0.001" id="opVolumeFinal" placeholder="Volume final a produzir em KG" oninput="calcularSementeAutomatica()">
 <input type="number" step="0.001" id="opSementeUsada" placeholder="Kg de semente calculada automaticamente" readonly>
 <select id="opStatus">
@@ -409,6 +411,15 @@ input[readonly]{background:#f1f5f9;color:#15592d;font-weight:bold;cursor:not-all
 <option>Bloqueada</option>
 </select>
 </div>
+<div class="subcard" style="margin-top:12px">
+<h3>Lotes de semente base selecionados</h3>
+<p class="small-note">Adicione um ou mais lotes e informe quantos kg de cada lote serão usados na OP.</p>
+<table>
+<thead><tr><th>Variedade</th><th>Lote</th><th>Kg Disponível</th><th>Kg Usado</th><th>Ação</th></tr></thead>
+<tbody id="tabelaLotesSementeBase"></tbody>
+</table>
+<div id="resumoLotesSementeBase" class="small-note"></div>
+</div>
 <br>
 <textarea id="opObservacao" rows="2" placeholder="Observações da ordem de produção"></textarea>
 <br><br>
@@ -417,8 +428,8 @@ input[readonly]{background:#f1f5f9;color:#15592d;font-weight:bold;cursor:not-all
 <button onclick="cancelarEdicaoOrdemIncrustacao()" id="btnCancelarOrdemIncrustacao" class="btn-danger hidden">Cancelar Edição</button>
 <button onclick="gerarRelatorioIncrustacao()" class="btn-edit">Relatório / PDF</button>
 <button onclick="exportarCSVIncrustacao()" class="btn-gray">Exportar CSV</button>
-<p class="small-note">Ao marcar uma ordem como Concluído, o sistema baixa os produtos, baixa a semente base selecionada do estoque normal e lança automaticamente no estoque separado de sementes incrustadas.</p>
-<p class="small-note"><strong>Semente base:</strong> selecione o lote do estoque normal. A quantidade é calculada automaticamente pelo volume final usando a dose do item “Semente”.</p>
+<p class="small-note">Ao marcar uma ordem como Concluído, o sistema baixa os produtos, baixa os lotes de semente base selecionados do estoque normal e lança automaticamente no estoque separado de sementes incrustadas.</p>
+<p class="small-note"><strong>Semente base:</strong> selecione um ou mais lotes do estoque normal e informe quantos kg serão usados de cada lote. A necessidade total é calculada automaticamente pelo volume final usando a dose do item “Semente”.</p>
 
 <div id="resultadoSimulacaoIncrustacao"></div>
 </div>
@@ -496,6 +507,7 @@ let produtosIncrustacaoCache = {};
 let ordensIncrustacaoCache = {};
 let sementesIncrustadasCache = {};
 let ultimaSimulacaoIncrustacao = [];
+let lotesSementeBaseSelecionados = [];
 let dadosIniciados = false;
 
 window.entrar = function(){
@@ -1291,6 +1303,7 @@ return 0;
 }
 const sementeNecessaria = volume * obterDoseSementeIncrustacao();
 campoSemente.value = sementeNecessaria.toFixed(3);
+renderizarLotesSementeBase();
 return sementeNecessaria;
 }
 
@@ -1302,14 +1315,85 @@ if(!semente) return null;
 return {id: select.value, ...semente};
 }
 
-function montarResumoSementeBase(sementeNecessaria){
-const sementeBase = obterSementeBaseSelecionada();
-if(!sementeBase){
-return `<span class="falta-estoque">Selecione o lote da semente base</span>`;
+function calcularTotalSementeBaseSelecionada(){
+return lotesSementeBaseSelecionados.reduce((s,l)=>s+Number(l.kgUsado||0),0);
 }
-const estoqueKg = Number(sementeBase.quantidadeKg || 0);
-const saldo = estoqueKg - Number(sementeNecessaria || 0);
-return `Lote base: ${sementeBase.variedade || ""} | ${sementeBase.lote || ""} — Disponível: ${formatarNumeroBR(estoqueKg)} KG — Necessário: ${formatarNumeroBR(sementeNecessaria)} KG — Saldo: <span class="${saldo < 0 ? 'falta-estoque' : 'ok-estoque'}">${formatarNumeroBR(saldo)} KG</span>`;
+
+function renderizarLotesSementeBase(){
+const tabela = document.getElementById("tabelaLotesSementeBase");
+const resumo = document.getElementById("resumoLotesSementeBase");
+if(!tabela) return;
+
+tabela.innerHTML = lotesSementeBaseSelecionados.length ? lotesSementeBaseSelecionados.map((lote,idx)=>`
+<tr>
+<td>${lote.variedade || ""}</td>
+<td>${lote.lote || ""}</td>
+<td>${formatarNumeroBR(lote.quantidadeKg || 0)} KG</td>
+<td>${formatarNumeroBR(lote.kgUsado || 0)} KG</td>
+<td><button class="btn-danger" onclick="removerLoteSementeBase(${idx})">Remover</button></td>
+</tr>`).join("") : `<tr><td colspan="5">Nenhum lote base adicionado.</td></tr>`;
+
+if(resumo){
+const necessario = Number(document.getElementById("opSementeUsada")?.value || 0);
+const total = calcularTotalSementeBaseSelecionada();
+const diferenca = total - necessario;
+const classe = Math.abs(diferenca) <= 0.5 ? "ok-estoque" : "falta-estoque";
+resumo.innerHTML = `Semente necessária: <strong>${formatarNumeroBR(necessario)} KG</strong> — Selecionada: <strong>${formatarNumeroBR(total)} KG</strong> — Diferença: <span class="${classe}">${formatarNumeroBR(diferenca)} KG</span>`;
+}
+}
+
+window.adicionarLoteSementeBase = function(){
+const select = document.getElementById("opSementeBaseId");
+const inputKg = document.getElementById("opSementeBaseKg");
+if(!select || !select.value){ alert("Selecione o lote da semente base."); return; }
+const kgUsado = Number(inputKg.value || 0);
+if(kgUsado <= 0){ alert("Informe a quantidade em kg deste lote."); return; }
+const semente = sementesCache[select.value];
+if(!semente){ alert("Lote de semente base não encontrado."); return; }
+const disponivel = Number(semente.quantidadeKg || 0);
+const jaSelecionado = lotesSementeBaseSelecionados.filter(l=>l.id===select.value).reduce((s,l)=>s+Number(l.kgUsado||0),0);
+if(kgUsado + jaSelecionado > disponivel){ alert("Quantidade informada maior que o saldo disponível deste lote."); return; }
+
+lotesSementeBaseSelecionados.push({
+id: select.value,
+variedade: semente.variedade || "",
+lote: semente.lote || "",
+quadra: semente.quadra || "",
+galpao: semente.galpao || "",
+quantidadeKg: disponivel,
+kgUsado
+});
+select.value = "";
+inputKg.value = "";
+renderizarLotesSementeBase();
+}
+
+window.removerLoteSementeBase = function(index){
+lotesSementeBaseSelecionados.splice(index,1);
+renderizarLotesSementeBase();
+}
+
+function obterLotesSementeBaseParaOrdem(){
+return lotesSementeBaseSelecionados.map(l=>({
+id:l.id,
+variedade:l.variedade||"",
+lote:l.lote||"",
+quadra:l.quadra||"",
+galpao:l.galpao||"",
+kgUsado:Number(l.kgUsado||0),
+quantidadeKg:Number(l.quantidadeKg||0)
+}));
+}
+
+function montarResumoSementeBase(sementeNecessaria){
+if(!lotesSementeBaseSelecionados.length){
+return `<span class="falta-estoque">Adicione um ou mais lotes de semente base</span>`;
+}
+const total = calcularTotalSementeBaseSelecionada();
+const diferenca = total - Number(sementeNecessaria || 0);
+const classe = Math.abs(diferenca) <= 0.5 ? "ok-estoque" : "falta-estoque";
+const lotes = lotesSementeBaseSelecionados.map(l=>`${l.variedade || ""} | ${l.lote || ""}: ${formatarNumeroBR(l.kgUsado)} KG`).join("; ");
+return `Lotes base: ${lotes} — Total selecionado: ${formatarNumeroBR(total)} KG — Necessário: ${formatarNumeroBR(sementeNecessaria)} KG — Diferença: <span class="${classe}">${formatarNumeroBR(diferenca)} KG</span>`;
 }
 
 window.salvarProdutoIncrustacao = async function(){
@@ -1387,17 +1471,29 @@ window.salvarOrdemIncrustacao = async function(){
 const id = document.getElementById("idOrdemIncrustacaoEdicao").value;
 const volume = Number(document.getElementById("opVolumeFinal").value || 0);
 if(volume <= 0){ alert("Informe o volume final em KG."); return; }
-const sementeBase = obterSementeBaseSelecionada();
-if(!sementeBase){ alert("Selecione o lote da semente base que será baixado do estoque normal."); return; }
 const sementeCalculada = calcularSementeAutomatica();
+const lotesBase = obterLotesSementeBaseParaOrdem();
+if(!lotesBase.length){ alert("Adicione pelo menos um lote de semente base."); return; }
+const totalLotesBase = lotesBase.reduce((s,l)=>s+Number(l.kgUsado||0),0);
+if(Math.abs(totalLotesBase - sementeCalculada) > 0.5){
+alert(`O total de semente base selecionado precisa bater com a semente necessária. Necessário: ${formatarNumeroBR(sementeCalculada)} KG. Selecionado: ${formatarNumeroBR(totalLotesBase)} KG.`);
+return;
+}
+for(const lote of lotesBase){
+const atual = sementesCache[lote.id];
+if(!atual){ alert(`Lote base ${lote.lote || lote.id} não encontrado.`); return; }
+if(Number(atual.quantidadeKg || 0) < Number(lote.kgUsado || 0)){
+alert(`Não é possível concluir/salvar: o lote ${lote.lote || lote.id} não tem saldo suficiente.`);
+return;
+}
+}
 if(id && ordensIncrustacaoCache[id] && ordensIncrustacaoCache[id].baixaRealizada){
 alert("Esta ordem já foi concluída e a baixa já foi realizada. Para proteger o estoque, ela não pode ser alterada. Caso tenha lançado errado, faça um ajuste manual no estoque e registre uma nova OP.");
 return;
 }
 const consumo = simularIncrustacao();
-const dados = {variedade:document.getElementById("opVariedade").value.trim(), lote:document.getElementById("opLote").value.trim(), quadra:document.getElementById("opQuadra").value.trim(), galpao:document.getElementById("opGalpao").value.trim(), volumeFinal:volume, sementeBaseId:sementeBase.id, sementeBaseVariedade:sementeBase.variedade||"", sementeBaseLote:sementeBase.lote||"", sementeUsada:sementeCalculada, status:document.getElementById("opStatus").value, statusEstoqueFinal:document.getElementById("opStatusEstoqueFinal").value, observacao:document.getElementById("opObservacao").value.trim(), consumo, baixaRealizada:false, usuarioAtualizacao:auth.currentUser?auth.currentUser.email:"", dataAtualizacao:new Date().toLocaleString("pt-BR")};
+const dados = {variedade:document.getElementById("opVariedade").value.trim(), lote:document.getElementById("opLote").value.trim(), quadra:document.getElementById("opQuadra").value.trim(), galpao:document.getElementById("opGalpao").value.trim(), volumeFinal:volume, lotesSementeBase:lotesBase, sementeBaseId:lotesBase[0]?.id||"", sementeBaseVariedade:lotesBase[0]?.variedade||"", sementeBaseLote:lotesBase.map(l=>l.lote).filter(Boolean).join(" / "), sementeUsada:sementeCalculada, status:document.getElementById("opStatus").value, statusEstoqueFinal:document.getElementById("opStatusEstoqueFinal").value, observacao:document.getElementById("opObservacao").value.trim(), consumo, baixaRealizada:false, usuarioAtualizacao:auth.currentUser?auth.currentUser.email:"", dataAtualizacao:new Date().toLocaleString("pt-BR")};
 if(!dados.variedade || !dados.lote){ alert("Informe variedade e lote da produção."); return; }
-if(dados.status === "Concluído" && Number(sementeBase.quantidadeKg||0) < sementeCalculada){ alert("Não é possível concluir: semente base insuficiente no estoque normal."); return; }
 if(dados.status === "Concluído" && consumo.some(c=>c.saldo<0)){ alert("Não é possível concluir: existe produto com estoque insuficiente."); return; }
 if(id){ await update(ref(db,"ordensIncrustacao/"+id),dados); if(dados.status === "Concluído") await concluirOrdemIncrustacao(id,dados); alert("Ordem atualizada com sucesso!"); }
 else{ dados.usuarioCadastro=auth.currentUser?auth.currentUser.email:""; dados.dataCadastro=new Date().toLocaleString("pt-BR"); const nova=await push(ref(db,"ordensIncrustacao"),dados); if(dados.status === "Concluído") await concluirOrdemIncrustacao(nova.key,dados); alert("Ordem salva com sucesso!"); }
@@ -1406,23 +1502,33 @@ cancelarEdicaoOrdemIncrustacao();
 
 async function concluirOrdemIncrustacao(idOrdem, ordem){
 if(ordem.baixaRealizada) return;
-const sementeBase = sementesCache[ordem.sementeBaseId];
-if(!sementeBase){ alert("Semente base não encontrada no estoque normal."); return; }
+let lotesBase = Array.isArray(ordem.lotesSementeBase) ? ordem.lotesSementeBase : [];
+if(!lotesBase.length && ordem.sementeBaseId){
+lotesBase = [{id:ordem.sementeBaseId, variedade:ordem.sementeBaseVariedade||"", lote:ordem.sementeBaseLote||"", kgUsado:Number(ordem.sementeUsada||0)}];
+}
+if(!lotesBase.length){ alert("Nenhum lote de semente base informado na OP."); return; }
+for(const lote of lotesBase){
+const sementeBase = sementesCache[lote.id];
+if(!sementeBase){ alert(`Semente base ${lote.lote || lote.id} não encontrada no estoque normal.`); return; }
 const estoqueSementeKg = Number(sementeBase.quantidadeKg || 0);
-const sementeNecessaria = Number(ordem.sementeUsada || 0);
-if(estoqueSementeKg < sementeNecessaria){ alert("Não é possível concluir: semente base insuficiente no estoque normal."); return; }
+const kgUsado = Number(lote.kgUsado || 0);
+if(estoqueSementeKg < kgUsado){ alert(`Não é possível concluir: semente base insuficiente no lote ${lote.lote || lote.id}.`); return; }
+}
 for(const c of ordem.consumo || []){
 const p=produtosIncrustacaoCache[c.produtoId];
 if(p){ await update(ref(db,"produtosIncrustacao/"+c.produtoId),{estoque:Number(p.estoque||0)-Number(c.necessario||0), dataAtualizacao:new Date().toLocaleString("pt-BR"), usuarioAtualizacao:auth.currentUser?auth.currentUser.email:""}); }
 }
-const novoKgSementeBase = estoqueSementeKg - sementeNecessaria;
-await update(ref(db,"sementes/"+ordem.sementeBaseId),{
+for(const lote of lotesBase){
+const sementeBase = sementesCache[lote.id];
+const novoKgSementeBase = Number(sementeBase.quantidadeKg || 0) - Number(lote.kgUsado || 0);
+await update(ref(db,"sementes/"+lote.id),{
 quantidadeKg: novoKgSementeBase,
 status: novoKgSementeBase <= 0 ? "Vendido" : (sementeBase.status || "Armazenada"),
 usuarioAtualizacao: auth.currentUser ? auth.currentUser.email : "",
 dataAtualizacao: new Date().toLocaleString("pt-BR")
 });
-await push(ref(db,"sementesIncrustadas"),{variedade:ordem.variedade,lote:ordem.lote,quadra:ordem.quadra,galpao:ordem.galpao,quantidadeKg:ordem.volumeFinal,status:ordem.statusEstoqueFinal||"Armazenada",ordemId:idOrdem,sementeBaseId:ordem.sementeBaseId,sementeBaseVariedade:ordem.sementeBaseVariedade||"",sementeBaseLote:ordem.sementeBaseLote||"",sementeUsada:ordem.sementeUsada||0,observacao:"Produzida via módulo de incrustamento. "+(ordem.observacao||""),usuarioCadastro:auth.currentUser?auth.currentUser.email:"",dataCadastro:new Date().toLocaleString("pt-BR")});
+}
+await push(ref(db,"sementesIncrustadas"),{variedade:ordem.variedade,lote:ordem.lote,quadra:ordem.quadra,galpao:ordem.galpao,quantidadeKg:ordem.volumeFinal,status:ordem.statusEstoqueFinal||"Armazenada",ordemId:idOrdem,lotesSementeBase:lotesBase,sementeBaseId:lotesBase[0]?.id||"",sementeBaseVariedade:lotesBase[0]?.variedade||"",sementeBaseLote:lotesBase.map(l=>l.lote).filter(Boolean).join(" / "),sementeUsada:ordem.sementeUsada||0,observacao:"Produzida via módulo de incrustamento. "+(ordem.observacao||""),usuarioCadastro:auth.currentUser?auth.currentUser.email:"",dataCadastro:new Date().toLocaleString("pt-BR")});
 await update(ref(db,"ordensIncrustacao/"+idOrdem),{baixaRealizada:true,dataConclusao:new Date().toLocaleString("pt-BR")});
 }
 
@@ -1430,10 +1536,67 @@ function carregarOrdensIncrustacao(){
 onValue(ref(db,"ordensIncrustacao"),(snapshot)=>{ ordensIncrustacaoCache={}; const tabela=document.getElementById("tabelaOrdensIncrustacao"); if(!tabela) return; tabela.innerHTML=""; snapshot.forEach(item=>{ const id=item.key; const op=item.val(); ordensIncrustacaoCache[id]=op; const cls=op.status==="Concluído"?"op-concluido":op.status==="Produzindo"?"op-produzindo":op.status==="Aguardando"?"op-aguardando":"op-espera"; const acoes = op.baixaRealizada ? `<span class="badge">Baixa realizada</span>` : `<button class="btn-edit" onclick="editarOrdemIncrustacao('${id}')">Editar</button><button class="btn-warning" onclick="marcarOrdemConcluida('${id}')">Concluir</button><button class="btn-danger" onclick="excluirOrdemIncrustacao('${id}')">Excluir</button>`; tabela.innerHTML+=`<tr><td>${op.variedade||""}</td><td>${op.lote||""}</td><td>${formatarNumeroBR(op.volumeFinal)}</td><td>${formatarNumeroBR(op.sementeUsada)}</td><td><span class="status-op ${cls}">${op.status||""}</span></td><td>${op.dataCadastro||op.dataAtualizacao||""}</td><td>${op.usuarioCadastro||op.usuarioAtualizacao||""}</td><td>${acoes}</td></tr>`; }); atualizarResumoIncrustacao(); });
 }
 
-window.editarOrdemIncrustacao = function(id){ const op=ordensIncrustacaoCache[id]; if(!op) return; if(op.baixaRealizada){ alert("Esta ordem já foi concluída e a baixa já foi realizada. Ela fica bloqueada para proteger o estoque."); return; } document.getElementById("idOrdemIncrustacaoEdicao").value=id; document.getElementById("opVariedade").value=op.variedade||""; document.getElementById("opLote").value=op.lote||""; document.getElementById("opQuadra").value=op.quadra||""; document.getElementById("opGalpao").value=op.galpao||""; if(document.getElementById("opSementeBaseId")){document.getElementById("opSementeBaseId").value=op.sementeBaseId||"";} document.getElementById("opVolumeFinal").value=op.volumeFinal||""; calcularSementeAutomatica(); document.getElementById("opStatus").value=op.status||"Em espera"; document.getElementById("opStatusEstoqueFinal").value=op.statusEstoqueFinal||"Armazenada"; document.getElementById("opObservacao").value=op.observacao||""; document.getElementById("btnSalvarOrdemIncrustacao").innerText="Atualizar Ordem"; document.getElementById("btnCancelarOrdemIncrustacao").classList.remove("hidden"); simularIncrustacao(); }
-window.cancelarEdicaoOrdemIncrustacao = function(){ ["idOrdemIncrustacaoEdicao","opVariedade","opLote","opQuadra","opGalpao","opVolumeFinal","opSementeUsada","opObservacao"].forEach(id=>document.getElementById(id).value=""); if(document.getElementById("opSementeBaseId")){document.getElementById("opSementeBaseId").value="";} document.getElementById("opStatus").value="Em espera"; document.getElementById("opStatusEstoqueFinal").value="Armazenada"; document.getElementById("resultadoSimulacaoIncrustacao").innerHTML=""; document.getElementById("btnSalvarOrdemIncrustacao").innerText="Salvar Ordem"; document.getElementById("btnCancelarOrdemIncrustacao").classList.add("hidden"); }
+window.editarOrdemIncrustacao = function(id){
+const op=ordensIncrustacaoCache[id];
+if(!op) return;
+if(op.baixaRealizada){ alert("Esta ordem já foi concluída e a baixa já foi realizada. Ela fica bloqueada para proteger o estoque."); return; }
+document.getElementById("idOrdemIncrustacaoEdicao").value=id;
+document.getElementById("opVariedade").value=op.variedade||"";
+document.getElementById("opLote").value=op.lote||"";
+document.getElementById("opQuadra").value=op.quadra||"";
+document.getElementById("opGalpao").value=op.galpao||"";
+document.getElementById("opVolumeFinal").value=op.volumeFinal||"";
+calcularSementeAutomatica();
+lotesSementeBaseSelecionados = Array.isArray(op.lotesSementeBase) ? op.lotesSementeBase.map(l=>({...l})) : [];
+if(!lotesSementeBaseSelecionados.length && op.sementeBaseId){
+const s = sementesCache[op.sementeBaseId] || {};
+lotesSementeBaseSelecionados = [{id:op.sementeBaseId,variedade:op.sementeBaseVariedade||s.variedade||"",lote:op.sementeBaseLote||s.lote||"",quadra:s.quadra||"",galpao:s.galpao||"",quantidadeKg:Number(s.quantidadeKg||0),kgUsado:Number(op.sementeUsada||0)}];
+}
+renderizarLotesSementeBase();
+document.getElementById("opStatus").value=op.status||"Em espera";
+document.getElementById("opStatusEstoqueFinal").value=op.statusEstoqueFinal||"Armazenada";
+document.getElementById("opObservacao").value=op.observacao||"";
+document.getElementById("btnSalvarOrdemIncrustacao").innerText="Atualizar Ordem";
+document.getElementById("btnCancelarOrdemIncrustacao").classList.remove("hidden");
+simularIncrustacao();
+}
+
+window.cancelarEdicaoOrdemIncrustacao = function(){
+["idOrdemIncrustacaoEdicao","opVariedade","opLote","opQuadra","opGalpao","opVolumeFinal","opSementeUsada","opObservacao","opSementeBaseKg"].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=""; });
+if(document.getElementById("opSementeBaseId")){document.getElementById("opSementeBaseId").value="";}
+lotesSementeBaseSelecionados = [];
+renderizarLotesSementeBase();
+document.getElementById("opStatus").value="Em espera";
+document.getElementById("opStatusEstoqueFinal").value="Armazenada";
+document.getElementById("resultadoSimulacaoIncrustacao").innerHTML="";
+document.getElementById("btnSalvarOrdemIncrustacao").innerText="Salvar Ordem";
+document.getElementById("btnCancelarOrdemIncrustacao").classList.add("hidden");
+}
+
 window.excluirOrdemIncrustacao = function(id){ if(confirm("Deseja excluir esta ordem? A exclusão não desfaz baixas já realizadas.")) remove(ref(db,"ordensIncrustacao/"+id)); }
-window.marcarOrdemConcluida = async function(id){ const op=ordensIncrustacaoCache[id]; if(!op) return; if(op.baixaRealizada){ alert("Esta ordem já foi concluída e a baixa já foi realizada."); return; } if(!confirm("Concluir produção, baixar produtos, baixar a semente base do estoque normal e lançar no estoque de sementes incrustadas?")) return; const sementeBase=sementesCache[op.sementeBaseId]; if(!sementeBase){ alert("Semente base não encontrada no estoque normal."); return; } if(Number(sementeBase.quantidadeKg||0) < Number(op.sementeUsada||0)){ alert("Não é possível concluir: semente base insuficiente no estoque normal."); return; } const consumo=(op.consumo||[]).map(c=>{ const p=produtosIncrustacaoCache[c.produtoId]||{}; return {...c, estoque:Number(p.estoque||0), saldo:Number(p.estoque||0)-Number(c.necessario||0)}; }); if(consumo.some(c=>c.saldo<0)){ alert("Não é possível concluir: existe produto com estoque insuficiente."); return; } op.consumo=consumo; op.status="Concluído"; await update(ref(db,"ordensIncrustacao/"+id),op); await concluirOrdemIncrustacao(id,op); alert("Produção concluída com sucesso!"); }
+
+window.marcarOrdemConcluida = async function(id){
+const op=ordensIncrustacaoCache[id];
+if(!op) return;
+if(op.baixaRealizada){ alert("Esta ordem já foi concluída e a baixa já foi realizada."); return; }
+if(!confirm("Concluir produção, baixar produtos, baixar os lotes de semente base do estoque normal e lançar no estoque de sementes incrustadas?")) return;
+let lotesBase = Array.isArray(op.lotesSementeBase) ? op.lotesSementeBase : [];
+if(!lotesBase.length && op.sementeBaseId){ lotesBase = [{id:op.sementeBaseId,lote:op.sementeBaseLote||"",kgUsado:Number(op.sementeUsada||0)}]; }
+if(!lotesBase.length){ alert("Esta OP não possui lote base informado."); return; }
+for(const lote of lotesBase){
+const sementeBase=sementesCache[lote.id];
+if(!sementeBase){ alert(`Semente base ${lote.lote || lote.id} não encontrada no estoque normal.`); return; }
+if(Number(sementeBase.quantidadeKg||0) < Number(lote.kgUsado||0)){ alert(`Não é possível concluir: semente base insuficiente no lote ${lote.lote || lote.id}.`); return; }
+}
+const consumo=(op.consumo||[]).map(c=>{ const p=produtosIncrustacaoCache[c.produtoId]||{}; return {...c, estoque:Number(p.estoque||0), saldo:Number(p.estoque||0)-Number(c.necessario||0)}; });
+if(consumo.some(c=>c.saldo<0)){ alert("Não é possível concluir: existe produto com estoque insuficiente."); return; }
+op.consumo=consumo;
+op.lotesSementeBase=lotesBase;
+op.status="Concluído";
+await update(ref(db,"ordensIncrustacao/"+id),op);
+await concluirOrdemIncrustacao(id,op);
+alert("Produção concluída com sucesso!");
+}
 
 function carregarSementesIncrustadas(){
 onValue(ref(db,"sementesIncrustadas"),(snapshot)=>{ sementesIncrustadasCache={}; const tabela=document.getElementById("tabelaSementesIncrustadas"); if(!tabela) return; tabela.innerHTML=""; snapshot.forEach(item=>{ const id=item.key; const s=item.val(); sementesIncrustadasCache[id]=s; tabela.innerHTML+=`<tr><td>${s.variedade||""}</td><td>${s.lote||""}</td><td>${s.quadra||""}</td><td>${s.galpao||""}</td><td>${formatarNumeroBR(s.quantidadeKg)}</td><td>${s.status||""}</td><td>${s.ordemId||""}</td><td>${s.dataCadastro||""}</td><td><button class="btn-danger" onclick="excluirSementeIncrustada('${id}')">Excluir</button></td></tr>`; }); atualizarResumoIncrustacao(); atualizarSelectVenda(); });
