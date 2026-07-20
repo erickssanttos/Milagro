@@ -1,1658 +1,807 @@
-
-
-
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AgroSeed</title>
+<title>Algodoeira - Sistema de Gestão de Pátio & ERP</title>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:Arial,sans-serif;background:#eef2f7;color:#333}
-header{background:linear-gradient(135deg,#1f7a3f,#15592d);color:white;padding:22px;text-align:center}
-.container{width:95%;max-width:1450px;margin:20px auto}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:#334155}
+header{background:linear-gradient(135deg,#1e3a8a,#0f172a);color:white;padding:20px;text-align:center;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1)}
+header h1{font-size:26px;letter-spacing:1px}
+header p{font-size:14px;color:#93c5fd;margin-top:4px}
+.container{width:96%;max-width:1600px;margin:25px auto}
 .hidden{display:none!important}
-.login-box{max-width:420px;margin:80px auto;background:white;padding:30px;border-radius:18px;box-shadow:0 4px 18px rgba(0,0,0,.12)}
-.login-box h2{text-align:center;color:#1f7a3f;margin-bottom:20px}
-.card,.card-info{background:white;border-radius:16px;padding:20px;margin-bottom:20px;box-shadow:0 2px 10px rgba(0,0,0,.08)}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:15px;margin-bottom:20px}
-.card-info h3{color:#666;margin-bottom:10px;font-size:15px}
-.card-info p{font-size:28px;font-weight:bold;color:#1f7a3f}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
-input,select,textarea{width:100%;padding:12px;border:1px solid #ccc;border-radius:10px;font-size:14px}
+
+/* Login */
+.login-box{max-width:400px;margin:100px auto;background:white;padding:35px;border-radius:16px;box-shadow:0 10px 25px -5px rgba(0,0,0,0.1)}
+.login-box h2{text-align:center;color:#1e3a8a;margin-bottom:25px}
+
+/* Cards & Layout */
+.card{background:white;border-radius:14px;padding:22px;margin-bottom:22px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05),0 2px 4px -1px rgba(0,0,0,0.06)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:22px}
+.card-info{background:white;border-radius:14px;padding:20px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);border-left:5px solid #1e3a8a}
+.card-info.pluma{border-left-color:#10b981}
+.card-info.caroco{border-left-color:#3b82f6}
+.card-info.fibrilha{border-left-color:#f59e0b}
+.card-info h3{color:#64748b;margin-bottom:8px;font-size:14px;text-transform:uppercase;letter-spacing:0.5px}
+.card-info p{font-size:26px;font-weight:bold;color:#1e293b}
+
+/* Formulários e Componentes */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+input,select,textarea{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;color:#334155;background:#fff;transition:border 0.2s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#3b82f6}
+input[readonly]{background:#f1f5f9;color:#64748b;cursor:not-allowed}
 textarea{resize:none}
-button{background:#1f7a3f;color:white;border:none;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:bold;margin:2px}
-button:hover{background:#15592d}
-.btn-danger{background:#d62828}
-.btn-edit{background:#0077b6}
-.btn-dark{background:#333}
-.btn-gray{background:#666}
-.top-bar{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
-.search{max-width:320px}
-table{width:100%;border-collapse:collapse;margin-top:10px}
-th{background:#1f7a3f;color:white;padding:12px;text-align:left;font-size:14px}
-td{padding:12px;border-bottom:1px solid #ddd;font-size:13px}
-tr:hover{background:#f6f6f6}
-.status{padding:6px 10px;border-radius:20px;font-size:12px;font-weight:bold;color:white}
-.armazenada{background:#1f7a3f}
-.venda{background:#0077b6}
-.bloqueada{background:#d62828}
-.vendido{background:#555}
-.user-area{text-align:right;margin-top:10px}
-@media(max-width:768px){table{display:block;overflow-x:auto}.user-area{text-align:center}.top-bar{flex-direction:column;align-items:stretch}}
 
-.report-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#e8f5ee;color:#15592d;font-size:12px;font-weight:bold}
-.chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
-.chart-box{background:#f9fafb;border:1px solid #e5e7eb;border-radius:14px;padding:14px}
-.bar-row{display:grid;grid-template-columns:110px 1fr 70px;gap:8px;align-items:center;margin:8px 0;font-size:13px}
-.bar-wrap{background:#e5e7eb;border-radius:999px;height:14px;overflow:hidden}
-.bar-fill{height:100%;background:#1f7a3f;border-radius:999px}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:flex-start;justify-content:center;padding:30px;z-index:9999;overflow:auto}
-.modal-content{background:white;width:100%;max-width:1200px;border-radius:16px;padding:22px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-.modal-header{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:15px}
-.small-note{font-size:12px;color:#666;margin-top:6px}
-.kpi-line{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
-.kpi-line span{background:#eef2f7;border-radius:10px;padding:8px 10px;font-weight:bold;color:#15592d}
-.filtros-box{background:#f9fafb;border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin:12px 0}
-.filtros-box h3{margin-bottom:10px;color:#15592d}
-@page{size:A4 landscape;margin:10mm}
-@media print{
-  body *{visibility:hidden}
-  #relatorioModal,#relatorioModal *{visibility:visible}
-  #relatorioModal{position:absolute;inset:0;background:white;padding:0;overflow:visible}
-  .modal-content{box-shadow:none;border-radius:0;max-width:100%;width:100%;padding:8px}
-  .no-print{display:none!important}
-  #relatorioConteudo{font-size:10px;color:#111}
-  #relatorioConteudo h1{font-size:18px;margin-bottom:6px}
-  #relatorioConteudo p{margin:3px 0}
-  #relatorioConteudo .kpi-line{gap:5px;margin:6px 0}
-  #relatorioConteudo .kpi-line span{padding:5px 6px;font-size:10px}
-  #relatorioConteudo table{width:100%;border-collapse:collapse;table-layout:fixed;page-break-inside:auto}
-  #relatorioConteudo tr{page-break-inside:avoid;page-break-after:auto}
-  #relatorioConteudo th,#relatorioConteudo td{font-size:8.5px;padding:4px;border:1px solid #ccc;white-space:normal;word-break:break-word;overflow-wrap:anywhere}
-  #relatorioConteudo th{background:#1f7a3f!important;color:white!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-}
+/* Botões */
+button{background:#1e3a8a;color:white;border:none;padding:11px 16px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;transition:background 0.2s}
+button:hover{background:#1d4ed8}
+.btn-danger{background:#ef4444}
+.btn-danger:hover{background:#dc2626}
+.btn-edit{background:#0ea5e9}
+.btn-edit:hover{background:#0284c7}
+.btn-dark{background:#334155}
+.btn-dark:hover{background:#1e293b}
+.btn-gray{background:#94a3b8}
+.btn-gray:hover{background:#64748b}
+.btn-success{background:#10b981}
+.btn-success:hover{background:#059669}
 
-/* ===== MÓDULO DE INCRUSTAÇÃO - ADICIONADO SEM ALTERAR O SISTEMA EXISTENTE ===== */
-.status-op{padding:6px 10px;border-radius:20px;font-size:12px;font-weight:bold;color:white;display:inline-block}
-.op-espera{background:#666}.op-produzindo{background:#0077b6}.op-aguardando{background:#f77f00}.op-concluido{background:#1f7a3f}.op-cancelado{background:#d62828}
-.ok-estoque{color:#1f7a3f;font-weight:bold}.falta-estoque{color:#d62828;font-weight:bold}.saldo-negativo{background:#ffe5e5}.saldo-positivo{background:#e8f5ee}
-.modulo-incrustacao h2{color:#15592d}.subcard{background:#f9fafb;border:1px solid #e5e7eb;border-radius:14px;padding:14px;margin:12px 0}
-.btn-warning{background:#f77f00}.btn-warning:hover{background:#c96000}
-input[readonly]{background:#f1f5f9;color:#15592d;font-weight:bold;cursor:not-allowed}
+.top-bar{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap;align-items:center;margin-bottom:15px}
+.search{max-width:350px}
 
-.menu-abas{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 20px 0;background:white;padding:12px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.08);position:sticky;top:0;z-index:20}
-.aba-btn{background:#e8f5ee;color:#15592d;border:1px solid #cfe8d8}
-.aba-btn:hover,.aba-btn.ativa{background:#1f7a3f;color:white}
+/* Tabelas */
+table{width:100%;border-collapse:separate;border-spacing:0;margin-top:12px;border-radius:8px;overflow:hidden;border:1px solid #e2e8f0}
+th{background:#f8fafc;color:#475569;padding:14px;text-align:left;font-size:13px;font-weight:600;border-bottom:2px solid #e2e8f0}
+td{padding:14px;border-bottom:1px solid #e2e8f0;font-size:13.5px;background:#fff}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f8fafc}
+
+/* Status Badges */
+.status{padding:5px 10px;border-radius:12px;font-size:11px;font-weight:700;text-transform:uppercase}
+.status.pluma{background:#d1fae5;color:#065f46}
+.status.caroco{background:#dbeafe;color:#1e40af}
+.status.fibrilha{background:#fef3c7;color:#92400e}
+.status.livre{background:#f1f5f9;color:#475569}
+.status.carregado{background:#e2e8f0;color:#1e293b}
+
+.user-area{text-align:right;margin-top:8px}
+.badge{display:inline-block;padding:6px 12px;border-radius:20px;background:#dbeafe;color:#1e40af;font-size:12px;font-weight:bold}
+.small-note{font-size:12px;color:#64748b;margin-top:6px}
+
+/* Abas de Navegação */
+.menu-abas{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 25px 0;background:white;padding:12px;border-radius:14px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);position:sticky;top:0;z-index:100}
+.aba-btn{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}
+.aba-btn:hover,.aba-btn.ativa{background:#1e3a8a;color:white;border-color:#1e3a8a}
 .aba-setor{display:none}
 .aba-setor.ativa{display:block}
 
+/* Croqui Estilizado do Pátio */
+.patio-layout{display:grid;grid-template-columns:3fr 1fr;gap:20px;align-items:start}
+.grid-patio{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;background:#f8fafc;padding:20px;border-radius:12px;border:1px dashed #cbd5e1}
+.bloco-patio{background:white;border:2px solid #e2e8f0;border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:all 0.2s}
+.bloco-patio:hover{transform:translateY(-3px);box-shadow:0 10px 15px -3px rgba(0,0,0,0.05)}
+.bloco-patio.p-pluma{border-color:#10b981;background:#f0fdf4}
+.bloco-patio.p-caroco{border-color:#3b82f6;background:#eff6ff}
+.bloco-patio.p-fibrilha{border-color:#f59e0b;background:#fffbeb}
+.bloco-patio.p-livre{border-color:#cbd5e1;background:#fafafa;color:#94a3b8}
+.bloco-nome{font-weight:bold;font-size:16px;color:#1e293b;display:block;margin-bottom:4px}
+.bloco-meta{font-size:12px;color:#64748b}
+
+.split-detail{border:2px solid #1e3a8a}
+
+@media(max-width:992px){.patio-layout{grid-template-columns:1fr}}
+@mediamax-width:768px.top-bar{flex-direction:column;align-items:stretch}}
 </style>
 </head>
 
 <body>
 
 <header>
-<h1>AgroSeed</h1>
-<p>Sistema Integrado de Gestão de Sementes</p>
-<div id="areaUsuario" class="user-area hidden">
-<span id="usuarioLogado"></span>
-<button class="btn-dark" onclick="sair()">Sair</button>
-</div>
+  <h1>Algodoeira ERP & Yard Management</h1>
+  <p>Controle de Produção, Armazenamento Geográfico e Expedição de Lotes</p>
+  <div id="areaUsuario" class="user-area hidden">
+    <span id="usuarioLogado"></span>
+    <button class="btn-dark" onclick="sair()">Sair</button>
+  </div>
 </header>
 
+<!-- Tela de Login -->
 <div id="loginTela" class="login-box">
-<h2>Login do Sistema</h2>
-<input type="email" id="emailLogin" placeholder="E-mail">
-<br><br>
-<input type="password" id="senhaLogin" placeholder="Senha">
-<br><br>
-<button onclick="entrar()">Entrar</button>
+  <h2>Acesso ao Sistema</h2>
+  <input type="email" id="emailLogin" placeholder="E-mail Funcional">
+  <br><br>
+  <input type="password" id="senhaLogin" placeholder="Senha de Acesso">
+  <br><br>
+  <button style="width:100%" onclick="entrar()">Entrar no Sistema</button>
 </div>
 
+<!-- Interface Principal do Sistema -->
 <div id="sistemaTela" class="container hidden">
 
-<div class="menu-abas">
-<button class="aba-btn ativa" onclick="abrirAbaSistema('abaDashboard', this)">Dashboard</button>
-<button class="aba-btn" onclick="abrirAbaSistema('abaCadastroSementes', this)">Cadastro de Sementes</button>
-<button class="aba-btn" onclick="abrirAbaSistema('abaEstoqueSementes', this)">Estoque de Sementes</button>
-<button class="aba-btn" onclick="abrirAbaSistema('abaVendas', this)">Vendas</button>
-<button class="aba-btn" onclick="abrirAbaSistema('abaProdutosIncrustacao', this)">Produtos de Incrustamento</button>
-<button class="aba-btn" onclick="abrirAbaSistema('abaOrdensIncrustacao', this)">Ordens de Produção</button>
-<button class="aba-btn" onclick="abrirAbaSistema('abaSementesIncrustadas', this)">Sementes Incrustadas</button>
-</div>
+  <!-- Menu Unificado de Processos -->
+  <div class="menu-abas">
+    <button class="aba-btn ativa" onclick="abrirAbaSistema('abaDashboard', this)">Dashboard Operacional</button>
+    <button class="aba-btn" onclick="abrirAbaSistema('abaProducao', this)">Entrada & Produção</button>
+    <button class="aba-btn" onclick="abrirAbaSistema('abaCroqui', this)">Mapa do Pátio (Croqui)</button>
+    <button class="aba-btn" onclick="abrirAbaSistema('abaExpedicao', this)">Ordem de Carregamento</button>
+  </div>
 
+  <!-- Aba 1: Dashboard -->
+  <div id="abaDashboard" class="aba-setor ativa">
+    <div class="cards">
+      <div class="card-info pluma"><h3>Fardos de Pluma</h3><p id="dashFardosPluma">0</p></div>
+      <div class="card-info caroco"><h3>Fardos de Caroço</h3><p id="dashFardosCaroco">0</p></div>
+      <div class="card-info fibrilha"><h3>Fardos de Fibrilha</h3><p id="dashFardosFibrilha">0</p></div>
+      <div class="card-info"><h3>Ocupação do Pátio</h3><p id="dashOcupacaoPatio">0%</p></div>
+      <div class="card-info"><h3>Caminhões no Pátio</h3><p id="dashCaminhoesAguardando">0</p></div>
+    </div>
 
-<div id="abaDashboard" class="aba-setor ativa">
-<div class="cards">
-<div class="card-info"><h3>Total de Lotes</h3><p id="totalRegistros">0</p></div>
-<div class="card-info"><h3>Total em Embalagens</h3><p id="totalQuantidade">0</p></div>
-<div class="card-info"><h3>Total em Kg</h3><p id="totalKg">0</p></div>
-<div class="card-info"><h3>Prontas para Venda</h3><p id="totalProntas">0</p></div>
-<div class="card-info"><h3>Total Vendido</h3><p id="totalVendido">0</p></div>
-</div>
+    <div class="card">
+      <h2>Resumo de Volumes Totais (Kg)</h2>
+      <div class="grid" style="margin-top:15px;">
+        <div style="background:#f8fafc; padding:15px; border-radius:8px; text-align:center;">
+          <h4 style="color:#64748b; font-size:13px;">PESO TOTAL PLUMA</h4>
+          <p style="font-size:22px; font-weight:bold; color:#10b981;" id="dashPesoPluma">0 Kg</p>
+        </div>
+        <div style="background:#f8fafc; padding:15px; border-radius:8px; text-align:center;">
+          <h4 style="color:#64748b; font-size:13px;">PESO TOTAL CAROÇO</h4>
+          <p style="font-size:22px; font-weight:bold; color:#3b82f6;" id="dashPesoCaroco">0 Kg</p>
+        </div>
+        <div style="background:#f8fafc; padding:15px; border-radius:8px; text-align:center;">
+          <h4 style="color:#64748b; font-size:13px;">PESO TOTAL FIBRILHA</h4>
+          <p style="font-size:22px; font-weight:bold; color:#f59e0b;" id="dashPesoFibrilha">0 Kg</p>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<div class="card">
-<div class="top-bar">
-<h2>Ferramentas e Relatórios</h2>
-<span class="badge">Versão completa</span>
-</div>
+  <!-- Aba 2: Entrada e Produção -->
+  <div id="abaProducao" class="aba-setor">
+    <div class="card">
+      <h2 id="tituloFormProducao">Registrar Lote Produzido</h2>
+      <input type="hidden" id="idEdicaoProducao">
+      
+      <div class="grid style-form" style="margin-top:15px;">
+        <div>
+          <label class="small-note">Identificação do Lote</label>
+          <input type="text" id="prodLote" placeholder="Ex: LOTE-2026-01">
+        </div>
+        <div>
+          <label class="small-note">Tipo de Produto</label>
+          <select id="prodTipo">
+            <option value="Pluma">Pluma</option>
+            <option value="Caroço">Caroço</option>
+            <option value="Fibrilha">Fibrilha</option>
+          </select>
+        </div>
+        <div>
+          <label class="small-note">Quantidade de Fardos</label>
+          <input type="number" id="prodFardos" placeholder="Quantidade de fardos">
+        </div>
+        <div>
+          <label class="small-note">Peso Líquido Balança (Kg)</label>
+          <input type="number" id="prodPeso" placeholder="Peso total em Kg">
+        </div>
+        <div>
+          <label class="small-note">Posição Inicial de Emblocamento</label>
+          <select id="prodPosicaoPatio">
+            <!-- Posições injetadas via JS -->
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:15px;">
+        <label class="small-note">Observações da Prensa / Classificação</label>
+        <textarea id="prodObs" rows="2" placeholder="Notas adicionais sobre o lote..."></textarea>
+      </div>
+      <br>
+      <button onclick="salvarLoteProducao()" id="btnSalvarProducao">Salvar no Estoque</button>
+      <button onclick="cancelarEdicaoProducao()" id="btnCancelarProducao" class="btn-danger hidden">Cancelar</button>
+    </div>
 
-<div class="filtros-box">
-<h3>Relatório filtrado por variedade</h3>
-<div class="grid">
-<select id="filtroRelatorioVariedade">
-<option value="">Todas as variedades</option>
-</select>
-<select id="filtroRelatorioGalpao">
-<option value="">Todos os galpões</option>
-</select>
-<button onclick="gerarRelatorioEstoque()">Gerar Relatório de Estoque / PDF</button>
-<button onclick="gerarRelatorioVendas()">Relatório de Vendas / PDF</button>
-</div>
-<p class="small-note">Escolha uma variedade e/ou um galpão para gerar relatório específico. Deixe em branco para relatório completo.</p>
-</div>
+    <div class="card">
+      <h2>Lotes Armazenados no Pátio</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Lote</th>
+            <th>Tipo</th>
+            <th>Fardos</th>
+            <th>Peso (Kg)</th>
+            <th>Posição</th>
+            <th>Data Registro</th>
+            <th>Operador</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaLotesEstoque"></tbody>
+      </table>
+    </div>
+  </div>
 
-<div class="report-actions">
-<button onclick="exportarCSV('estoque')">Exportar Estoque CSV</button>
-<button onclick="exportarCSV('vendas')">Exportar Vendas CSV</button>
-<button onclick="fazerBackup()">Backup JSON</button>
-<button class="btn-gray" onclick="restaurarBackupPrompt()">Restaurar Backup</button>
-</div>
-<p class="small-note">PDF: abra o relatório e escolha “Imprimir / Salvar PDF”. CSV abre no Excel.</p>
-</div>
+  <!-- Aba 3: Croqui Interativo do Pátio -->
+  <div id="abaCroqui" class="aba-setor">
+    <div class="card">
+      <div class="top-bar">
+        <h2>Mapa Físico do Pátio (YMS)</h2>
+        <span class="badge">Ocupação Espacial Dinâmica</span>
+      </div>
+      <p class="small-note" style="margin-bottom:15px;">Clique sobre as quadras operacionais para inspecionar o lote ou fazer movimentações de estoque.</p>
+      
+      <div class="patio-layout">
+        <!-- Grid de Quadras -->
+        <div class="grid-patio" id="containerMapaPatio">
+          <!-- Gerado de forma dinâmica via JavaScript -->
+        </div>
 
-<div class="card">
-<h2>Dashboard por Galpão e Status</h2>
-<div class="chart-grid">
-<div class="chart-box">
-<h3>Estoque por Galpão</h3>
-<div id="graficoGalpao"></div>
-</div>
-<div class="chart-box">
-<h3>Lotes por Status</h3>
-<div id="graficoStatus"></div>
-</div>
-<div class="chart-box">
-<h3>Kg por Tipo de Embalagem</h3>
-<div id="graficoEmbalagem"></div>
-</div>
-</div>
-</div>
-<div class="card modulo-incrustacao">
-<div class="top-bar"><h2>Resumo do Incrustamento</h2><span class="badge">Módulo separado</span></div>
-<p class="small-note">Resumo dos produtos, ordens e sementes incrustadas. Use o menu acima para abrir cada setor.</p>
-<div class="cards">
-<div class="card-info"><h3>Produtos Cadastrados</h3><p id="totalProdutosIncrustacao">0</p></div>
-<div class="card-info"><h3>Ordens de Produção</h3><p id="totalOrdensIncrustacao">0</p></div>
-<div class="card-info"><h3>Kg Incrustados</h3><p id="totalKgIncrustado">0</p></div>
-<div class="card-info"><h3>OPs Pendentes</h3><p id="totalOpsPendentes">0</p></div>
-</div>
-</div>
-</div>
+        <!-- Painel Lateral de Inspeção -->
+        <div class="card split-detail" id="painelInspecaoPatio">
+          <h3 style="color:#1e3a8a;">Inspeção de Área</h3>
+          <hr style="margin:12px 0; border:0; border-top:1px solid #e2e8f0;">
+          <div id="conteudoInspecaoPatio">
+            <p style="color:#64748b; text-align:center; padding:30px 0;">Selecione um bloco no croqui para exibir as métricas de rastreabilidade.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<div id="abaCadastroSementes" class="aba-setor">
-<div class="card">
-<h2 id="tituloFormulario">Cadastro de Sementes</h2>
-<input type="hidden" id="idEdicao">
+  <!-- Aba 4: Expedição & Carregamento -->
+  <div id="abaExpedicao" class="aba-setor">
+    <div class="card">
+      <h2>Ordem de Carregamento & Faturamento</h2>
+      <div class="grid" style="margin-top:15px;">
+        <div>
+          <label class="small-note">Cliente de Destino</label>
+          <input type="text" id="expCliente" placeholder="Nome do Cliente / Trading">
+        </div>
+        <div>
+          <label class="small-note">Nome do Motorista</label>
+          <input type="text" id="expMotorista" placeholder="Nome completo">
+        </div>
+        <div>
+          <label class="small-note">Placa do Caminhão</label>
+          <input type="text" id="expCaminhao" placeholder="Placa do veículo">
+        </div>
+        <div>
+          <label class="small-note">Número da Nota Fiscal (NF)</label>
+          <input type="text" id="expNF" placeholder="Número da NF-e">
+        </div>
+        <div>
+          <label class="small-note">Lote para Carregamento</label>
+          <select id="expLoteSelec" onchange="atualizarDadosLoteExpedicao()">
+            <option value="">Selecione um lote disponível...</option>
+          </select>
+        </div>
+        <div>
+          <label class="small-note">Volume do Lote (KG)</label>
+          <input type="text" id="expPesoDisponivel" readonly placeholder="Aguardando seleção">
+        </div>
+      </div>
+      <br>
+      <button onclick="registrarExpedicaoCarga()" class="btn-success">Autorizar Saída e Baixar Estoque</button>
+    </div>
 
-<div class="grid">
-<input type="text" id="variedade" placeholder="Variedade">
-<input type="text" id="lote" placeholder="Lote">
-<input type="text" id="quadra" placeholder="Quadra">
-
-<select id="galpao">
-<option value="">Selecione o Galpão</option>
-<option>Galpão 1</option>
-<option>Galpão 2</option>
-<option>Galpão 3</option>
-<option>Galpão 4</option>
-</select>
-
-<input type="number" id="quantidade" placeholder="Quantidade de embalagens">
-<input type="number" id="quantidadeKg" placeholder="Quantidade em Kg">
-
-<select id="tipoEmbalagem">
-<option value="">Tipo de embalagem</option>
-<option>Bigbag</option>
-<option>Sacaria de rafia</option>
-</select>
-
-<input type="text" id="pureza" placeholder="Pureza (%)">
-<input type="text" id="tz" placeholder="TZ (%)">
-
-<select id="status">
-<option>Armazenada</option>
-<option>Pronta para venda</option>
-<option>Bloqueada</option>
-<option>Vendido</option>
-</select>
-</div>
-
-<br>
-<textarea id="observacao" rows="3" placeholder="Observações, contaminação ou ajustes"></textarea>
-<br><br>
-
-<button onclick="salvarSemente()" id="btnSalvar">Salvar Semente</button>
-<button onclick="cancelarEdicao()" id="btnCancelar" class="btn-danger hidden">Cancelar Edição</button>
-</div>
-</div>
-
-<div id="abaEstoqueSementes" class="aba-setor">
-<div class="card">
-<div class="top-bar">
-<h2>Estoque de Sementes</h2>
-<input type="text" id="buscaEstoque" class="search" placeholder="Buscar geral no estoque..." onkeyup="aplicarFiltrosEstoque()">
-</div>
-
-<div class="filtros-box">
-<h3>Filtros avançados do estoque</h3>
-<div class="grid">
-<input type="text" id="filtroVariedadeEstoque" placeholder="Filtrar por variedade" onkeyup="aplicarFiltrosEstoque()">
-<input type="text" id="filtroPurezaEstoque" placeholder="Filtrar por pureza" onkeyup="aplicarFiltrosEstoque()">
-<input type="text" id="filtroTzEstoque" placeholder="Filtrar por TZ" onkeyup="aplicarFiltrosEstoque()">
-<select id="filtroEmbalagemEstoque" onchange="aplicarFiltrosEstoque()">
-<option value="">Todas as embalagens</option>
-<option>Bigbag</option>
-<option>Sacaria de rafia</option>
-</select>
-<button class="btn-gray" onclick="limparFiltrosEstoque()">Limpar Filtros</button>
-</div>
-</div>
-
-<table>
-<thead>
-<tr>
-<th>Variedade</th>
-<th>Lote</th>
-<th>Quadra</th>
-<th>Galpão</th>
-<th>Emb.</th>
-<th>Kg</th>
-<th>Tipo Embalagem</th>
-<th>Pureza</th>
-<th>TZ</th>
-<th>Status</th>
-<th>Ações</th>
-</tr>
-</thead>
-<tbody id="tabelaEstoque"></tbody>
-</table>
-</div>
-</div>
-
-<div id="abaVendas" class="aba-setor">
-<div class="card">
-<h2>Registrar Venda com Baixa de Estoque</h2>
-
-<div class="grid">
-<input type="text" id="clienteVenda" placeholder="Cliente">
-<select id="tipoProdutoVenda" onchange="atualizarSelectVenda()">
-<option value="sementes">Semente normal</option>
-<option value="sementesIncrustadas">Semente incrustada</option>
-</select>
-<select id="sementeVenda">
-<option value="">Selecione o lote vendido</option>
-</select>
-<input type="number" id="quantidadeVenda" placeholder="Quantidade de embalagens vendida">
-<input type="number" id="quantidadeKgVenda" placeholder="Quantidade em Kg vendida">
-<input type="date" id="dataVenda">
-</div>
-
-<br>
-<textarea id="observacaoVenda" rows="3" placeholder="Observação da venda"></textarea>
-<br><br>
-
-<button onclick="registrarVenda()">Registrar Venda e Dar Baixa</button>
-</div>
-<div class="card">
-<div class="top-bar">
-<h2>Histórico de Vendas</h2>
-<input type="text" id="buscaVendas" class="search" placeholder="Buscar vendas..." onkeyup="filtrarTabela('buscaVendas','tabelaVendas')">
-</div>
-
-<table>
-<thead>
-<tr>
-<th>Cliente</th>
-<th>Tipo</th>
-<th>Variedade</th>
-<th>Lote</th>
-<th>Emb. Vendida</th>
-<th>Kg Vendido</th>
-<th>Data</th>
-<th>Usuário</th>
-<th>Observação</th>
-<th>Ação</th>
-</tr>
-</thead>
-<tbody id="tabelaVendas"></tbody>
-</table>
-</div>
-</div>
-
-<div id="abaProdutosIncrustacao" class="aba-setor">
-<div class="card modulo-incrustacao">
-<div class="top-bar"><h2>Produtos de Incrustamento</h2><span class="badge">Estoque físico dos insumos</span></div>
-<p class="small-note">Cadastre aqui os produtos, dose por kg produzido e estoque físico disponível.</p>
-<div class="subcard">
-<h3>1. Estoque de Produtos do Incrustamento</h3>
-<input type="hidden" id="idProdutoIncrustacaoEdicao">
-<div class="grid">
-<input type="text" id="produtoIncrustacaoNome" placeholder="Nome do produto">
-<select id="produtoIncrustacaoUnidade">
-<option value="KG">KG - Quilograma</option>
-<option value="G">G - Grama</option>
-<option value="L">L - Litro</option>
-<option value="ML">mL - Mililitro</option>
-</select>
-<input type="number" step="0.001" id="produtoIncrustacaoDose" placeholder="Dose">
-<select id="produtoIncrustacaoUnidadeDose">
-<option value="KG">kg/kg produzido</option>
-<option value="G">g/kg produzido</option>
-<option value="L">L/kg produzido</option>
-<option value="ML">mL/kg produzido</option>
-</select>
-<input type="number" step="0.001" id="produtoIncrustacaoEstoque" placeholder="Estoque atual">
-<input type="number" step="0.001" id="produtoIncrustacaoEstoqueMinimo" placeholder="Estoque mínimo">
-<input type="text" id="produtoIncrustacaoFornecedor" placeholder="Fornecedor">
-</div>
-<br>
-<textarea id="produtoIncrustacaoObs" rows="2" placeholder="Observação do produto"></textarea>
-<br><br>
-<button onclick="salvarProdutoIncrustacao()" id="btnSalvarProdutoIncrustacao">Salvar Produto</button>
-<button onclick="carregarReceitaPadraoIncrustacao()" class="btn-edit">Carregar Receita Padrão</button>
-<button onclick="cancelarEdicaoProdutoIncrustacao()" id="btnCancelarProdutoIncrustacao" class="btn-danger hidden">Cancelar Edição</button>
-
-<table>
-<thead>
-<tr>
-<th>Produto</th><th>Unid. Estoque</th><th>Dose</th><th>Estoque</th><th>Pode Produzir</th><th>Estoque Mín.</th><th>Fornecedor</th><th>Status</th><th>Ações</th>
-</tr>
-</thead>
-<tbody id="tabelaProdutosIncrustacao"></tbody>
-</table>
-</div>
-</div>
-</div>
-
-<div id="abaOrdensIncrustacao" class="aba-setor">
-<div class="card modulo-incrustacao">
-<div class="top-bar"><h2>Ordens de Produção</h2><span class="badge">Produção incrustada</span></div>
-<p class="small-note">Simule o consumo, salve a OP e conclua para baixar os insumos e lançar no estoque separado de sementes incrustadas.</p>
-<div class="subcard">
-<h3>2. Simulador e Ordem de Produção</h3>
-<input type="hidden" id="idOrdemIncrustacaoEdicao">
-<div class="grid">
-<input type="text" id="opVariedade" placeholder="Variedade da semente incrustada">
-<input type="text" id="opLote" placeholder="Lote da produção">
-<input type="text" id="opQuadra" placeholder="Quadra / identificação">
-<input type="text" id="opGalpao" placeholder="Galpão / local">
-<select id="opSementeBaseId">
-<option value="">Selecione o lote da semente base</option>
-</select>
-<input type="number" step="0.001" id="opSementeBaseKg" placeholder="Kg deste lote para usar">
-<button type="button" onclick="adicionarLoteSementeBase()">Adicionar Lote Base</button>
-<input type="number" step="0.001" id="opVolumeFinal" placeholder="Volume final a produzir em KG" oninput="calcularSementeAutomatica()">
-<input type="number" step="0.001" id="opSementeUsada" placeholder="Kg de semente calculada automaticamente" readonly>
-<select id="opStatus">
-<option>Em espera</option>
-<option>Produzindo</option>
-<option>Aguardando</option>
-<option>Concluído</option>
-</select>
-<select id="opStatusEstoqueFinal">
-<option>Armazenada</option>
-<option>Pronta para venda</option>
-<option>Bloqueada</option>
-</select>
-</div>
-<div class="subcard" style="margin-top:12px">
-<h3>Lotes de semente base selecionados</h3>
-<p class="small-note">Adicione um ou mais lotes e informe quantos kg de cada lote serão usados na OP.</p>
-<table>
-<thead><tr><th>Variedade</th><th>Lote</th><th>Kg Disponível</th><th>Kg Usado</th><th>Ação</th></tr></thead>
-<tbody id="tabelaLotesSementeBase"></tbody>
-</table>
-<div id="resumoLotesSementeBase" class="small-note"></div>
-</div>
-<br>
-<textarea id="opObservacao" rows="2" placeholder="Observações da ordem de produção"></textarea>
-<br><br>
-<button onclick="simularIncrustacao()">Simular Consumo</button>
-<button onclick="salvarOrdemIncrustacao()" id="btnSalvarOrdemIncrustacao">Salvar Ordem</button>
-<button onclick="cancelarEdicaoOrdemIncrustacao()" id="btnCancelarOrdemIncrustacao" class="btn-danger hidden">Cancelar Edição</button>
-<button onclick="gerarRelatorioIncrustacao()" class="btn-edit">Relatório / PDF</button>
-<button onclick="exportarCSVIncrustacao()" class="btn-gray">Exportar CSV</button>
-<p class="small-note">Ao marcar uma ordem como Concluído, o sistema baixa os produtos, baixa os lotes de semente base selecionados do estoque normal e lança automaticamente no estoque separado de sementes incrustadas.</p>
-<p class="small-note"><strong>Semente base:</strong> selecione um ou mais lotes do estoque normal e informe quantos kg serão usados de cada lote. A necessidade total é calculada automaticamente pelo volume final usando a dose do item “Semente”.</p>
-
-<div id="resultadoSimulacaoIncrustacao"></div>
-</div>
-<div class="subcard">
-<h3>3. Ordens de Produção</h3>
-<table>
-<thead>
-<tr>
-<th>Variedade</th><th>Lote</th><th>Volume Final Kg</th><th>Semente Kg</th><th>Status</th><th>Data</th><th>Usuário</th><th>Ações</th>
-</tr>
-</thead>
-<tbody id="tabelaOrdensIncrustacao"></tbody>
-</table>
-</div>
-</div>
-</div>
-
-<div id="abaSementesIncrustadas" class="aba-setor">
-<div class="card modulo-incrustacao">
-<div class="top-bar"><h2>Estoque de Sementes Incrustadas</h2><span class="badge">Separado do estoque normal</span></div>
-<p class="small-note">Aqui aparecem apenas as sementes produzidas pela incrustamento.</p>
-<div class="subcard">
-<h3>4. Estoque Separado de Sementes Incrustadas</h3>
-<table>
-<thead>
-<tr>
-<th>Variedade</th><th>Lote</th><th>Quadra</th><th>Galpão</th><th>Kg</th><th>Status</th><th>Origem OP</th><th>Data</th><th>Ações</th>
-</tr>
-</thead>
-<tbody id="tabelaSementesIncrustadas"></tbody>
-</table>
-</div>
-</div>
+    <div class="card">
+      <h2>Histórico de Cargas Despachadas (Logística)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Lote</th>
+            <th>Tipo</th>
+            <th>Peso (Kg)</th>
+            <th>Motorista</th>
+            <th>Placa</th>
+            <th>NF</th>
+            <th>Data Saída</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaHistoricoExpedicao"></tbody>
+      </table>
+    </div>
+  </div>
 
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
+// Próximo passo: Injeção da Engine do Firebase e Lógica de Negócios da Algodoeira
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
-getDatabase,
-ref,
-push,
-onValue,
-update,
-remove,
-get
+  getDatabase,
+  ref,
+  push,
+  onValue,
+  update,
+  remove,
+  get
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
 import {
-getAuth,
-signInWithEmailAndPassword,
-onAuthStateChanged,
-signOut
+  getAuth,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+// Configuração do Banco de Dados da Algodoeira (Mantendo suas credenciais originais)
 const firebaseConfig = {
-apiKey: "AIzaSyALJOAPzmil3tTmv6f3kMGYQX1Oc61t0F4",
-authDomain: "milagro-172c5.firebaseapp.com",
-databaseURL: "https://milagro-172c5-default-rtdb.firebaseio.com",
-projectId: "milagro-172c5",
-storageBucket: "milagro-172c5.firebasestorage.app",
-messagingSenderId: "923027654375",
-appId: "1:923027654375:web:d9e24bec8e48d304438442",
-measurementId: "G-CVWBH7LJM5"
+  apiKey: "AIzaSyALJOAPzmil3tTmv6f3kMGYQX1Oc61t0F4",
+  authDomain: "milagro-172c5.firebaseapp.com",
+  databaseURL: "https://milagro-172c5-default-rtdb.firebaseio.com",
+  projectId: "milagro-172c5",
+  storageBucket: "milagro-172c5.firebasestorage.app",
+  messagingSenderId: "923027654375",
+  appId: "1:923027654375:web:d9e24bec8e48d304438442",
+  measurementId: "G-CVWBH7LJM5"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-let sementesCache = {};
-let vendasCache = {};
-let produtosIncrustacaoCache = {};
-let ordensIncrustacaoCache = {};
-let sementesIncrustadasCache = {};
-let ultimaSimulacaoIncrustacao = [];
-let lotesSementeBaseSelecionados = [];
+// Caches locais para performance e reatividade
+let lotesEstoqueCache = {};
+let historicoCargasCache = {};
 let dadosIniciados = false;
 
-window.entrar = function(){
-const email = document.getElementById("emailLogin").value.trim();
-const senha = document.getElementById("senhaLogin").value;
-
-if(!email || !senha){
-alert("Informe e-mail e senha.");
-return;
-}
-
-signInWithEmailAndPassword(auth,email,senha)
-.then(()=>alert("Login realizado com sucesso!"))
-.catch((erro)=>{
-alert("Erro no login: " + erro.code);
-console.log("ERRO FIREBASE:", erro);
-});
-}
-
-window.sair = function(){
-signOut(auth);
-}
-
-window.abrirAbaSistema = function(abaId, botao){
-document.querySelectorAll(".aba-setor").forEach(aba => aba.classList.remove("ativa"));
-document.querySelectorAll(".aba-btn").forEach(btn => btn.classList.remove("ativa"));
-const aba = document.getElementById(abaId);
-if(aba) aba.classList.add("ativa");
-if(botao) botao.classList.add("ativa");
-}
-
-onAuthStateChanged(auth,(user)=>{
-if(user){
-document.getElementById("loginTela").classList.add("hidden");
-document.getElementById("sistemaTela").classList.remove("hidden");
-document.getElementById("areaUsuario").classList.remove("hidden");
-document.getElementById("usuarioLogado").innerText = "Usuário: " + user.email;
-
-if(!dadosIniciados){
-carregarDados();
-carregarVendas();
-carregarProdutosIncrustacao();
-carregarOrdensIncrustacao();
-carregarSementesIncrustadas();
-dadosIniciados = true;
-}
-
-}else{
-document.getElementById("loginTela").classList.remove("hidden");
-document.getElementById("sistemaTela").classList.add("hidden");
-document.getElementById("areaUsuario").classList.add("hidden");
-dadosIniciados = false;
-}
-});
-
-window.salvarSemente = function(){
-const idEdicao = document.getElementById("idEdicao").value;
-
-const dados = {
-variedade: document.getElementById("variedade").value.trim(),
-lote: document.getElementById("lote").value.trim(),
-quadra: document.getElementById("quadra").value.trim(),
-galpao: document.getElementById("galpao").value,
-quantidade: Number(document.getElementById("quantidade").value),
-quantidadeKg: Number(document.getElementById("quantidadeKg").value || 0),
-tipoEmbalagem: document.getElementById("tipoEmbalagem").value,
-pureza: document.getElementById("pureza").value.trim(),
-tz: document.getElementById("tz").value.trim(),
-status: document.getElementById("status").value,
-observacao: document.getElementById("observacao").value.trim(),
-usuarioAtualizacao: auth.currentUser ? auth.currentUser.email : "",
-dataAtualizacao: new Date().toLocaleString("pt-BR")
-};
-
-if(!dados.variedade || !dados.lote || dados.quantidade <= 0){
-alert("Preencha variedade, lote e quantidade de embalagens maior que zero.");
-return;
-}
-
-if(idEdicao){
-update(ref(db,"sementes/"+idEdicao),dados);
-alert("Lançamento atualizado com sucesso!");
-cancelarEdicao();
-}else{
-dados.usuarioCadastro = auth.currentUser ? auth.currentUser.email : "";
-dados.dataCadastro = new Date().toLocaleString("pt-BR");
-push(ref(db,"sementes"),dados);
-alert("Semente salva com sucesso!");
-limparCampos();
-}
-}
-
-function carregarDados(){
-const tabela = document.getElementById("tabelaEstoque");
-const selectSementeBase = document.getElementById("opSementeBaseId");
-
-onValue(ref(db,"sementes"),(snapshot)=>{
-tabela.innerHTML="";
-if(selectSementeBase){
-selectSementeBase.innerHTML='<option value="">Selecione o lote da semente base</option>';
-}
-sementesCache = {};
-
-let total=0;
-let quantidade=0;
-let totalKg=0;
-let prontas=0;
-
-snapshot.forEach((item)=>{
-const id = item.key;
-const dados = item.val();
-sementesCache[id] = dados;
-
-total++;
-quantidade += Number(dados.quantidade || 0);
-totalKg += Number(dados.quantidadeKg || 0);
-
-if(dados.status === "Pronta para venda") prontas++;
-
-if(selectSementeBase && Number(dados.quantidadeKg || 0) > 0 && dados.status !== "Bloqueada" && dados.status !== "Vendido"){
-selectSementeBase.innerHTML += `<option value="${id}">${dados.variedade || ""} | Lote: ${dados.lote || ""} | Kg: ${formatarNumeroBR(dados.quantidadeKg || 0)}</option>`;
-}
-
-tabela.innerHTML += `
-<tr data-variedade="${(dados.variedade || "").toLowerCase()}" data-pureza="${(dados.pureza || "").toLowerCase()}" data-tz="${(dados.tz || "").toLowerCase()}" data-embalagem="${(dados.tipoEmbalagem || "").toLowerCase()}">
-<td>${dados.variedade || ""}</td>
-<td>${dados.lote || ""}</td>
-<td>${dados.quadra || ""}</td>
-<td>${dados.galpao || ""}</td>
-<td>${dados.quantidade || 0}</td>
-<td>${dados.quantidadeKg || 0}</td>
-<td>${dados.tipoEmbalagem || ""}</td>
-<td>${dados.pureza || ""}</td>
-<td>${dados.tz || ""}</td>
-<td>
-<span class="status ${
-dados.status === "Pronta para venda" ? "venda" :
-dados.status === "Bloqueada" ? "bloqueada" :
-dados.status === "Vendido" ? "vendido" :
-"armazenada"
-}">
-${dados.status || "Armazenada"}
-</span>
-</td>
-<td>
-<button class="btn-edit" onclick="editarSemente('${id}')">Editar</button>
-<button class="btn-danger" onclick="excluirSemente('${id}')">Excluir</button>
-</td>
-</tr>
-`;
-});
-
-document.getElementById("totalRegistros").innerText=total;
-document.getElementById("totalQuantidade").innerText=quantidade;
-document.getElementById("totalKg").innerText=totalKg;
-document.getElementById("totalProntas").innerText=prontas;
-atualizarGraficos();
-atualizarFiltroRelatorioVariedade();
-aplicarFiltrosEstoque();
-atualizarSelectVenda();
-});
-}
-
-window.atualizarSelectVenda = function(){
-const selectVenda = document.getElementById("sementeVenda");
-const tipo = document.getElementById("tipoProdutoVenda") ? document.getElementById("tipoProdutoVenda").value : "sementes";
-if(!selectVenda) return;
-selectVenda.innerHTML = '<option value="">Selecione o lote vendido</option>';
-
-if(tipo === "sementesIncrustadas"){
-Object.entries(sementesIncrustadasCache).forEach(([id,dados])=>{
-const kg = Number(dados.quantidadeKg || 0);
-if(kg > 0 && dados.status !== "Bloqueada" && dados.status !== "Vendido"){
-selectVenda.innerHTML += `<option value="${id}">${dados.variedade || ""} | Lote: ${dados.lote || ""} | Kg: ${formatarNumeroBR(kg)}</option>`;
-}
-});
-}else{
-Object.entries(sementesCache).forEach(([id,dados])=>{
-if(Number(dados.quantidade || 0) > 0 && dados.status !== "Bloqueada" && dados.status !== "Vendido"){
-selectVenda.innerHTML += `<option value="${id}">${dados.variedade || ""} | Lote: ${dados.lote || ""} | Emb: ${dados.quantidade || 0} | Kg: ${formatarNumeroBR(dados.quantidadeKg || 0)}</option>`;
-}
-});
-}
-}
-
-window.registrarVenda = async function(){
-const cliente = document.getElementById("clienteVenda").value.trim();
-const tipoOrigem = document.getElementById("tipoProdutoVenda") ? document.getElementById("tipoProdutoVenda").value : "sementes";
-const tipoProduto = tipoOrigem === "sementesIncrustadas" ? "Semente incrustada" : "Semente normal";
-const idSemente = document.getElementById("sementeVenda").value;
-const qtdVenda = Number(document.getElementById("quantidadeVenda").value || 0);
-const qtdKgVenda = Number(document.getElementById("quantidadeKgVenda").value || 0);
-const dataVenda = document.getElementById("dataVenda").value;
-const observacao = document.getElementById("observacaoVenda").value.trim();
-
-if(!cliente || !idSemente || !dataVenda || (qtdVenda <= 0 && qtdKgVenda <= 0)){
-alert("Preencha cliente, lote, data e quantidade vendida em embalagens ou kg.");
-return;
-}
-
-const cacheOrigem = tipoOrigem === "sementesIncrustadas" ? sementesIncrustadasCache : sementesCache;
-const caminhoOrigem = tipoOrigem === "sementesIncrustadas" ? "sementesIncrustadas" : "sementes";
-const semente = cacheOrigem[idSemente];
-
-if(!semente){
-alert("Lote não encontrado no estoque selecionado.");
-return;
-}
-
-const estoqueAtual = Number(semente.quantidade || 0);
-const estoqueKgAtual = Number(semente.quantidadeKg || 0);
-
-if(tipoOrigem === "sementes" && qtdVenda > estoqueAtual){
-alert("Quantidade vendida maior que o estoque disponível em embalagens.");
-return;
-}
-
-if(qtdKgVenda > estoqueKgAtual && estoqueKgAtual > 0){
-alert("Quantidade em Kg vendida maior que o Kg disponível.");
-return;
-}
-
-const novoEstoque = Math.max(0, estoqueAtual - qtdVenda);
-const novoEstoqueKg = Math.max(0, estoqueKgAtual - qtdKgVenda);
-
-await push(ref(db,"vendas"),{
-cliente,
-tipoProduto,
-estoqueOrigem: caminhoOrigem,
-sementeId: idSemente,
-variedade: semente.variedade || "",
-lote: semente.lote || "",
-quadra: semente.quadra || "",
-galpao: semente.galpao || "",
-tipoEmbalagem: semente.tipoEmbalagem || "",
-quantidadeVendida: qtdVenda,
-quantidadeKgVendida: qtdKgVenda,
-estoqueAntes: estoqueAtual,
-estoqueDepois: novoEstoque,
-estoqueKgAntes: estoqueKgAtual,
-estoqueKgDepois: novoEstoqueKg,
-dataVenda,
-observacao,
-usuarioVenda: auth.currentUser ? auth.currentUser.email : "",
-dataRegistro: new Date().toLocaleString("pt-BR")
-});
-
-const atualizacao = {
-quantidadeKg: novoEstoqueKg,
-status: novoEstoqueKg <= 0 ? "Vendido" : (semente.status || "Armazenada"),
-usuarioAtualizacao: auth.currentUser ? auth.currentUser.email : "",
-dataAtualizacao: new Date().toLocaleString("pt-BR")
-};
-if(tipoOrigem === "sementes"){
-atualizacao.quantidade = novoEstoque;
-atualizacao.status = (novoEstoque <= 0 && novoEstoqueKg <= 0) ? "Vendido" : (semente.status || "Armazenada");
-}
-
-await update(ref(db,caminhoOrigem+"/"+idSemente),atualizacao);
-
-alert("Venda registrada e estoque baixado com sucesso!");
-
-document.getElementById("clienteVenda").value="";
-document.getElementById("sementeVenda").value="";
-document.getElementById("quantidadeVenda").value="";
-document.getElementById("quantidadeKgVenda").value="";
-document.getElementById("dataVenda").value="";
-document.getElementById("observacaoVenda").value="";
-atualizarSelectVenda();
-}
-
-function carregarVendas(){
-const tabela = document.getElementById("tabelaVendas");
-
-onValue(ref(db,"vendas"),(snapshot)=>{
-tabela.innerHTML="";
-vendasCache = {};
-let totalVendido=0;
-
-snapshot.forEach((item)=>{
-const id = item.key;
-const venda = item.val();
-vendasCache[id] = venda;
-totalVendido += Number(venda.quantidadeVendida || 0);
-
-tabela.innerHTML += `
-<tr>
-<td>${venda.cliente || ""}</td>
-<td>${venda.tipoProduto || "Semente normal"}</td>
-<td>${venda.variedade || ""}</td>
-<td>${venda.lote || ""}</td>
-<td>${venda.quantidadeVendida || 0}</td>
-<td>${venda.quantidadeKgVendida || 0}</td>
-<td>${venda.dataVenda || ""}</td>
-<td>${venda.usuarioVenda || ""}</td>
-<td>${venda.observacao || ""}</td>
-<td><button class="btn-danger" onclick="cancelarVenda('${id}')">Cancelar</button></td>
-</tr>
-`;
-});
-
-document.getElementById("totalVendido").innerText=totalVendido;
-});
-}
-
-window.cancelarVenda = async function(idVenda){
-if(!confirm("Deseja cancelar esta venda e devolver a quantidade ao estoque correto?")) return;
-
-const vendaSnap = await get(ref(db,"vendas/"+idVenda));
-if(!vendaSnap.exists()){
-alert("Venda não encontrada.");
-return;
-}
-
-const venda = vendaSnap.val();
-const idSemente = venda.sementeId;
-const qtdVendida = Number(venda.quantidadeVendida || 0);
-const qtdKgVendida = Number(venda.quantidadeKgVendida || 0);
-const caminhoOrigem = venda.estoqueOrigem || "sementes";
-const cacheOrigem = caminhoOrigem === "sementesIncrustadas" ? sementesIncrustadasCache : sementesCache;
-
-if(idSemente){
-const sementeAtual = cacheOrigem[idSemente];
-if(sementeAtual){
-const novoEstoque = Number(sementeAtual.quantidade || 0) + qtdVendida;
-const novoEstoqueKg = Number(sementeAtual.quantidadeKg || 0) + qtdKgVendida;
-const atualizacao = {
-quantidadeKg: novoEstoqueKg,
-status: sementeAtual.status === "Vendido" ? "Armazenada" : sementeAtual.status,
-usuarioAtualizacao: auth.currentUser ? auth.currentUser.email : "",
-dataAtualizacao: new Date().toLocaleString("pt-BR")
-};
-if(caminhoOrigem === "sementes") atualizacao.quantidade = novoEstoque;
-await update(ref(db,caminhoOrigem+"/"+idSemente),atualizacao);
-}
-}
-
-await remove(ref(db,"vendas/"+idVenda));
-alert("Venda cancelada e estoque restaurado.");
-}
-
-window.editarSemente = function(id){
-const dados = sementesCache[id];
-
-document.getElementById("idEdicao").value=id;
-document.getElementById("variedade").value=dados.variedade || "";
-document.getElementById("lote").value=dados.lote || "";
-document.getElementById("quadra").value=dados.quadra || "";
-document.getElementById("galpao").value=dados.galpao || "";
-document.getElementById("quantidade").value=dados.quantidade || "";
-document.getElementById("quantidadeKg").value=dados.quantidadeKg || "";
-document.getElementById("tipoEmbalagem").value=dados.tipoEmbalagem || "";
-document.getElementById("pureza").value=dados.pureza || "";
-document.getElementById("tz").value=dados.tz || "";
-document.getElementById("status").value=dados.status || "Armazenada";
-document.getElementById("observacao").value=dados.observacao || "";
-
-document.getElementById("tituloFormulario").innerText="Editar Lançamento";
-document.getElementById("btnSalvar").innerText="Atualizar Lançamento";
-document.getElementById("btnCancelar").classList.remove("hidden");
-
-window.scrollTo({top:0,behavior:"smooth"});
-}
-
-window.cancelarEdicao = function(){
-document.getElementById("idEdicao").value="";
-document.getElementById("tituloFormulario").innerText="Cadastro de Sementes";
-document.getElementById("btnSalvar").innerText="Salvar Semente";
-document.getElementById("btnCancelar").classList.add("hidden");
-limparCampos();
-}
-
-window.excluirSemente = function(id){
-if(confirm("Deseja excluir este lançamento?")){
-remove(ref(db,"sementes/"+id));
-}
-}
-
-window.filtrarTabela = function(inputId,tabelaId){
-const filtro = document.getElementById(inputId).value.toLowerCase();
-const linhas = document.querySelectorAll("#"+tabelaId+" tr");
-
-linhas.forEach((linha)=>{
-const texto = linha.innerText.toLowerCase();
-linha.style.display = texto.includes(filtro) ? "" : "none";
-});
-}
-
-window.aplicarFiltrosEstoque = function(){
-const geral = document.getElementById("buscaEstoque").value.toLowerCase();
-const variedade = document.getElementById("filtroVariedadeEstoque").value.toLowerCase();
-const pureza = document.getElementById("filtroPurezaEstoque").value.toLowerCase();
-const tz = document.getElementById("filtroTzEstoque").value.toLowerCase();
-const embalagem = document.getElementById("filtroEmbalagemEstoque").value.toLowerCase();
-const linhas = document.querySelectorAll("#tabelaEstoque tr");
-
-linhas.forEach((linha)=>{
-const texto = linha.innerText.toLowerCase();
-const okGeral = !geral || texto.includes(geral);
-const okVariedade = !variedade || (linha.dataset.variedade || "").includes(variedade);
-const okPureza = !pureza || (linha.dataset.pureza || "").includes(pureza);
-const okTz = !tz || (linha.dataset.tz || "").includes(tz);
-const okEmbalagem = !embalagem || (linha.dataset.embalagem || "") === embalagem;
-linha.style.display = okGeral && okVariedade && okPureza && okTz && okEmbalagem ? "" : "none";
-});
-}
-
-window.limparFiltrosEstoque = function(){
-document.getElementById("buscaEstoque").value="";
-document.getElementById("filtroVariedadeEstoque").value="";
-document.getElementById("filtroPurezaEstoque").value="";
-document.getElementById("filtroTzEstoque").value="";
-document.getElementById("filtroEmbalagemEstoque").value="";
-aplicarFiltrosEstoque();
-}
-
-function limparCampos(){
-document.getElementById("variedade").value="";
-document.getElementById("lote").value="";
-document.getElementById("quadra").value="";
-document.getElementById("galpao").value="";
-document.getElementById("quantidade").value="";
-document.getElementById("quantidadeKg").value="";
-document.getElementById("tipoEmbalagem").value="";
-document.getElementById("pureza").value="";
-document.getElementById("tz").value="";
-document.getElementById("status").value="Armazenada";
-document.getElementById("observacao").value="";
-}
-
-function atualizarGraficos(){
-const porGalpao = {};
-const porStatus = {};
-const porEmbalagem = {};
-Object.values(sementesCache).forEach((s)=>{
-const galpao = s.galpao || "Sem galpão";
-const status = s.status || "Armazenada";
-const embalagem = s.tipoEmbalagem || "Sem embalagem";
-porGalpao[galpao] = (porGalpao[galpao] || 0) + Number(s.quantidade || 0);
-porStatus[status] = (porStatus[status] || 0) + 1;
-porEmbalagem[embalagem] = (porEmbalagem[embalagem] || 0) + Number(s.quantidadeKg || 0);
-});
-renderBarras("graficoGalpao", porGalpao, "emb.");
-renderBarras("graficoStatus", porStatus, "lotes");
-renderBarras("graficoEmbalagem", porEmbalagem, "kg");
-}
-
-function renderBarras(containerId, dados, unidade){
-const el = document.getElementById(containerId);
-if(!el) return;
-const entradas = Object.entries(dados);
-if(entradas.length === 0){
-el.innerHTML = "<p class='small-note'>Sem dados para exibir.</p>";
-return;
-}
-const max = Math.max(...entradas.map(([_,v])=>Number(v)||0),1);
-el.innerHTML = entradas.map(([nome,valor])=>{
-const pct = Math.max(3, Math.round((Number(valor)/max)*100));
-return `
-<div class="bar-row">
-<div>${nome}</div>
-<div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div>
-<div>${valor} ${unidade}</div>
-</div>`;
-}).join("");
-}
-
-function atualizarFiltroRelatorioVariedade(){
-const selectVariedade = document.getElementById("filtroRelatorioVariedade");
-const selectGalpao = document.getElementById("filtroRelatorioGalpao");
-if(selectVariedade){
-const valorAtual = selectVariedade.value;
-const variedades = [...new Set(Object.values(sementesCache).map(s=>s.variedade).filter(Boolean))].sort();
-selectVariedade.innerHTML = '<option value="">Todas as variedades</option>' + variedades.map(v=>`<option value="${v}">${v}</option>`).join("");
-selectVariedade.value = valorAtual;
-}
-if(selectGalpao){
-const valorAtualGalpao = selectGalpao.value;
-const galpoes = [...new Set(Object.values(sementesCache).map(s=>s.galpao).filter(Boolean))].sort();
-selectGalpao.innerHTML = '<option value="">Todos os galpões</option>' + galpoes.map(g=>`<option value="${g}">${g}</option>`).join("");
-selectGalpao.value = valorAtualGalpao;
-}
-}
-
-function montarTabelaHTML(colunas, linhas){
-return `
-<table class="tabela-relatorio">
-<thead><tr>${colunas.map(c=>`<th>${c}</th>`).join("")}</tr></thead>
-<tbody>${linhas.map(l=>`<tr>${l.map(c=>`<td>${c ?? ""}</td>`).join("")}</tr>`).join("")}</tbody>
-</table>`;
-}
-
-window.gerarRelatorioEstoque = function(){
-const filtroVariedade = document.getElementById("filtroRelatorioVariedade").value;
-const filtroGalpao = document.getElementById("filtroRelatorioGalpao") ? document.getElementById("filtroRelatorioGalpao").value : "";
-let sementes = Object.values(sementesCache);
-if(filtroVariedade){
-sementes = sementes.filter(s => (s.variedade || "") === filtroVariedade);
-}
-if(filtroGalpao){
-sementes = sementes.filter(s => (s.galpao || "") === filtroGalpao);
-}
-const totalQtd = sementes.reduce((s,x)=>s+Number(x.quantidade||0),0);
-const totalKg = sementes.reduce((s,x)=>s+Number(x.quantidadeKg||0),0);
-const totalLotes = sementes.length;
-const prontas = sementes.filter(x=>x.status==="Pronta para venda").length;
-const bloqueadas = sementes.filter(x=>x.status==="Bloqueada").length;
-
-const linhas = sementes.map(s=>[
-s.variedade||"",
-s.lote||"",
-s.quadra||"",
-s.galpao||"",
-s.quantidade||0,
-s.quantidadeKg||0,
-s.tipoEmbalagem||"",
-s.pureza||"",
-s.tz||"",
-s.status||"",
-s.observacao||""
-]);
-
-abrirRelatorio("Relatório de Estoque", `
-<h1>Relatório de Estoque - AgroSeed</h1>
-<p>Gerado em: ${new Date().toLocaleString("pt-BR")}</p>
-<p><strong>Filtro de variedade:</strong> ${filtroVariedade || "Todas"} &nbsp; | &nbsp; <strong>Filtro de galpão:</strong> ${filtroGalpao || "Todos"}</p>
-<div class="kpi-line">
-<span>Total de lotes: ${totalLotes}</span>
-<span>Total embalagens: ${totalQtd}</span>
-<span>Total Kg: ${totalKg}</span>
-<span>Prontas para venda: ${prontas}</span>
-<span>Bloqueadas: ${bloqueadas}</span>
-</div>
-${montarTabelaHTML(["Variedade","Lote","Quadra","Galpão","Emb.","Kg","Tipo Embalagem","Pureza","TZ","Status","Obs."], linhas)}
-`);
-}
-
-window.gerarRelatorioVendas = function(){
-const vendas = Object.values(vendasCache);
-const totalVendido = vendas.reduce((s,x)=>s+Number(x.quantidadeVendida||0),0);
-const totalKgVendido = vendas.reduce((s,x)=>s+Number(x.quantidadeKgVendida||0),0);
-const clientes = new Set(vendas.map(v=>v.cliente||"").filter(Boolean)).size;
-
-const linhas = vendas.map(v=>[
-v.cliente||"",
-v.tipoProduto||"Semente normal",
-v.variedade||"",
-v.lote||"",
-v.tipoEmbalagem||"",
-v.quantidadeVendida||0,
-v.quantidadeKgVendida||0,
-v.estoqueAntes||"",
-v.estoqueDepois||"",
-v.dataVenda||"",
-v.usuarioVenda||"",
-v.observacao||""
-]);
-
-abrirRelatorio("Relatório de Vendas", `
-<h1>Relatório de Vendas - AgroSeed</h1>
-<p>Gerado em: ${new Date().toLocaleString("pt-BR")}</p>
-<div class="kpi-line">
-<span>Total vendido: ${totalVendido} embalagens</span>
-<span>Total Kg vendido: ${totalKgVendido}</span>
-<span>Registros de venda: ${vendas.length}</span>
-<span>Clientes atendidos: ${clientes}</span>
-</div>
-${montarTabelaHTML(["Cliente","Tipo","Variedade","Lote","Tipo Embalagem","Emb.","Kg","Estoque Antes","Estoque Depois","Data","Usuário","Obs."], linhas)}
-`);
-}
-
-function abrirRelatorio(titulo, conteudo){
-document.getElementById("relatorioTitulo").innerText = titulo;
-document.getElementById("relatorioConteudo").innerHTML = conteudo;
-document.getElementById("relatorioModal").classList.remove("hidden");
-}
-
-window.fecharRelatorio = function(){
-document.getElementById("relatorioModal").classList.add("hidden");
-}
-
-window.exportarCSV = function(tipo){
-let nomeArquivo = "";
-let colunas = [];
-let linhas = [];
-
-if(tipo === "estoque"){
-nomeArquivo = "relatorio_estoque_agroseed.csv";
-colunas = ["Variedade","Lote","Quadra","Galpao","Embalagens","Kg","Tipo Embalagem","Pureza","TZ","Status","Observacao"];
-linhas = Object.values(sementesCache).map(s=>[
-s.variedade||"",s.lote||"",s.quadra||"",s.galpao||"",s.quantidade||0,s.quantidadeKg||0,s.tipoEmbalagem||"",s.pureza||"",s.tz||"",s.status||"",s.observacao||""
-]);
-}else{
-nomeArquivo = "relatorio_vendas_agroseed.csv";
-colunas = ["Cliente","Tipo","Variedade","Lote","Tipo Embalagem","Embalagens Vendidas","Kg Vendido","Estoque Antes","Estoque Depois","Data","Usuario","Observacao"];
-linhas = Object.values(vendasCache).map(v=>[
-v.cliente||"",v.tipoProduto||"Semente normal",v.variedade||"",v.lote||"",v.tipoEmbalagem||"",v.quantidadeVendida||0,v.quantidadeKgVendida||0,v.estoqueAntes||"",v.estoqueDepois||"",v.dataVenda||"",v.usuarioVenda||"",v.observacao||""
-]);
-}
-
-const csv = [colunas, ...linhas].map(linha => linha.map(c => `"${String(c).replaceAll('"','""')}"`).join(";")).join("\n");
-baixarArquivo(nomeArquivo, "\ufeff"+csv, "text/csv;charset=utf-8;");
-}
-
-window.fazerBackup = function(){
-const backup = {
-geradoEm: new Date().toISOString(),
-sementes: sementesCache,
-vendas: vendasCache,
-produtosIncrustacao: produtosIncrustacaoCache,
-ordensIncrustacao: ordensIncrustacaoCache,
-sementesIncrustadas: sementesIncrustadasCache
-};
-baixarArquivo("backup_agroseed.json", JSON.stringify(backup,null,2), "application/json");
-}
-
-window.restaurarBackupPrompt = function(){
-const input = document.createElement("input");
-input.type = "file";
-input.accept = ".json,application/json";
-input.onchange = async (e)=>{
-const file = e.target.files[0];
-if(!file) return;
-if(!confirm("A restauração vai acrescentar/atualizar dados do backup no Firebase. Deseja continuar?")) return;
-const texto = await file.text();
-const backup = JSON.parse(texto);
-
-if(backup.sementes){
-for(const [id,dados] of Object.entries(backup.sementes)){
-await update(ref(db,"sementes/"+id),dados);
-}
-}
-if(backup.vendas){
-for(const [id,dados] of Object.entries(backup.vendas)){
-await update(ref(db,"vendas/"+id),dados);
-}
-}
-if(backup.produtosIncrustacao){
-for(const [id,dados] of Object.entries(backup.produtosIncrustacao)){
-await update(ref(db,"produtosIncrustacao/"+id),dados);
-}
-}
-if(backup.ordensIncrustacao){
-for(const [id,dados] of Object.entries(backup.ordensIncrustacao)){
-await update(ref(db,"ordensIncrustacao/"+id),dados);
-}
-}
-if(backup.sementesIncrustadas){
-for(const [id,dados] of Object.entries(backup.sementesIncrustadas)){
-await update(ref(db,"sementesIncrustadas/"+id),dados);
-}
-}
-alert("Backup restaurado com sucesso.");
-};
-input.click();
-}
-
-
-/* ===== FUNÇÕES DO MÓDULO DE INCRUSTAÇÃO - ADICIONADO SEM ALTERAR O SISTEMA EXISTENTE ===== */
-const BASE_RECEITA_INCRUSTACAO_KG = 2600000;
-const receitaPadraoIncrustacao = [
-{nome:"Semente", unidade:"KG", dose:866660/BASE_RECEITA_INCRUSTACAO_KG, unidadeDose:"KG", estoque:0},
-{nome:"Bent. Sódica", unidade:"KG", dose:(693316/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:693316},
-{nome:"Calcário Filler", unidade:"KG", dose:(554632/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:554632},
-{nome:"Gesso", unidade:"KG", dose:(138658/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:138658},
-{nome:"Seed Gel", unidade:"KG", dose:(164658/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:164658},
-{nome:"Fosfato Bicálcio", unidade:"KG", dose:(164658/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:164658},
-{nome:"Óxido de Zinco", unidade:"KG", dose:(17316/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:17316},
-{nome:"Grafite", unidade:"KG", dose:(36400/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:36400},
-{nome:"Maxim XL", unidade:"L", dose:(867/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"ML", estoque:867},
-{nome:"Fipronil", unidade:"L", dose:(867/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"ML", estoque:867},
-{nome:"Dermacor", unidade:"L", dose:(174/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"ML", estoque:174},
-{nome:"Purakelp", unidade:"L", dose:(867/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"ML", estoque:867},
-{nome:"Selvol", unidade:"KG", dose:(1531/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:1531},
-{nome:"Gás Industrial", unidade:"KG", dose:(30500/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:30500},
-{nome:"Sulfato de Zinco", unidade:"KG", dose:(867/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:867},
-{nome:"Sulfato de Manganês", unidade:"KG", dose:(260/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:260},
-{nome:"Borosol", unidade:"KG", dose:(260/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:260},
-{nome:"Molibsol", unidade:"KG", dose:(260/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:260},
-{nome:"Kellus Koper", unidade:"KG", dose:(260/BASE_RECEITA_INCRUSTACAO_KG)*1000, unidadeDose:"G", estoque:260},
-{nome:"Bombardeio", unidade:"L", dose:0.033333, unidadeDose:"ML", estoque:0},
-{nome:"Biomagno", unidade:"L", dose:0.033333, unidadeDose:"ML", estoque:0},
-{nome:"Bioasis", unidade:"L", dose:0.033333, unidadeDose:"ML", estoque:0}
+// Definição das coordenadas físicas do pátio de emblocamento da algodoeira
+const posicoesPatioMapeadas = [
+  "A01", "A02", "A03", "A04", "A05",
+  "B01", "B02", "B03", "B04", "B05",
+  "C01", "C02", "C03", "C04", "C05",
+  "D01", "D02", "D03", "D04", "D05"
 ];
 
-function formatarNumeroBR(valor, casas=3){
-return Number(valor || 0).toLocaleString("pt-BR", {minimumFractionDigits:0, maximumFractionDigits:casas});
-}
+// --- CONTROLE DE AUTENTICAÇÃO ---
+window.entrar = function() {
+  const email = document.getElementById("emailLogin").value.trim();
+  const senha = document.getElementById("senhaLogin").value;
 
-function normalizarUnidade(unidade){
-const u = String(unidade || "KG").trim().toUpperCase();
-if(u === "ML" || u === "M L" || u === "MILILITRO") return "ML";
-if(u === "G" || u === "GR" || u === "GRAMA") return "G";
-if(u === "L" || u === "LT" || u === "LITRO") return "L";
-return "KG";
-}
+  if (!email || !senha) {
+    alert("Por favor, preencha todos os campos de acesso.");
+    return;
+  }
 
-function rotuloUnidade(unidade){
-const u = normalizarUnidade(unidade);
-return u === "ML" ? "mL" : u;
-}
-
-function categoriaUnidade(unidade){
-const u = normalizarUnidade(unidade);
-return (u === "KG" || u === "G") ? "massa" : "volume";
-}
-
-function fatorUnidadeBase(unidade){
-const u = normalizarUnidade(unidade);
-if(u === "KG" || u === "L") return 1000;
-return 1;
-}
-
-function obterUnidadeDoseProduto(produto){
-return normalizarUnidade(produto.unidadeDose || produto.unidadeDoseProduto || produto.unidade || "KG");
-}
-
-function converterDoseParaUnidadeEstoque(produto){
-const dose = Number(produto.dose || 0);
-const unidadeDose = obterUnidadeDoseProduto(produto);
-const unidadeEstoque = normalizarUnidade(produto.unidade || unidadeDose);
-if(dose <= 0) return 0;
-if(categoriaUnidade(unidadeDose) !== categoriaUnidade(unidadeEstoque)) return dose;
-return (dose * fatorUnidadeBase(unidadeDose)) / fatorUnidadeBase(unidadeEstoque);
-}
-
-function formatarDoseProduto(produto){
-const dose = Number(produto.dose || 0);
-const unidadeDose = obterUnidadeDoseProduto(produto);
-
-if(unidadeDose === "ML"){
-return `${formatarNumeroBR(dose,3)} mL/kg`;
-}
-
-if(unidadeDose === "G"){
-return `${formatarNumeroBR(dose,3)} g/kg`;
-}
-
-if(unidadeDose === "L"){
-return `${formatarNumeroBR(dose,6)} L/kg`;
-}
-
-if(unidadeDose === "KG"){
-return `${formatarNumeroBR(dose,6)} KG/kg`;
-}
-
-return `${formatarNumeroBR(dose,6)} ${unidadeDose}/kg`;
-}
-
-function formatarMedida(valor, unidade, casas=3){
-valor = Number(valor || 0);
-unidade = normalizarUnidade(unidade);
-
-if(unidade === "L" && valor < 1){
-return `${formatarNumeroBR(valor * 1000,0)} mL`;
-}
-
-if(unidade === "KG" && valor < 1){
-return `${formatarNumeroBR(valor * 1000,0)} g`;
-}
-
-return `${formatarNumeroBR(valor, casas)} ${rotuloUnidade(unidade)}`;
-}
-
-function formatarProducaoPossivel(valorKg){
-const v = Number(valorKg || 0);
-if(v >= 1000) return `${formatarNumeroBR(v/1000,1)} t`;
-return `${formatarNumeroBR(v,0)} kg`;
-}
-
-function calcularProducaoPossivelPorInsumo(produto){
-const estoque = Number(produto.estoque || 0);
-const doseConvertida = converterDoseParaUnidadeEstoque(produto);
-if(doseConvertida <= 0) return 0;
-return estoque / doseConvertida;
-}
-
-function obterDoseSementeIncrustacao(){
-const produtoSemente = Object.values(produtosIncrustacaoCache).find(p => (p.nome || "").trim().toLowerCase() === "semente");
-if(produtoSemente && Number(produtoSemente.dose || 0) > 0){
-return converterDoseParaUnidadeEstoque({...produtoSemente, unidade:"KG"});
-}
-return 866660 / BASE_RECEITA_INCRUSTACAO_KG;
-}
-
-window.calcularSementeAutomatica = function(){
-const volume = Number(document.getElementById("opVolumeFinal").value || 0);
-const campoSemente = document.getElementById("opSementeUsada");
-if(!campoSemente) return 0;
-if(volume <= 0){
-campoSemente.value = "";
-return 0;
-}
-const sementeNecessaria = volume * obterDoseSementeIncrustacao();
-campoSemente.value = sementeNecessaria.toFixed(3);
-renderizarLotesSementeBase();
-return sementeNecessaria;
-}
-
-function obterSementeBaseSelecionada(){
-const select = document.getElementById("opSementeBaseId");
-if(!select || !select.value) return null;
-const semente = sementesCache[select.value];
-if(!semente) return null;
-return {id: select.value, ...semente};
-}
-
-function calcularTotalSementeBaseSelecionada(){
-return lotesSementeBaseSelecionados.reduce((s,l)=>s+Number(l.kgUsado||0),0);
-}
-
-function renderizarLotesSementeBase(){
-const tabela = document.getElementById("tabelaLotesSementeBase");
-const resumo = document.getElementById("resumoLotesSementeBase");
-if(!tabela) return;
-
-tabela.innerHTML = lotesSementeBaseSelecionados.length ? lotesSementeBaseSelecionados.map((lote,idx)=>`
-<tr>
-<td>${lote.variedade || ""}</td>
-<td>${lote.lote || ""}</td>
-<td>${formatarNumeroBR(lote.quantidadeKg || 0)} KG</td>
-<td>${formatarNumeroBR(lote.kgUsado || 0)} KG</td>
-<td><button class="btn-danger" onclick="removerLoteSementeBase(${idx})">Remover</button></td>
-</tr>`).join("") : `<tr><td colspan="5">Nenhum lote base adicionado.</td></tr>`;
-
-if(resumo){
-const necessario = Number(document.getElementById("opSementeUsada")?.value || 0);
-const total = calcularTotalSementeBaseSelecionada();
-const diferenca = total - necessario;
-const classe = Math.abs(diferenca) <= 0.5 ? "ok-estoque" : "falta-estoque";
-resumo.innerHTML = `Semente necessária: <strong>${formatarNumeroBR(necessario)} KG</strong> — Selecionada: <strong>${formatarNumeroBR(total)} KG</strong> — Diferença: <span class="${classe}">${formatarNumeroBR(diferenca)} KG</span>`;
-}
-}
-
-window.adicionarLoteSementeBase = function(){
-const select = document.getElementById("opSementeBaseId");
-const inputKg = document.getElementById("opSementeBaseKg");
-if(!select || !select.value){ alert("Selecione o lote da semente base."); return; }
-const kgUsado = Number(inputKg.value || 0);
-if(kgUsado <= 0){ alert("Informe a quantidade em kg deste lote."); return; }
-const semente = sementesCache[select.value];
-if(!semente){ alert("Lote de semente base não encontrado."); return; }
-const disponivel = Number(semente.quantidadeKg || 0);
-const jaSelecionado = lotesSementeBaseSelecionados.filter(l=>l.id===select.value).reduce((s,l)=>s+Number(l.kgUsado||0),0);
-if(kgUsado + jaSelecionado > disponivel){ alert("Quantidade informada maior que o saldo disponível deste lote."); return; }
-
-lotesSementeBaseSelecionados.push({
-id: select.value,
-variedade: semente.variedade || "",
-lote: semente.lote || "",
-quadra: semente.quadra || "",
-galpao: semente.galpao || "",
-quantidadeKg: disponivel,
-kgUsado
-});
-select.value = "";
-inputKg.value = "";
-renderizarLotesSementeBase();
-}
-
-window.removerLoteSementeBase = function(index){
-lotesSementeBaseSelecionados.splice(index,1);
-renderizarLotesSementeBase();
-}
-
-function obterLotesSementeBaseParaOrdem(){
-return lotesSementeBaseSelecionados.map(l=>({
-id:l.id,
-variedade:l.variedade||"",
-lote:l.lote||"",
-quadra:l.quadra||"",
-galpao:l.galpao||"",
-kgUsado:Number(l.kgUsado||0),
-quantidadeKg:Number(l.quantidadeKg||0)
-}));
-}
-
-function montarResumoSementeBase(sementeNecessaria){
-if(!lotesSementeBaseSelecionados.length){
-return `<span class="falta-estoque">Adicione um ou mais lotes de semente base</span>`;
-}
-const total = calcularTotalSementeBaseSelecionada();
-const diferenca = total - Number(sementeNecessaria || 0);
-const classe = Math.abs(diferenca) <= 0.5 ? "ok-estoque" : "falta-estoque";
-const lotes = lotesSementeBaseSelecionados.map(l=>`${l.variedade || ""} | ${l.lote || ""}: ${formatarNumeroBR(l.kgUsado)} KG`).join("; ");
-return `Lotes base: ${lotes} — Total selecionado: ${formatarNumeroBR(total)} KG — Necessário: ${formatarNumeroBR(sementeNecessaria)} KG — Diferença: <span class="${classe}">${formatarNumeroBR(diferenca)} KG</span>`;
-}
-
-window.salvarProdutoIncrustacao = async function(){
-try{
-const id = document.getElementById("idProdutoIncrustacaoEdicao").value;
-const dados = {
-nome: document.getElementById("produtoIncrustacaoNome").value.trim(),
-unidade: document.getElementById("produtoIncrustacaoUnidade").value,
-dose: Number(document.getElementById("produtoIncrustacaoDose").value || 0),
-unidadeDose: document.getElementById("produtoIncrustacaoUnidadeDose").value,
-estoque: Number(document.getElementById("produtoIncrustacaoEstoque").value || 0),
-estoqueMinimo: Number(document.getElementById("produtoIncrustacaoEstoqueMinimo").value || 0),
-fornecedor: document.getElementById("produtoIncrustacaoFornecedor").value.trim(),
-observacao: document.getElementById("produtoIncrustacaoObs").value.trim(),
-usuarioAtualizacao: auth.currentUser ? auth.currentUser.email : "",
-dataAtualizacao: new Date().toLocaleString("pt-BR")
+  signInWithEmailAndPassword(auth, email, senha)
+    .then(() => alert("Acesso autorizado! Carregando pátio..."))
+    .catch((erro) => alert("Falha na autenticação: " + erro.code));
 };
-if(!dados.nome || dados.dose <= 0){ alert("Informe o produto e a dose por kg produzido."); return; }
-if(id){ await update(ref(db,"produtosIncrustacao/"+id),dados); alert("Produto atualizado com sucesso!"); }
-else{ dados.usuarioCadastro = auth.currentUser ? auth.currentUser.email : ""; dados.dataCadastro = new Date().toLocaleString("pt-BR"); await push(ref(db,"produtosIncrustacao"),dados); alert("Produto salvo com sucesso!"); }
-cancelarEdicaoProdutoIncrustacao();
-}catch(erro){
-console.error("Erro ao salvar produto de incrustamento:", erro);
-alert("Erro ao salvar produto: " + erro.message);
-}
-}
 
-window.cancelarEdicaoProdutoIncrustacao = function(){
-["idProdutoIncrustacaoEdicao","produtoIncrustacaoNome","produtoIncrustacaoDose","produtoIncrustacaoEstoque","produtoIncrustacaoEstoqueMinimo","produtoIncrustacaoFornecedor","produtoIncrustacaoObs"].forEach(id=>document.getElementById(id).value="");
-document.getElementById("produtoIncrustacaoUnidade").value="KG";
-document.getElementById("produtoIncrustacaoUnidadeDose").value="G";
-document.getElementById("btnSalvarProdutoIncrustacao").innerText="Salvar Produto";
-document.getElementById("btnCancelarProdutoIncrustacao").classList.add("hidden");
-}
+window.sair = function() {
+  signOut(auth);
+};
 
-window.carregarReceitaPadraoIncrustacao = async function(){
-if(!confirm("Deseja carregar a receita padrão? Produtos com mesmo nome serão atualizados.")) return;
-for(const item of receitaPadraoIncrustacao){
-const existente = Object.entries(produtosIncrustacaoCache).find(([_,p]) => (p.nome || "").toLowerCase() === item.nome.toLowerCase());
-const dados = {nome:item.nome, unidade:item.unidade, dose:item.dose, unidadeDose:item.unidadeDose || item.unidade, estoque:item.estoque, estoqueMinimo:0, fornecedor:"", observacao:"Receita padrão inicial", usuarioAtualizacao: auth.currentUser ? auth.currentUser.email : "", dataAtualizacao:new Date().toLocaleString("pt-BR")};
-if(existente){ await update(ref(db,"produtosIncrustacao/"+existente[0]),dados); }
-else{ dados.usuarioCadastro = auth.currentUser ? auth.currentUser.email : ""; dados.dataCadastro = new Date().toLocaleString("pt-BR"); await push(ref(db,"produtosIncrustacao"),dados); }
-}
-alert("Receita padrão carregada com sucesso!");
-}
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    document.getElementById("loginTela").classList.add("hidden");
+    document.getElementById("sistemaTela").classList.remove("hidden");
+    document.getElementById("areaUsuario").classList.remove("hidden");
+    document.getElementById("usuarioLogado").innerText = "Operador: " + user.email;
 
-function carregarProdutosIncrustacao(){
-onValue(ref(db,"produtosIncrustacao"),(snapshot)=>{
-produtosIncrustacaoCache = {}; const tabela=document.getElementById("tabelaProdutosIncrustacao"); if(!tabela) return; tabela.innerHTML="";
-snapshot.forEach(item=>{ const id=item.key; const p=item.val(); produtosIncrustacaoCache[id]=p; const estoque=Number(p.estoque||0); const minimo=Number(p.estoqueMinimo||0); const status = estoque <= minimo ? "Baixo" : "OK";
-const podeProduzir = calcularProducaoPossivelPorInsumo(p);
-tabela.innerHTML += `<tr><td>${p.nome||""}</td><td>${rotuloUnidade(p.unidade)}</td><td>${formatarDoseProduto(p)}</td><td>${formatarMedida(estoque,p.unidade)}</td><td><strong>${formatarProducaoPossivel(podeProduzir)}</strong></td><td>${formatarMedida(minimo,p.unidade)}</td><td>${p.fornecedor||""}</td><td class="${status==='OK'?'ok-estoque':'falta-estoque'}">${status}</td><td><button class="btn-edit" onclick="editarProdutoIncrustacao('${id}')">Editar</button><button class="btn-danger" onclick="excluirProdutoIncrustacao('${id}')">Excluir</button></td></tr>`;
+    if (!dadosIniciados) {
+      inicializarEscutasFirebase();
+      dadosIniciados = true;
+    }
+  } else {
+    document.getElementById("loginTela").classList.remove("hidden");
+    document.getElementById("sistemaTela").classList.add("hidden");
+    document.getElementById("areaUsuario").classList.add("hidden");
+    dadosIniciados = false;
+  }
 });
-atualizarResumoIncrustacao();
-calcularSementeAutomatica();
-});
+
+// --- NAVEGAÇÃO ENTRE ABAS ---
+window.abrirAbaSistema = function(abaId, botao) {
+  document.querySelectorAll(".aba-setor").forEach(aba => aba.classList.remove("ativa"));
+  document.querySelectorAll(".aba-btn").forEach(btn => btn.classList.remove("ativa"));
+  
+  const aba = document.getElementById(abaId);
+  if (aba) aba.classList.add("ativa");
+  if (botao) botao.classList.add("ativa");
+  
+  // Forçar re-renderização do mapa ao abrir a aba do croqui
+  if (abaId === "abaCroqui") {
+    renderizarCroquiPatio();
+  }
+};
+
+// --- ESCUTAS EM TEMPO REAL (FIREBASE) ---
+function inicializarEscutasFirebase() {
+  // Escuta os lotes produzidos no estoque
+  onValue(ref(db, "lotesAlgodoeira"), (snapshot) => {
+    lotesEstoqueCache = {};
+    snapshot.forEach((item) => {
+      lotesEstoqueCache[item.key] = item.val();
+    });
+    
+    atualizarTabelaEstoque();
+    atualizarSelectsPosicoes();
+    atualizarSelectLotesExpedicao();
+    processarDashboardsEPatio();
+  });
+
+  // Escuta o histórico de cargas despachadas na expedição
+  onValue(ref(db, "expedicaoAlgodoeira"), (snapshot) => {
+    historicoCargasCache = {};
+    snapshot.forEach((item) => {
+      historicoCargasCache[item.key] = item.val();
+    });
+    atualizarTabelaExpedicao();
+    processarDashboardsEPatio();
+  });
 }
 
-window.editarProdutoIncrustacao = function(id){ const p=produtosIncrustacaoCache[id]; if(!p) return; document.getElementById("idProdutoIncrustacaoEdicao").value=id; document.getElementById("produtoIncrustacaoNome").value=p.nome||""; document.getElementById("produtoIncrustacaoUnidade").value=normalizarUnidade(p.unidade||"KG"); document.getElementById("produtoIncrustacaoDose").value=p.dose||""; document.getElementById("produtoIncrustacaoUnidadeDose").value=obterUnidadeDoseProduto(p); document.getElementById("produtoIncrustacaoEstoque").value=p.estoque||""; document.getElementById("produtoIncrustacaoEstoqueMinimo").value=p.estoqueMinimo||""; document.getElementById("produtoIncrustacaoFornecedor").value=p.fornecedor||""; document.getElementById("produtoIncrustacaoObs").value=p.observacao||""; document.getElementById("btnSalvarProdutoIncrustacao").innerText="Atualizar Produto"; document.getElementById("btnCancelarProdutoIncrustacao").classList.remove("hidden"); }
-window.excluirProdutoIncrustacao = function(id){ if(confirm("Deseja excluir este produto?")) remove(ref(db,"produtosIncrustacao/"+id)); }
+// --- ENGINE REATIVA: DASHBOARD E MAPA VISUAL ---
+function processarDashboardsEPatio() {
+  let fardosPluma = 0, fardosCaroco = 0, fardosFibrilha = 0;
+  let pesoPluma = 0, pesoCaroco = 0, pesoFibrilha = 0;
+  let posicoesOcupadas = 0;
 
-window.simularIncrustacao = function(){
-const volume = Number(document.getElementById("opVolumeFinal").value || 0);
-if(volume <= 0){ alert("Informe o volume final em KG."); return []; }
-const sementeCalculada = calcularSementeAutomatica();
-ultimaSimulacaoIncrustacao = Object.entries(produtosIncrustacaoCache)
-.filter(([_,p]) => (p.nome || "").trim().toLowerCase() !== "semente")
-.map(([id,p])=>{ const doseConvertida = converterDoseParaUnidadeEstoque(p); const necessario = volume * doseConvertida; const estoque = Number(p.estoque||0); return {produtoId:id,nome:p.nome||"",unidade:p.unidade||"",unidadeDose:obterUnidadeDoseProduto(p),dose:Number(p.dose||0),doseConvertida,necessario,estoque,saldo:estoque-necessario}; });
-const linhas = ultimaSimulacaoIncrustacao.map(i=>`<tr class="${i.saldo<0?'saldo-negativo':'saldo-positivo'}"><td>${i.nome}</td><td>${rotuloUnidade(i.unidade)}</td><td>${formatarDoseProduto(i)}</td><td>${formatarMedida(i.necessario,i.unidade)}</td><td>${formatarMedida(i.estoque,i.unidade)}</td><td>${formatarMedida(i.saldo,i.unidade)}</td><td class="${i.saldo<0?'falta-estoque':'ok-estoque'}">${i.saldo<0?'FALTA':'OK'}</td></tr>`).join("");
-document.getElementById("resultadoSimulacaoIncrustacao").innerHTML = `<h3>Resultado da simulação - ${formatarNumeroBR(volume)} KG</h3><div class="kpi-line"><span>Semente base calculada: ${formatarNumeroBR(sementeCalculada)} KG</span></div><p class="small-note">${montarResumoSementeBase(sementeCalculada)}</p><table><thead><tr><th>Produto</th><th>Unid.</th><th>Dose</th><th>Necessário</th><th>Estoque</th><th>Saldo</th><th>Status</th></tr></thead><tbody>${linhas}</tbody></table>`;
-return ultimaSimulacaoIncrustacao;
-}
+  // Mapeia posições ativas
+  const posicoesOcupadasSet = new Set();
 
-window.salvarOrdemIncrustacao = async function(){
-const id = document.getElementById("idOrdemIncrustacaoEdicao").value;
-const volume = Number(document.getElementById("opVolumeFinal").value || 0);
-if(volume <= 0){ alert("Informe o volume final em KG."); return; }
-const sementeCalculada = calcularSementeAutomatica();
-const lotesBase = obterLotesSementeBaseParaOrdem();
-if(!lotesBase.length){ alert("Adicione pelo menos um lote de semente base."); return; }
-const totalLotesBase = lotesBase.reduce((s,l)=>s+Number(l.kgUsado||0),0);
-if(Math.abs(totalLotesBase - sementeCalculada) > 0.5){
-alert(`O total de semente base selecionado precisa bater com a semente necessária. Necessário: ${formatarNumeroBR(sementeCalculada)} KG. Selecionado: ${formatarNumeroBR(totalLotesBase)} KG.`);
-return;
-}
-for(const lote of lotesBase){
-const atual = sementesCache[lote.id];
-if(!atual){ alert(`Lote base ${lote.lote || lote.id} não encontrado.`); return; }
-if(Number(atual.quantidadeKg || 0) < Number(lote.kgUsado || 0)){
-alert(`Não é possível concluir/salvar: o lote ${lote.lote || lote.id} não tem saldo suficiente.`);
-return;
-}
-}
-if(id && ordensIncrustacaoCache[id] && ordensIncrustacaoCache[id].baixaRealizada){
-alert("Esta ordem já foi concluída e a baixa já foi realizada. Para proteger o estoque, ela não pode ser alterada. Caso tenha lançado errado, faça um ajuste manual no estoque e registre uma nova OP.");
-return;
-}
-const consumo = simularIncrustacao();
-const dados = {variedade:document.getElementById("opVariedade").value.trim(), lote:document.getElementById("opLote").value.trim(), quadra:document.getElementById("opQuadra").value.trim(), galpao:document.getElementById("opGalpao").value.trim(), volumeFinal:volume, lotesSementeBase:lotesBase, sementeBaseId:lotesBase[0]?.id||"", sementeBaseVariedade:lotesBase[0]?.variedade||"", sementeBaseLote:lotesBase.map(l=>l.lote).filter(Boolean).join(" / "), sementeUsada:sementeCalculada, status:document.getElementById("opStatus").value, statusEstoqueFinal:document.getElementById("opStatusEstoqueFinal").value, observacao:document.getElementById("opObservacao").value.trim(), consumo, baixaRealizada:false, usuarioAtualizacao:auth.currentUser?auth.currentUser.email:"", dataAtualizacao:new Date().toLocaleString("pt-BR")};
-if(!dados.variedade || !dados.lote){ alert("Informe variedade e lote da produção."); return; }
-if(dados.status === "Concluído" && consumo.some(c=>c.saldo<0)){ alert("Não é possível concluir: existe produto com estoque insuficiente."); return; }
-if(id){ await update(ref(db,"ordensIncrustacao/"+id),dados); if(dados.status === "Concluído") await concluirOrdemIncrustacao(id,dados); alert("Ordem atualizada com sucesso!"); }
-else{ dados.usuarioCadastro=auth.currentUser?auth.currentUser.email:""; dados.dataCadastro=new Date().toLocaleString("pt-BR"); const nova=await push(ref(db,"ordensIncrustacao"),dados); if(dados.status === "Concluído") await concluirOrdemIncrustacao(nova.key,dados); alert("Ordem salva com sucesso!"); }
-cancelarEdicaoOrdemIncrustacao();
+  Object.values(lotesEstoqueCache).forEach(lote => {
+    if (Number(lote.peso || 0) > 0 && lote.posicaoPatio) {
+      posicoesOcupadasSet.add(lote.posicaoPatio.trim().toUpperCase());
+      
+      const fardos = Number(lote.fardos || 0);
+      const peso = Number(lote.peso || 0);
+
+      if (lote.tipo === "Pluma") { fardosPluma += fardos; pesoPluma += peso; }
+      else if (lote.tipo === "Caroço") { fardosCaroco += fardos; pesoCaroco += peso; }
+      else if (lote.tipo === "Fibrilha") { fardosFibrilha += fardos; pesoFibrilha += peso; }
+    }
+  });
+
+  // Conta caminhões "agendados" ou despachados no dia corrente
+  const totalCaminhoes = Object.keys(historicoCargasCache).length;
+
+  // Atualiza elementos de texto do Dashboard
+  document.getElementById("dashFardosPluma").innerText = formatarNumero(fardosPluma);
+  document.getElementById("dashFardosCaroco").innerText = formatarNumero(fardosCaroco);
+  document.getElementById("dashFardosFibrilha").innerText = formatarNumero(fardosFibrilha);
+  
+  document.getElementById("dashPesoPluma").innerText = formatarNumero(pesoPluma) + " Kg";
+  document.getElementById("dashPesoCaroco").innerText = formatarNumero(pesoCaroco) + " Kg";
+  document.getElementById("dashPesoFibrilha").innerText = formatarNumero(pesoFibrilha) + " Kg";
+
+  const pctOcupacao = Math.min(100, Math.round((posicoesOcupadasSet.size / posicoesPatioMapeadas.length) * 100));
+  document.getElementById("dashOcupacaoPatio").innerText = pctOcupacao + "%";
+  document.getElementById("dashCaminhoesAguardando").innerText = totalCaminhoes;
+
+  // Atualiza graficamente o mapa do pátio se a aba estiver aberta
+  renderizarCroquiPatio();
 }
 
-async function concluirOrdemIncrustacao(idOrdem, ordem){
-if(ordem.baixaRealizada) return;
-let lotesBase = Array.isArray(ordem.lotesSementeBase) ? ordem.lotesSementeBase : [];
-if(!lotesBase.length && ordem.sementeBaseId){
-lotesBase = [{id:ordem.sementeBaseId, variedade:ordem.sementeBaseVariedade||"", lote:ordem.sementeBaseLote||"", kgUsado:Number(ordem.sementeUsada||0)}];
-}
-if(!lotesBase.length){ alert("Nenhum lote de semente base informado na OP."); return; }
-for(const lote of lotesBase){
-const sementeBase = sementesCache[lote.id];
-if(!sementeBase){ alert(`Semente base ${lote.lote || lote.id} não encontrada no estoque normal.`); return; }
-const estoqueSementeKg = Number(sementeBase.quantidadeKg || 0);
-const kgUsado = Number(lote.kgUsado || 0);
-if(estoqueSementeKg < kgUsado){ alert(`Não é possível concluir: semente base insuficiente no lote ${lote.lote || lote.id}.`); return; }
-}
-for(const c of ordem.consumo || []){
-const p=produtosIncrustacaoCache[c.produtoId];
-if(p){ await update(ref(db,"produtosIncrustacao/"+c.produtoId),{estoque:Number(p.estoque||0)-Number(c.necessario||0), dataAtualizacao:new Date().toLocaleString("pt-BR"), usuarioAtualizacao:auth.currentUser?auth.currentUser.email:""}); }
-}
-for(const lote of lotesBase){
-const sementeBase = sementesCache[lote.id];
-const novoKgSementeBase = Number(sementeBase.quantidadeKg || 0) - Number(lote.kgUsado || 0);
-await update(ref(db,"sementes/"+lote.id),{
-quantidadeKg: novoKgSementeBase,
-status: novoKgSementeBase <= 0 ? "Vendido" : (sementeBase.status || "Armazenada"),
-usuarioAtualizacao: auth.currentUser ? auth.currentUser.email : "",
-dataAtualizacao: new Date().toLocaleString("pt-BR")
-});
-}
-await push(ref(db,"sementesIncrustadas"),{variedade:ordem.variedade,lote:ordem.lote,quadra:ordem.quadra,galpao:ordem.galpao,quantidadeKg:ordem.volumeFinal,status:ordem.statusEstoqueFinal||"Armazenada",ordemId:idOrdem,lotesSementeBase:lotesBase,sementeBaseId:lotesBase[0]?.id||"",sementeBaseVariedade:lotesBase[0]?.variedade||"",sementeBaseLote:lotesBase.map(l=>l.lote).filter(Boolean).join(" / "),sementeUsada:ordem.sementeUsada||0,observacao:"Produzida via módulo de incrustamento. "+(ordem.observacao||""),usuarioCadastro:auth.currentUser?auth.currentUser.email:"",dataCadastro:new Date().toLocaleString("pt-BR")});
-await update(ref(db,"ordensIncrustacao/"+idOrdem),{baixaRealizada:true,dataConclusao:new Date().toLocaleString("pt-BR")});
+// --- PROCESSAMENTO DO CROQUI INTERATIVO ---
+function renderizarCroquiPatio() {
+  const container = document.getElementById("containerMapaPatio");
+  if (!container) return;
+  container.innerHTML = "";
+
+  posicoesPatioMapeadas.forEach(posicao => {
+    // Procura por um lote com saldo nesta coordenada exata
+    const idLoteOcupante = Object.keys(lotesEstoqueCache).find(id => {
+      const l = lotesEstoqueCache[id];
+      return l.posicaoPatio && l.posicaoPatio.trim().toUpperCase() === posicao && Number(l.peso || 0) > 0;
+    });
+
+    const elemento = document.createElement("div");
+    elemento.className = "bloco-patio";
+
+    if (idLoteOcupante) {
+      const lote = lotesEstoqueCache[idLoteOcupante];
+      let classeCor = "p-pluma";
+      if (lote.tipo === "Caroço") classeCor = "p-caroco";
+      if (lote.tipo === "Fibrilha") classeCor = "p-fibrilha";
+
+      elemento.classList.add(classeCor);
+      elemento.innerHTML = `
+        <span class="bloco-nome">${posicao}</span>
+        <span class="bloco-meta"><strong>${lote.lote}</strong></span><br>
+        <span class="bloco-meta">${formatarNumero(lote.peso)} Kg</span>
+      `;
+      elemento.onclick = () => inspecionarPosicaoPatio(idLoteOcupante, posicao);
+    } else {
+      elemento.classList.add("p-livre");
+      elemento.innerHTML = `
+        <span class="bloco-nome">${posicao}</span>
+        <span class="bloco-meta" style="color:#94a3b8">Livre</span>
+      `;
+      elemento.onclick = () => exibirPosicaoVazia(posicao);
+    }
+
+    container.appendChild(elemento);
+  });
 }
 
-function carregarOrdensIncrustacao(){
-onValue(ref(db,"ordensIncrustacao"),(snapshot)=>{ ordensIncrustacaoCache={}; const tabela=document.getElementById("tabelaOrdensIncrustacao"); if(!tabela) return; tabela.innerHTML=""; snapshot.forEach(item=>{ const id=item.key; const op=item.val(); ordensIncrustacaoCache[id]=op; const cls=op.status==="Concluído"?"op-concluido":op.status==="Produzindo"?"op-produzindo":op.status==="Aguardando"?"op-aguardando":"op-espera"; const acoes = op.baixaRealizada ? `<span class="badge">Baixa realizada</span>` : `<button class="btn-edit" onclick="editarOrdemIncrustacao('${id}')">Editar</button><button class="btn-warning" onclick="marcarOrdemConcluida('${id}')">Concluir</button><button class="btn-danger" onclick="excluirOrdemIncrustacao('${id}')">Excluir</button>`; tabela.innerHTML+=`<tr><td>${op.variedade||""}</td><td>${op.lote||""}</td><td>${formatarNumeroBR(op.volumeFinal)}</td><td>${formatarNumeroBR(op.sementeUsada)}</td><td><span class="status-op ${cls}">${op.status||""}</span></td><td>${op.dataCadastro||op.dataAtualizacao||""}</td><td>${op.usuarioCadastro||op.usuarioAtualizacao||""}</td><td>${acoes}</td></tr>`; }); atualizarResumoIncrustacao(); });
+function inspecionarPosicaoPatio(idLote, posicao) {
+  const lote = lotesEstoqueCache[idLote];
+  const painel = document.getElementById("conteudoInspecaoPatio");
+  
+  painel.innerHTML = `
+    <div style="font-size:13.5px; line-height:1.7;">
+      <p style="margin-bottom:6px;"><strong>Coordenada:</strong> <span class="badge" style="background:#1e3a8a; color:white;">${posicao}</span></p>
+      <p><strong>Lote Identificado:</strong> ${lote.lote}</p>
+      <p><strong>Tipo de Produto:</strong> <span class="status ${lote.tipo.toLowerCase()}">${lote.tipo}</span></p>
+      <p><strong>Fardos no Bloco:</strong> ${lote.fardos} fds</p>
+      <p><strong>Peso Líquido:</strong> ${formatarNumero(lote.peso)} Kg</p>
+      <p><strong>Data de Entrada:</strong> ${lote.dataCadastro || "N/D"}</p>
+      
+      <hr style="margin:12px 0; border:0; border-top:1px solid #e2e8f0;">
+      
+      <h4 style="color:#1e3a8a; margin-bottom:8px;">Remanejamento de Pátio</h4>
+      <label class="small-note">Mover este lote para outra Posição:</label>
+      <select id="remanejarNovaPosicao" style="margin-bottom:8px; padding:6px; font-size:12px;">
+        ${posicoesPatioMapeadas.map(p => `<option value="${p}" ${p===posicao?'disabled':''}>${p}</option>`).join('')}
+      </select>
+      <button style="width:100%; padding:8px; font-size:12px;" onclick="window.executarRemanejamentoFisico('${idLote}', '${posicao}')">Confirmar Movimentação</button>
+    </div>
+  `;
 }
 
-window.editarOrdemIncrustacao = function(id){
-const op=ordensIncrustacaoCache[id];
-if(!op) return;
-if(op.baixaRealizada){ alert("Esta ordem já foi concluída e a baixa já foi realizada. Ela fica bloqueada para proteger o estoque."); return; }
-document.getElementById("idOrdemIncrustacaoEdicao").value=id;
-document.getElementById("opVariedade").value=op.variedade||"";
-document.getElementById("opLote").value=op.lote||"";
-document.getElementById("opQuadra").value=op.quadra||"";
-document.getElementById("opGalpao").value=op.galpao||"";
-document.getElementById("opVolumeFinal").value=op.volumeFinal||"";
-calcularSementeAutomatica();
-lotesSementeBaseSelecionados = Array.isArray(op.lotesSementeBase) ? op.lotesSementeBase.map(l=>({...l})) : [];
-if(!lotesSementeBaseSelecionados.length && op.sementeBaseId){
-const s = sementesCache[op.sementeBaseId] || {};
-lotesSementeBaseSelecionados = [{id:op.sementeBaseId,variedade:op.sementeBaseVariedade||s.variedade||"",lote:op.sementeBaseLote||s.lote||"",quadra:s.quadra||"",galpao:s.galpao||"",quantidadeKg:Number(s.quantidadeKg||0),kgUsado:Number(op.sementeUsada||0)}];
-}
-renderizarLotesSementeBase();
-document.getElementById("opStatus").value=op.status||"Em espera";
-document.getElementById("opStatusEstoqueFinal").value=op.statusEstoqueFinal||"Armazenada";
-document.getElementById("opObservacao").value=op.observacao||"";
-document.getElementById("btnSalvarOrdemIncrustacao").innerText="Atualizar Ordem";
-document.getElementById("btnCancelarOrdemIncrustacao").classList.remove("hidden");
-simularIncrustacao();
+function exibirPosicaoVazia(posicao) {
+  document.getElementById("conteudoInspecaoPatio").innerHTML = `
+    <div style="text-align:center; padding:15px 0;">
+      <h3 style="color:#94a3b8; font-size:18px;">Área ${posicao}</h3>
+      <p style="font-size:13px; margin-top:8px; color:#64748b;">Nenhum fardo alocado nesta posição. O espaço está liberado para novos emblocamentos industriais.</p>
+    </div>
+  `;
 }
 
-window.cancelarEdicaoOrdemIncrustacao = function(){
-["idOrdemIncrustacaoEdicao","opVariedade","opLote","opQuadra","opGalpao","opVolumeFinal","opSementeUsada","opObservacao","opSementeBaseKg"].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=""; });
-if(document.getElementById("opSementeBaseId")){document.getElementById("opSementeBaseId").value="";}
-lotesSementeBaseSelecionados = [];
-renderizarLotesSementeBase();
-document.getElementById("opStatus").value="Em espera";
-document.getElementById("opStatusEstoqueFinal").value="Armazenada";
-document.getElementById("resultadoSimulacaoIncrustacao").innerHTML="";
-document.getElementById("btnSalvarOrdemIncrustacao").innerText="Salvar Ordem";
-document.getElementById("btnCancelarOrdemIncrustacao").classList.add("hidden");
+window.executarRemanejamentoFisico = async function(idLote, posicaoAntiga) {
+  const novaPosicao = document.getElementById("remanejarNovaPosicao").value;
+  
+  // Verifica se a nova posição já não possui um lote ativo com peso
+  const posicaoOcupada = Object.values(lotesEstoqueCache).some(l => 
+    l.posicaoPatio === novaPosicao && Number(l.peso || 0) > 0
+  );
+
+  if (posicaoOcupada) {
+    alert(`Operação abortada. A posição ${novaPosicao} já possui estoque ativo. Evite contaminação de lotes.`);
+    return;
+  }
+
+  if (confirm(`Confirmar a movimentação física do lote da posição ${posicaoAntiga} para a posição ${novaPosicao}?`)) {
+    await update(ref(db, `lotesAlgodoeira/${idLote}`), {
+      posicaoPatio: novaPosicao,
+      usuarioAtualizacao: auth.currentUser ? auth.currentUser.email : "Sistema",
+      dataAtualizacao: new Date().toLocaleString("pt-BR")
+    });
+    alert("Movimentação registrada com sucesso. Pátio atualizado.");
+    exibirPosicaoVazia(posicaoAntiga);
+  }
+};
+
+// --- MÓDULO DE ENTRADA / PRODUÇÃO DE ALGODÃO ---
+window.salvarLoteProducao = function() {
+  const idEdicao = document.getElementById("idEdicaoProducao").value;
+  const loteStr = document.getElementById("prodLote").value.trim();
+  const tipo = document.getElementById("prodTipo").value;
+  const fardos = Number(document.getElementById("prodFardos").value || 0);
+  const peso = Number(document.getElementById("prodPeso").value || 0);
+  const posicaoPatio = document.getElementById("prodPosicaoPatio").value;
+  const observacao = document.getElementById("prodObs").value.trim();
+
+  if (!loteStr || fardos <= 0 || peso <= 0) {
+    alert("Preencha a identificação do lote, quantidade de fardos e peso líquido de balança.");
+    return;
+  }
+
+  // Verifica bloqueio de posição (duplicidade no pátio)
+  const jaOcupado = Object.entries(lotesEstoqueCache).some(([id, l]) => 
+    id !== idEdicao && l.posicaoPatio === posicaoPatio && Number(l.peso || 0) > 0
+  );
+
+  if (jaOcupado) {
+    alert(`A posição ${posicaoPatio} já está ocupada no pátio. Escolha outra área.`);
+    return;
+  }
+
+  const dados = {
+    lote: loteStr,
+    tipo: tipo,
+    fardos: fardos,
+    peso: peso,
+    posicaoPatio: posicaoPatio,
+    observacao: observacao,
+    usuarioAtualizacao: auth.currentUser ? auth.currentUser.email : "Sistema",
+    dataAtualizacao: new Date().toLocaleString("pt-BR")
+  };
+
+  if (idEdicao) {
+    update(ref(db, "lotesAlgodoeira/" + idEdicao), dados)
+      .then(() => {
+        alert("Lote atualizado com sucesso no armazém.");
+        cancelarEdicaoProducao();
+      });
+  } else {
+    dados.usuarioCadastro = auth.currentUser ? auth.currentUser.email : "Sistema";
+    dados.dataCadastro = new Date().toLocaleString("pt-BR");
+    push(ref(db, "lotesAlgodoeira"), dados)
+      .then(() => {
+        alert("Novo lote de algodão processado e emblocado!");
+        limparCamposProducao();
+      });
+  }
+};
+
+window.editarLote = function(id) {
+  const lote = lotesEstoqueCache[id];
+  document.getElementById("idEdicaoProducao").value = id;
+  document.getElementById("prodLote").value = lote.lote || "";
+  document.getElementById("prodTipo").value = lote.tipo || "Pluma";
+  document.getElementById("prodFardos").value = lote.fardos || "";
+  document.getElementById("prodPeso").value = lote.peso || "";
+  document.getElementById("prodPosicaoPatio").value = lote.posicaoPatio || "A01";
+  document.getElementById("prodObs").value = lote.observacao || "";
+  
+  document.getElementById("tituloFormProducao").innerText = "Editar Parâmetros do Lote";
+  document.getElementById("btnCancelarProducao").classList.remove("hidden");
+};
+
+window.excluirLote = function(id) {
+  if (confirm("Deseja deletar permanentemente este registro de lote do estoque físico?")) {
+    remove(ref(db, "lotesAlgodoeira/" + id)).then(() => alert("Registro removido."));
+  }
+};
+
+window.cancelarEdicaoProducao = function() {
+  limparCamposProducao();
+  document.getElementById("tituloFormProducao").innerText = "Registrar Lote Produzido";
+  document.getElementById("btnCancelarProducao").classList.add("hidden");
+};
+
+function limparCamposProducao() {
+  document.getElementById("idEdicaoProducao").value = "";
+  document.getElementById("prodLote").value = "";
+  document.getElementById("prodFardos").value = "";
+  document.getElementById("prodPeso").value = "";
+  document.getElementById("prodObs").value = "";
 }
 
-window.excluirOrdemIncrustacao = function(id){ if(confirm("Deseja excluir esta ordem? A exclusão não desfaz baixas já realizadas.")) remove(ref(db,"ordensIncrustacao/"+id)); }
+function atualizarTabelaEstoque() {
+  const tbody = document.getElementById("tabelaLotesEstoque");
+  if (!tbody) return;
+  tbody.innerHTML = "";
 
-window.marcarOrdemConcluida = async function(id){
-const op=ordensIncrustacaoCache[id];
-if(!op) return;
-if(op.baixaRealizada){ alert("Esta ordem já foi concluída e a baixa já foi realizada."); return; }
-if(!confirm("Concluir produção, baixar produtos, baixar os lotes de semente base do estoque normal e lançar no estoque de sementes incrustadas?")) return;
-let lotesBase = Array.isArray(op.lotesSementeBase) ? op.lotesSementeBase : [];
-if(!lotesBase.length && op.sementeBaseId){ lotesBase = [{id:op.sementeBaseId,lote:op.sementeBaseLote||"",kgUsado:Number(op.sementeUsada||0)}]; }
-if(!lotesBase.length){ alert("Esta OP não possui lote base informado."); return; }
-for(const lote of lotesBase){
-const sementeBase=sementesCache[lote.id];
-if(!sementeBase){ alert(`Semente base ${lote.lote || lote.id} não encontrada no estoque normal.`); return; }
-if(Number(sementeBase.quantidadeKg||0) < Number(lote.kgUsado||0)){ alert(`Não é possível concluir: semente base insuficiente no lote ${lote.lote || lote.id}.`); return; }
-}
-const consumo=(op.consumo||[]).map(c=>{ const p=produtosIncrustacaoCache[c.produtoId]||{}; return {...c, estoque:Number(p.estoque||0), saldo:Number(p.estoque||0)-Number(c.necessario||0)}; });
-if(consumo.some(c=>c.saldo<0)){ alert("Não é possível concluir: existe produto com estoque insuficiente."); return; }
-op.consumo=consumo;
-op.lotesSementeBase=lotesBase;
-op.status="Concluído";
-await update(ref(db,"ordensIncrustacao/"+id),op);
-await concluirOrdemIncrustacao(id,op);
-alert("Produção concluída com sucesso!");
-}
+  Object.entries(lotesEstoqueCache).forEach(([id, lote]) => {
+    if (Number(lote.peso || 0) <= 0) return; // Oculta lotes zerados/expedidos
 
-function carregarSementesIncrustadas(){
-onValue(ref(db,"sementesIncrustadas"),(snapshot)=>{ sementesIncrustadasCache={}; const tabela=document.getElementById("tabelaSementesIncrustadas"); if(!tabela) return; tabela.innerHTML=""; snapshot.forEach(item=>{ const id=item.key; const s=item.val(); sementesIncrustadasCache[id]=s; tabela.innerHTML+=`<tr><td>${s.variedade||""}</td><td>${s.lote||""}</td><td>${s.quadra||""}</td><td>${s.galpao||""}</td><td>${formatarNumeroBR(s.quantidadeKg)}</td><td>${s.status||""}</td><td>${s.ordemId||""}</td><td>${s.dataCadastro||""}</td><td><button class="btn-danger" onclick="excluirSementeIncrustada('${id}')">Excluir</button></td></tr>`; }); atualizarResumoIncrustacao(); atualizarSelectVenda(); });
-}
-window.excluirSementeIncrustada = function(id){ if(confirm("Deseja excluir esta semente incrustada do estoque separado?")) remove(ref(db,"sementesIncrustadas/"+id)); }
-
-function atualizarResumoIncrustacao(){
-const el1=document.getElementById("totalProdutosIncrustacao"); if(!el1) return;
-el1.innerText=Object.keys(produtosIncrustacaoCache).length;
-document.getElementById("totalOrdensIncrustacao").innerText=Object.keys(ordensIncrustacaoCache).length;
-document.getElementById("totalKgIncrustado").innerText=formatarNumeroBR(Object.values(sementesIncrustadasCache).reduce((s,x)=>s+Number(x.quantidadeKg||0),0));
-document.getElementById("totalOpsPendentes").innerText=Object.values(ordensIncrustacaoCache).filter(op=>op.status!=="Concluído").length;
+    tbody.innerHTML += `
+      <tr>
+        <td><strong>${lote.lote || ""}</strong></td>
+        <td><span class="status ${lote.tipo.toLowerCase()}">${lote.tipo || ""}</span></td>
+        <td>${lote.fardos || 0} fds</td>
+        <td>${formatarNumero(lote.peso || 0)}</td>
+        <td><span class="badge">${lote.posicaoPatio || "N/A"}</span></td>
+        <td>${lote.dataCadastro || ""}</td>
+        <td>${lote.usuarioCadastro || ""}</td>
+        <td>
+          <button class="btn-edit" onclick="editarLote('${id}')">Editar</button>
+          <button class="btn-danger" onclick="excluirLote('${id}')">Excluir</button>
+        </td>
+      </tr>
+    `;
+  });
 }
 
-window.gerarRelatorioIncrustacao = function(){
-const produtos = Object.values(produtosIncrustacaoCache).map(p=>[p.nome||"",rotuloUnidade(p.unidade),formatarDoseProduto(p),formatarMedida(p.estoque,p.unidade),formatarProducaoPossivel(calcularProducaoPossivelPorInsumo(p)),formatarMedida(p.estoqueMinimo,p.unidade)]);
-const ordens = Object.values(ordensIncrustacaoCache).map(o=>[o.variedade||"",o.lote||"",formatarNumeroBR(o.volumeFinal),formatarNumeroBR(o.sementeUsada),o.status||"",o.dataCadastro||""]);
-const incrustadas = Object.values(sementesIncrustadasCache).map(s=>[s.variedade||"",s.lote||"",s.quadra||"",s.galpao||"",formatarNumeroBR(s.quantidadeKg),s.status||"",s.dataCadastro||""]);
-abrirRelatorio("Relatório de Incrustamento", `<h1>Relatório de Incrustamento - AgroSeed</h1><p>Gerado em: ${new Date().toLocaleString("pt-BR")}</p><h2>Produtos de Incrustamento</h2>${montarTabelaHTML(["Produto","Unid. Estoque","Dose","Estoque","Pode Produzir","Estoque Mín."], produtos)}<h2>Ordens de Produção</h2>${montarTabelaHTML(["Variedade","Lote","Volume Kg","Semente Kg","Status","Data"], ordens)}<h2>Estoque de Sementes Incrustadas</h2>${montarTabelaHTML(["Variedade","Lote","Quadra","Galpão","Kg","Status","Data"], incrustadas)}`);
+function atualizarSelectsPosicoes() {
+  const select = document.getElementById("prodPosicaoPatio");
+  if (!select) return;
+  select.innerHTML = "";
+  
+  posicoesPatioMapeadas.forEach(pos => {
+    select.innerHTML += `<option value="${pos}">${pos}</option>`;
+  });
 }
 
-window.exportarCSVIncrustacao = function(){
-const colunas=["Tipo","Produto/Variedade","Lote","Unidade/Status","Dose/Volume","Estoque/Kg","Pode Produzir","Data"];
-const linhas=[];
-Object.values(produtosIncrustacaoCache).forEach(p=>linhas.push(["Produto",p.nome||"","",rotuloUnidade(p.unidade),formatarDoseProduto(p),formatarMedida(p.estoque,p.unidade),formatarProducaoPossivel(calcularProducaoPossivelPorInsumo(p)),p.dataAtualizacao||""]));
-Object.values(ordensIncrustacaoCache).forEach(o=>linhas.push(["Ordem",o.variedade||"",o.lote||"",o.status||"",o.volumeFinal||0,o.sementeUsada||0,"",o.dataCadastro||""]));
-Object.values(sementesIncrustadasCache).forEach(s=>linhas.push(["Semente Incrustada",s.variedade||"",s.lote||"",s.status||"",s.quantidadeKg||0,"","",s.dataCadastro||""]));
-const csv=[colunas,...linhas].map(linha=>linha.map(c=>`"${String(c).replaceAll('"','""')}"`).join(";")).join("\n");
-baixarArquivo("relatorio_incrustamento_agroseed.csv", "\ufeff"+csv, "text/csv;charset=utf-8;");
+// --- MÓDULO DE EXPEDIÇÃO & LOGÍSTICA ---
+function atualizarSelectLotesExpedicao() {
+  const select = document.getElementById("expLoteSelec");
+  if (!select) return;
+  select.innerHTML = '<option value="">Selecione um lote disponível...</option>';
+
+  Object.entries(lotesEstoqueCache).forEach(([id, lote]) => {
+    if (Number(lote.peso || 0) > 0) {
+      select.innerHTML += `<option value="${id}">${lote.lote} (${lote.tipo}) | Posição: ${lote.posicaoPatio}</option>`;
+    }
+  });
 }
 
-function baixarArquivo(nome, conteudo, tipo){
-const blob = new Blob([conteudo], {type: tipo});
-const url = URL.createObjectURL(blob);
-const a = document.createElement("a");
-a.href = url;
-a.download = nome;
-document.body.appendChild(a);
-a.click();
-document.body.removeChild(a);
-URL.revokeObjectURL(url);
+window.atualizarDadosLoteExpedicao = function() {
+  const idLote = document.getElementById("expLoteSelec").value;
+  const inputPeso = document.getElementById("expPesoDisponivel");
+  if (!idLote) {
+    inputPeso.value = "";
+    return;
+  }
+  const lote = lotesEstoqueCache[idLote];
+  inputPeso.value = `${formatarNumero(lote.peso)} Kg (${lote.fardos} Fardos)`;
+};
+
+window.registrarExpedicaoCarga = async function() {
+  const cliente = document.getElementById("expCliente").value.trim();
+  const motorista = document.getElementById("expMotorista").value.trim();
+  const caminhao = document.getElementById("expCaminhao").value.trim();
+  const nf = document.getElementById("expNF").value.trim();
+  const idLote = document.getElementById("expLoteSelec").value;
+
+  if (!cliente || !motorista || !caminhao || !nf || !idLote) {
+    alert("Todos os campos logísticos e a seleção de lote são obrigatórios para emissão da OC.");
+    return;
+  }
+
+  const lote = lotesEstoqueCache[idLote];
+  if (!lote) return;
+
+  if (confirm(`Confirmar faturamento e carregamento do lote ${lote.lote}? Isso dará baixa automática no estoque e liberará a posição ${lote.posicaoPatio}.`)) {
+    
+    // 1. Grava no histórico de expedição (Logística/Balança de Saída)
+    await push(ref(db, "expedicaoAlgodoeira"), {
+      cliente: cliente,
+      lote: lote.lote,
+      tipo: lote.tipo,
+      fardos: lote.fardos,
+      peso: lote.peso,
+      motorista: motorista,
+      caminhao: caminhao,
+      nf: nf,
+      dataSaida: new Date().toLocaleString("pt-BR"),
+      operador: auth.currentUser ? auth.currentUser.email : "Sistema"
+    });
+
+    // 2. Dá a baixa automática no estoque físico (Zera peso/fardos) e libera a quadra
+    await update(ref(db, `lotesAlgodoeira/${idLote}`), {
+      peso: 0,
+      fardos: 0,
+      posicaoAnterior: lote.posicaoPatio,
+      posicaoPatio: "", // Libera geograficamente
+      usuarioAtualizacao: auth.currentUser ? auth.currentUser.email : "Sistema",
+      dataAtualizacao: new Date().toLocaleString("pt-BR")
+    });
+
+    alert("Carga despachada com sucesso! Nota Fiscal integrada à balança e posição liberada.");
+    limparCamposExpedicao();
+  }
+};
+
+function limparCamposExpedicao() {
+  document.getElementById("expCliente").value = "";
+  document.getElementById("expMotorista").value = "";
+  document.getElementById("expCaminhao").value = "";
+  document.getElementById("expNF").value = "";
+  document.getElementById("expLoteSelec").value = "";
+  document.getElementById("expPesoDisponivel").value = "";
+}
+
+function atualizarTabelaExpedicao() {
+  const tbody = document.getElementById("tabelaHistoricoExpedicao");
+  if (!tbody) return;
+  tbody.innerHTML = "";
+
+  Object.values(historicoCargasCache).reverse().forEach(carga => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${carga.cliente || ""}</td>
+        <td><strong>${carga.lote || ""}</strong></td>
+        <td><span class="status carregado">${carga.tipo || ""}</span></td>
+        <td>${formatarNumero(carga.peso || 0)} Kg</td>
+        <td>${carga.motorista || ""}</td>
+        <td><span class="badge" style="background:#475569; color:white;">${carga.caminhao || ""}</span></td>
+        <td>${carga.nf || ""}</td>
+        <td>${carga.dataSaida || ""}</td>
+      </tr>
+    `;
+  });
+}
+
+// --- UTILITÁRIO DE FORMATAÇÃO ---
+function formatarNumero(num) {
+  return Number(num).toLocaleString("pt-BR");
 }
 </script>
-
-<div id="relatorioModal" class="modal hidden">
-<div class="modal-content">
-<div class="modal-header no-print">
-<h2 id="relatorioTitulo">Relatório</h2>
-<div>
-<button onclick="window.print()">Gerar PDF Completo</button>
-<button class="btn-danger" onclick="fecharRelatorio()">Fechar</button>
-</div>
-</div>
-<div id="relatorioConteudo"></div>
-</div>
-</div>
-
 </body>
 </html>
