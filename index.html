@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -15,6 +16,10 @@
     .hidden{display:none!important}
     .login-box{max-width:400px;margin:100px auto;background:white;padding:35px;border-radius:16px;box-shadow:0 10px 25px -5px rgba(0,0,0,.1)}
     .login-box h2{text-align:center;color:#1e3a8a;margin-bottom:25px}
+    .login-status{padding:10px;border-radius:8px;margin-top:12px;font-size:12px;line-height:1.45}
+    .login-status.ok{background:#dcfce7;color:#166534;border:1px solid #86efac}
+    .login-status.erro{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+    .login-status.info{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
     .card{background:white;border-radius:14px;padding:22px;margin-bottom:22px;box-shadow:0 4px 6px -1px rgba(0,0,0,.05),0 2px 4px -1px rgba(0,0,0,.06)}
     .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:22px}
     .card-info{background:white;border-radius:14px;padding:20px;box-shadow:0 4px 6px -1px rgba(0,0,0,.05);border-left:5px solid #1e3a8a}
@@ -82,7 +87,7 @@
 
 <header>
   <h1>Algodoeira ERP & Yard Management</h1>
-  <p>Controle de Produção, Armazenamento Geográfico e Expedição de Lotes</p>
+  <p>Controle de Produção, Armazenamento Geográfico e Expedição de Lotes · Versão 1.3</p>
   <div id="areaUsuario" class="user-area hidden">
     <span id="usuarioLogado"></span>
     <button class="btn-dark" onclick="sair()">Sair</button>
@@ -95,7 +100,9 @@
   <br><br>
   <input type="password" id="senhaLogin" placeholder="Senha de Acesso">
   <br><br>
-  <button style="width:100%" onclick="entrar()">Entrar no Sistema</button>
+  <button id="btnLogin" style="width:100%" onclick="entrar()">Entrar no Sistema</button>
+  <button id="btnTesteFirebase" class="btn-gray" style="width:100%;margin-top:10px;" onclick="testarFirebase()">Testar conexão com Firebase</button>
+  <div id="statusLogin" class="small-note" style="margin-top:12px;text-align:center;"></div>
 </div>
 
 <div id="sistemaTela" class="container hidden">
@@ -250,7 +257,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getDatabase, ref, push, onValue, update, remove, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyALJOAPzmil3tTmv6f3kMGYQX1Oc61t0F4",
@@ -282,12 +289,88 @@
   function formatarNumero(num){ return new Intl.NumberFormat("pt-BR").format(num || 0); }
   function agora(){ return new Date().toLocaleString("pt-BR"); }
 
-  window.entrar = function(){
+  function mostrarStatusLogin(mensagem, tipo="info"){
+    const el=document.getElementById("statusLogin");
+    if(!el) return;
+    el.className="small-note login-status "+tipo;
+    el.innerHTML=mensagem;
+  }
+
+  function traduzirErroLogin(erro){
+    const codigo=erro?.code || "";
+    const mensagens={
+      "auth/invalid-credential":"E-mail ou senha incorretos.",
+      "auth/invalid-email":"O e-mail informado é inválido.",
+      "auth/user-not-found":"Usuário não encontrado no Firebase Authentication.",
+      "auth/wrong-password":"Senha incorreta.",
+      "auth/too-many-requests":"Muitas tentativas. Aguarde alguns minutos e tente novamente.",
+      "auth/network-request-failed":"Falha de conexão. Verifique a internet.",
+      "auth/unauthorized-domain":"O domínio do GitHub Pages ainda não está autorizado no Firebase Authentication.",
+      "auth/api-key-not-valid":"A API Key do Firebase foi rejeitada. Confira a chave e as restrições da API no Google Cloud/Firebase.",
+      "auth/operation-not-allowed":"Login por e-mail e senha não está habilitado no Firebase Authentication.",
+      "auth/configuration-not-found":"A configuração do Firebase Authentication não foi encontrada."
+    };
+    return mensagens[codigo] || ("Falha na autenticação: "+codigo+(erro?.message ? "<br><small>"+escapeHtml(erro.message)+"</small>" : ""));
+  }
+
+  window.entrar = async function(){
     const email=document.getElementById("emailLogin").value.trim();
     const senha=document.getElementById("senhaLogin").value;
-    if(!email || !senha){ alert("Por favor, preencha todos os campos de acesso."); return; }
-    signInWithEmailAndPassword(auth,email,senha).catch(erro=>alert("Falha na autenticação: "+erro.code));
+    const btn=document.getElementById("btnLogin");
+
+    if(!email || !senha){
+      mostrarStatusLogin("Informe o e-mail e a senha.","erro");
+      return;
+    }
+
+    try{
+      btn.disabled=true;
+      btn.innerText="Entrando...";
+      mostrarStatusLogin("Validando acesso no Firebase...","info");
+
+      await setPersistence(auth,browserLocalPersistence);
+      await signInWithEmailAndPassword(auth,email,senha);
+
+      mostrarStatusLogin("Acesso autorizado. Carregando o pátio...","ok");
+    }catch(erro){
+      console.error("ERRO FIREBASE AUTH:",erro);
+      mostrarStatusLogin(traduzirErroLogin(erro),"erro");
+    }finally{
+      btn.disabled=false;
+      btn.innerText="Entrar no Sistema";
+    }
   };
+
+  window.testarFirebase = async function(){
+    try{
+      mostrarStatusLogin("Testando a configuração do Firebase...","info");
+      // O Firebase Auth é inicializado acima. Aqui usamos o domínio/configuração
+      // visível no próprio projeto para detectar rapidamente erros de configuração.
+      const cfgOk = firebaseConfig &&
+        firebaseConfig.apiKey &&
+        firebaseConfig.authDomain &&
+        firebaseConfig.projectId &&
+        firebaseConfig.appId;
+
+      if(!cfgOk) throw new Error("Configuração incompleta.");
+
+      mostrarStatusLogin(
+        "Configuração carregada.<br>" +
+        "<strong>Projeto:</strong> "+escapeHtml(firebaseConfig.projectId)+"<br>" +
+        "<strong>Auth:</strong> "+escapeHtml(firebaseConfig.authDomain)+"<br>" +
+        "Se o login retornar <strong>auth/api-key-not-valid</strong>, o problema está na API Key/restrições do Google Cloud, não no usuário e senha.",
+        "ok"
+      );
+    }catch(erro){
+      console.error(erro);
+      mostrarStatusLogin("Não foi possível validar a configuração: "+escapeHtml(erro.message),"erro");
+    }
+  };
+
+  document.getElementById("senhaLogin").addEventListener("keydown",e=>{
+    if(e.key==="Enter") window.entrar();
+  });
+
   window.sair=function(){ signOut(auth); };
 
   onAuthStateChanged(auth,user=>{
@@ -345,15 +428,21 @@
     });
 
     onValue(ref(db,"patioAreas"),async snapshot=>{
-      if(!snapshot.exists()){
-        await set(ref(db,"patioAreas"),patioPadrao);
-        return;
+      try{
+        if(!snapshot.exists()){
+          await set(ref(db,"patioAreas"),patioPadrao);
+          areasPatioCache=patioPadrao;
+        }else{
+          areasPatioCache=snapshot.val() || {};
+        }
+        atualizarSelectsPosicoes();
+        renderizarCroquiPatio();
+        renderizarConfiguracaoAreas();
+        processarDashboardsEPatio();
+      }catch(erro){
+        console.error("Erro ao carregar/criar áreas do pátio:",erro);
+        alert("Não foi possível carregar o mapa do pátio. Verifique as regras do Realtime Database.");
       }
-      areasPatioCache=snapshot.val() || {};
-      atualizarSelectsPosicoes();
-      renderizarCroquiPatio();
-      renderizarConfiguracaoAreas();
-      processarDashboardsEPatio();
     });
   }
 
