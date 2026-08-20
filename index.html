@@ -87,7 +87,7 @@
 
 <header>
   <h1>Algodoeira ERP & Yard Management</h1>
-  <p>Controle de Produção, Armazenamento Geográfico e Expedição de Lotes · Versão 1.3</p>
+  <p>Controle de Produção, Armazenamento Geográfico e Expedição de Lotes</p>
   <div id="areaUsuario" class="user-area hidden">
     <span id="usuarioLogado"></span>
     <button class="btn-dark" onclick="sair()">Sair</button>
@@ -101,8 +101,6 @@
   <input type="password" id="senhaLogin" placeholder="Senha de Acesso">
   <br><br>
   <button id="btnLogin" style="width:100%" onclick="entrar()">Entrar no Sistema</button>
-  <button id="btnTesteFirebase" class="btn-gray" style="width:100%;margin-top:10px;" onclick="testarFirebase()">Testar conexão com Firebase</button>
-  <div id="statusLogin" class="small-note" style="margin-top:12px;text-align:center;"></div>
 </div>
 
 <div id="sistemaTela" class="container hidden">
@@ -289,28 +287,37 @@
   function formatarNumero(num){ return new Intl.NumberFormat("pt-BR").format(num || 0); }
   function agora(){ return new Date().toLocaleString("pt-BR"); }
 
-  function mostrarStatusLogin(mensagem, tipo="info"){
-    const el=document.getElementById("statusLogin");
-    if(!el) return;
-    el.className="small-note login-status "+tipo;
-    el.innerHTML=mensagem;
+  function mostrarErroLogin(mensagem){
+    let el=document.getElementById("erroLogin");
+    if(!el){
+      el=document.createElement("div");
+      el.id="erroLogin";
+      el.style.cssText="margin-top:12px;padding:10px;border-radius:8px;background:#fee2e2;color:#991b1b;border:1px solid #fecaca;font-size:12px;text-align:center;";
+      document.getElementById("btnLogin").insertAdjacentElement("afterend",el);
+    }
+    el.textContent=mensagem;
+  }
+
+  function limparErroLogin(){
+    const el=document.getElementById("erroLogin");
+    if(el) el.remove();
   }
 
   function traduzirErroLogin(erro){
     const codigo=erro?.code || "";
     const mensagens={
-      "auth/invalid-credential":"E-mail ou senha incorretos.",
-      "auth/invalid-email":"O e-mail informado é inválido.",
-      "auth/user-not-found":"Usuário não encontrado no Firebase Authentication.",
-      "auth/wrong-password":"Senha incorreta.",
+      "auth/invalid-credential":"E-mail ou senha inválidos.",
+      "auth/invalid-email":"Informe um e-mail válido.",
+      "auth/user-not-found":"E-mail ou senha inválidos.",
+      "auth/wrong-password":"E-mail ou senha inválidos.",
       "auth/too-many-requests":"Muitas tentativas. Aguarde alguns minutos e tente novamente.",
-      "auth/network-request-failed":"Falha de conexão. Verifique a internet.",
-      "auth/unauthorized-domain":"O domínio do GitHub Pages ainda não está autorizado no Firebase Authentication.",
-      "auth/api-key-not-valid":"A API Key do Firebase foi rejeitada. Confira a chave e as restrições da API no Google Cloud/Firebase.",
-      "auth/operation-not-allowed":"Login por e-mail e senha não está habilitado no Firebase Authentication.",
-      "auth/configuration-not-found":"A configuração do Firebase Authentication não foi encontrada."
+      "auth/network-request-failed":"Não foi possível conectar ao servidor. Verifique sua internet.",
+      "auth/unauthorized-domain":"Este endereço ainda não está autorizado no Firebase.",
+      "auth/api-key-not-valid":"Não foi possível validar a configuração de acesso.",
+      "auth/operation-not-allowed":"O acesso por e-mail e senha não está habilitado.",
+      "auth/configuration-not-found":"A configuração de autenticação não foi encontrada."
     };
-    return mensagens[codigo] || ("Falha na autenticação: "+codigo+(erro?.message ? "<br><small>"+escapeHtml(erro.message)+"</small>" : ""));
+    return mensagens[codigo] || "Não foi possível realizar o login. Verifique suas credenciais.";
   }
 
   window.entrar = async function(){
@@ -318,52 +325,23 @@
     const senha=document.getElementById("senhaLogin").value;
     const btn=document.getElementById("btnLogin");
 
+    limparErroLogin();
+
     if(!email || !senha){
-      mostrarStatusLogin("Informe o e-mail e a senha.","erro");
+      mostrarErroLogin("Informe o e-mail e a senha.");
       return;
     }
 
     try{
       btn.disabled=true;
       btn.innerText="Entrando...";
-      mostrarStatusLogin("Validando acesso no Firebase...","info");
-
       await setPersistence(auth,browserLocalPersistence);
       await signInWithEmailAndPassword(auth,email,senha);
-
-      mostrarStatusLogin("Acesso autorizado. Carregando o pátio...","ok");
     }catch(erro){
-      console.error("ERRO FIREBASE AUTH:",erro);
-      mostrarStatusLogin(traduzirErroLogin(erro),"erro");
-    }finally{
+      console.error("Firebase Authentication:",erro);
+      mostrarErroLogin(traduzirErroLogin(erro));
       btn.disabled=false;
       btn.innerText="Entrar no Sistema";
-    }
-  };
-
-  window.testarFirebase = async function(){
-    try{
-      mostrarStatusLogin("Testando a configuração do Firebase...","info");
-      // O Firebase Auth é inicializado acima. Aqui usamos o domínio/configuração
-      // visível no próprio projeto para detectar rapidamente erros de configuração.
-      const cfgOk = firebaseConfig &&
-        firebaseConfig.apiKey &&
-        firebaseConfig.authDomain &&
-        firebaseConfig.projectId &&
-        firebaseConfig.appId;
-
-      if(!cfgOk) throw new Error("Configuração incompleta.");
-
-      mostrarStatusLogin(
-        "Configuração carregada.<br>" +
-        "<strong>Projeto:</strong> "+escapeHtml(firebaseConfig.projectId)+"<br>" +
-        "<strong>Auth:</strong> "+escapeHtml(firebaseConfig.authDomain)+"<br>" +
-        "Se o login retornar <strong>auth/api-key-not-valid</strong>, o problema está na API Key/restrições do Google Cloud, não no usuário e senha.",
-        "ok"
-      );
-    }catch(erro){
-      console.error(erro);
-      mostrarStatusLogin("Não foi possível validar a configuração: "+escapeHtml(erro.message),"erro");
     }
   };
 
