@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -16,10 +15,6 @@
     .hidden{display:none!important}
     .login-box{max-width:400px;margin:100px auto;background:white;padding:35px;border-radius:16px;box-shadow:0 10px 25px -5px rgba(0,0,0,.1)}
     .login-box h2{text-align:center;color:#1e3a8a;margin-bottom:25px}
-    .login-status{padding:10px;border-radius:8px;margin-top:12px;font-size:12px;line-height:1.45}
-    .login-status.ok{background:#dcfce7;color:#166534;border:1px solid #86efac}
-    .login-status.erro{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
-    .login-status.info{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
     .card{background:white;border-radius:14px;padding:22px;margin-bottom:22px;box-shadow:0 4px 6px -1px rgba(0,0,0,.05),0 2px 4px -1px rgba(0,0,0,.06)}
     .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:22px}
     .card-info{background:white;border-radius:14px;padding:20px;box-shadow:0 4px 6px -1px rgba(0,0,0,.05);border-left:5px solid #1e3a8a}
@@ -37,19 +32,14 @@
     .btn-danger{background:#ef4444}.btn-danger:hover{background:#dc2626}
     .btn-edit{background:#0ea5e9}.btn-edit:hover{background:#0284c7}
     .btn-dark{background:#334155}.btn-dark:hover{background:#1e293b}
-    .btn-gray{background:#94a3b8}.btn-gray:hover{background:#64748b}
     .btn-success{background:#10b981}.btn-success:hover{background:#059669}
-    .btn-warning{background:#f59e0b}.btn-warning:hover{background:#d97706}
     .top-bar{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap;align-items:center;margin-bottom:15px}
     table{width:100%;border-collapse:separate;border-spacing:0;margin-top:12px;border-radius:8px;overflow:hidden;border:1px solid #e2e8f0}
     th{background:#f8fafc;color:#475569;padding:14px;text-align:left;font-size:13px;font-weight:600;border-bottom:2px solid #e2e8f0}
     td{padding:14px;border-bottom:1px solid #e2e8f0;font-size:13.5px;background:#fff}
-    tr:last-child td{border-bottom:none}
     tr:hover td{background:#f8fafc}
     .status{padding:5px 10px;border-radius:12px;font-size:11px;font-weight:700;text-transform:uppercase}
     .status.pluma{background:#d1fae5;color:#065f46}.status.caroco{background:#dbeafe;color:#1e40af}.status.fibrilha{background:#fef3c7;color:#92400e}
-    .status.livre{background:#f1f5f9;color:#475569}.status.carregado{background:#e2e8f0;color:#1e293b}
-    .status.pronto{background:#dcfce7;color:#166534}.status.pendente{background:#fef3c7;color:#92400e}
     .user-area{text-align:right;margin-top:8px}.badge{display:inline-block;padding:6px 12px;border-radius:20px;background:#dbeafe;color:#1e40af;font-size:12px;font-weight:bold}
     .small-note{font-size:12px;color:#64748b;margin-top:6px}
     .menu-abas{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 25px;background:white;padding:12px;border-radius:14px;box-shadow:0 4px 6px -1px rgba(0,0,0,.05);position:sticky;top:0;z-index:100}
@@ -65,22 +55,16 @@
     .bloco-patio:hover{transform:translateY(-2px);box-shadow:0 8px 15px -5px rgba(0,0,0,.12)}
     .bloco-patio.p-pluma{border-color:#10b981;background:#f0fdf4}.bloco-patio.p-caroco{border-color:#3b82f6;background:#eff6ff}
     .bloco-patio.p-fibrilha{border-color:#f59e0b;background:#fffbeb}.bloco-patio.p-livre{border-color:#cbd5e1;background:#fafafa;color:#94a3b8}
-    .bloco-patio.p-pronto{box-shadow:0 0 0 2px rgba(16,185,129,.15)}
     .bloco-nome{font-weight:bold;font-size:15px;color:#1e293b;display:block;margin-bottom:4px}.bloco-meta{font-size:12px;color:#64748b}
     .split-detail{border:2px solid #1e3a8a}
-    .area-admin{border:1px solid #e2e8f0;border-radius:10px;padding:15px;margin-top:12px}
-    .area-admin h4{color:#1e3a8a;margin-bottom:8px}
-    .mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-    .danger-note{background:#fef2f2;color:#991b1b;padding:10px;border-radius:8px;font-size:12px;margin-top:10px}
     .success-note{background:#ecfdf5;color:#065f46;padding:10px;border-radius:8px;font-size:12px;margin-top:10px}
     .modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:500}
     .modal{background:#fff;width:min(680px,100%);border-radius:16px;padding:22px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
     .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
-    .modal-header h3{color:#1e3a8a}
     .legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
     .legend span{font-size:12px;padding:6px 10px;border-radius:15px;background:#f8fafc;border:1px solid #e2e8f0}
     @media(max-width:992px){.patio-layout{grid-template-columns:1fr}}
-    @media(max-width:768px){.top-bar{flex-direction:column;align-items:stretch}.mini-grid{grid-template-columns:1fr 1fr}.menu-abas{position:static}}
+    @media(max-width:768px){.top-bar{flex-direction:column;align-items:stretch}.menu-abas{position:static}}
   </style>
 </head>
 <body>
@@ -173,7 +157,7 @@
       <div class="top-bar">
         <div>
           <h2>Mapa Físico do Pátio (YMS)</h2>
-          <p class="small-note">As áreas e posições agora são cadastradas no sistema. Você pode criar novas áreas físicas sem alterar o código.</p>
+          <p class="small-note">As áreas e posições são cadastradas dinamicamente no banco de dados.</p>
         </div>
         <button class="btn-success" onclick="abrirAbaPorId('abaConfiguracaoPatio')">+ Criar Área Física</button>
       </div>
@@ -199,13 +183,13 @@
       <div class="top-bar">
         <div>
           <h2>Configuração Física do Pátio</h2>
-          <p class="small-note">Crie novas áreas, defina o prefixo e a quantidade de linhas e colunas.</p>
+          <p class="small-note">Crie áreas, defina o prefixo e o arranjo de posições.</p>
         </div>
         <button class="btn-success" onclick="abrirModalNovaArea()">+ Nova Área Física</button>
       </div>
       <div id="listaAreasConfiguracao"></div>
       <div class="success-note">
-        As posições são salvas no Firebase em <strong>patioAreas</strong>. As posições antigas A01 até D05 são criadas automaticamente na primeira execução caso ainda não exista nenhuma configuração.
+        As posições do pátio são salvas dinamicamente no nó <strong>patioAreas</strong> do Firebase.
       </div>
     </div>
   </div>
@@ -237,9 +221,10 @@
 <div id="modalNovaArea" class="modal-backdrop hidden">
   <div class="modal">
     <div class="modal-header">
-      <h3>Criar Nova Área Física</h3>
+      <h3 id="tituloModalArea">Criar Nova Área Física</h3>
       <button class="btn-dark" onclick="fecharModalNovaArea()">Fechar</button>
     </div>
+    <input type="hidden" id="idAreaEdicao">
     <div class="grid">
       <div><label class="small-note">Nome da Área</label><input id="novaAreaNome" placeholder="Ex: Pátio Norte"></div>
       <div><label class="small-note">Prefixo das Posições</label><input id="novaAreaPrefixo" placeholder="Ex: E" maxlength="6"></div>
@@ -248,7 +233,7 @@
     </div>
     <p class="small-note" style="margin-top:12px;">Exemplo: prefixo <strong>E</strong>, 2 linhas e 5 colunas gera E01 até E10.</p>
     <br>
-    <button class="btn-success" onclick="criarNovaArea()">Criar Área</button>
+    <button class="btn-success" onclick="criarNovaArea()">Salvar Área</button>
   </div>
 </div>
 
@@ -311,11 +296,7 @@
       "auth/user-not-found":"E-mail ou senha inválidos.",
       "auth/wrong-password":"E-mail ou senha inválidos.",
       "auth/too-many-requests":"Muitas tentativas. Aguarde alguns minutos e tente novamente.",
-      "auth/network-request-failed":"Não foi possível conectar ao servidor. Verifique sua internet.",
-      "auth/unauthorized-domain":"Este endereço ainda não está autorizado no Firebase.",
-      "auth/api-key-not-valid":"Não foi possível validar a configuração de acesso.",
-      "auth/operation-not-allowed":"O acesso por e-mail e senha não está habilitado.",
-      "auth/configuration-not-found":"A configuração de autenticação não foi encontrada."
+      "auth/network-request-failed":"Não foi possível conectar ao servidor. Verifique sua internet."
     };
     return mensagens[codigo] || "Não foi possível realizar o login. Verifique suas credenciais.";
   }
@@ -326,29 +307,19 @@
     const btn=document.getElementById("btnLogin");
 
     limparErroLogin();
-
-    if(!email || !senha){
-      mostrarErroLogin("Informe o e-mail e a senha.");
-      return;
-    }
+    if(!email || !senha){ mostrarErroLogin("Informe o e-mail e a senha."); return; }
 
     try{
-      btn.disabled=true;
-      btn.innerText="Entrando...";
+      btn.disabled=true; btn.innerText="Entrando...";
       await setPersistence(auth,browserLocalPersistence);
       await signInWithEmailAndPassword(auth,email,senha);
     }catch(erro){
-      console.error("Firebase Authentication:",erro);
       mostrarErroLogin(traduzirErroLogin(erro));
-      btn.disabled=false;
-      btn.innerText="Entrar no Sistema";
+      btn.disabled=false; btn.innerText="Entrar no Sistema";
     }
   };
 
-  document.getElementById("senhaLogin").addEventListener("keydown",e=>{
-    if(e.key==="Enter") window.entrar();
-  });
-
+  document.getElementById("senhaLogin").addEventListener("keydown",e=>{ if(e.key==="Enter") window.entrar(); });
   window.sair=function(){ signOut(auth); };
 
   onAuthStateChanged(auth,user=>{
@@ -383,8 +354,7 @@
     const aba=document.getElementById(id);
     if(aba) aba.classList.add("ativa");
     document.querySelectorAll(".aba-btn").forEach(b=>b.classList.remove("ativa"));
-    const botoes=document.querySelectorAll(".aba-btn");
-    botoes.forEach(b=>{ if(b.textContent.includes("Configurar Pátio")) b.classList.add("ativa"); });
+    document.querySelectorAll(".aba-btn").forEach(b=>{ if(b.textContent.includes("Configurar Pátio")) b.classList.add("ativa"); });
     if(id==="abaConfiguracaoPatio") renderizarConfiguracaoAreas();
   };
 
@@ -418,8 +388,7 @@
         renderizarConfiguracaoAreas();
         processarDashboardsEPatio();
       }catch(erro){
-        console.error("Erro ao carregar/criar áreas do pátio:",erro);
-        alert("Não foi possível carregar o mapa do pátio. Verifique as regras do Realtime Database.");
+        alert("Não foi possível carregar o mapa do pátio.");
       }
     });
   }
@@ -477,7 +446,7 @@
 
     const entries=Object.entries(areasPatioCache);
     if(!entries.length){
-      container.innerHTML='<div style="text-align:center;padding:60px;color:#64748b;">Nenhuma área cadastrada. Use <strong>Configurar Pátio</strong> para criar a primeira.</div>';
+      container.innerHTML='<div style="text-align:center;padding:60px;color:#64748b;">Nenhuma área cadastrada.</div>';
       return;
     }
 
@@ -492,7 +461,7 @@
         <div class="area-header">
           <div>
             <div class="area-titulo">${escapeHtml(area.nome || areaId)}</div>
-            <div class="area-info">Prefixo: ${escapeHtml(area.prefixo||"")} · ${posicoes.length} posições · ${area.linhas||1} linha(s) x ${area.colunas||colunas} coluna(s)</div>
+            <div class="area-info">Prefixo: ${escapeHtml(area.prefixo||"")} · ${posicoes.length} posições</div>
           </div>
           <button class="btn-edit" onclick="abrirConfiguracaoArea('${areaId}')">Editar área</button>
         </div>
@@ -547,12 +516,11 @@
     painel.innerHTML=`
       <div style="font-size:13.5px;line-height:1.7;">
         <p><strong>Posição:</strong> <span class="badge" style="background:#1e3a8a;color:white;">${escapeHtml(posicao)}</span></p>
-        <p><strong>Lote/Bloco:</strong> ${escapeHtml(lote.lote)}</p>
+        <p><strong>Lote:</strong> ${escapeHtml(lote.lote)}</p>
         <p><strong>Produto:</strong> <span class="status ${(lote.tipo||"").toLowerCase()}">${escapeHtml(lote.tipo)}</span></p>
         <p><strong>Fardos:</strong> ${lote.fardos||0}</p>
         <p><strong>Peso:</strong> ${formatarNumero(lote.peso)} Kg</p>
         <p><strong>Entrada:</strong> ${escapeHtml(lote.dataCadastro||"N/D")}</p>
-        <p><strong>Última atualização:</strong> ${escapeHtml(lote.dataAtualizacao||"N/D")}</p>
         <hr style="margin:12px 0;border:0;border-top:1px solid #e2e8f0;">
         <h4 style="color:#1e3a8a;margin-bottom:8px;">Remanejamento</h4>
         <select id="remanejarNovaPosicao" style="margin-bottom:8px;">
@@ -568,8 +536,8 @@
       <div style="text-align:center;padding:15px 0;">
         <h3 style="color:#94a3b8;font-size:18px;">${escapeHtml(posicao)}</h3>
         <p style="font-size:13px;margin-top:8px;color:#64748b;">Área: ${escapeHtml(areaNome)}</p>
-        <p style="font-size:13px;margin-top:8px;color:#64748b;">Posição livre para receber novo lote/emblocamento.</p>
-        <button class="btn-success" style="margin-top:12px" onclick="abrirAbaPorId('abaProducao')">Registrar lote nesta posição</button>
+        <p style="font-size:13px;margin-top:8px;color:#64748b;">Posição livre.</p>
+        <button class="btn-success" style="margin-top:12px" onclick="abrirAbaPorId('abaProducao')">Registrar Lote Aqui</button>
       </div>
     `;
   }
@@ -577,20 +545,19 @@
   window.executarRemanejamentoFisico=async function(idLote,posicaoAntiga){
     const novaPosicao=document.getElementById("remanejarNovaPosicao").value;
     if(!novaPosicao) return;
-    if(loteNaPosicao(novaPosicao)){
-      alert(`A posição ${novaPosicao} já está ocupada.`);
-      return;
-    }
-    if(confirm(`Confirmar a movimentação de ${posicaoAntiga} para ${novaPosicao}?`)){
+    if(loteNaPosicao(novaPosicao)){ alert(`A posição ${novaPosicao} já está ocupada.`); return; }
+
+    if(confirm(`Confirmar movimentação de ${posicaoAntiga} para ${novaPosicao}?`)){
       await update(ref(db,`lotesAlgodoeira/${idLote}`),{
         posicaoPatio:novaPosicao,
         usuarioAtualizacao:auth.currentUser?.email||"Sistema",
         dataAtualizacao:agora()
       });
-      alert("Movimentação registrada.");
+      alert("Movimentação efetuada com sucesso!");
     }
   };
 
+  /* --- SALVAMENTO E MANUTENÇÃO DE LOTES (PRODUÇÃO) --- */
   window.salvarLoteProducao=async function(){
     const idEdicao=document.getElementById("idEdicaoProducao").value;
     const loteStr=document.getElementById("prodLote").value.trim();
@@ -604,253 +571,318 @@
     if(!loteStr){alert("Preencha a identificação do lote.");return;}
     if(fardos<=0){alert("Informe uma quantidade válida de fardos.");return;}
     if(peso<=0){alert("Informe um peso válido.");return;}
-    if(!posicaoPatio){alert("Selecione uma posição.");return;}
+    if(!posicaoPatio){alert("Selecione uma posição do pátio.");return;}
 
-    const ocupada=Object.entries(lotesEstoqueCache).some(([id,l])=>id!==idEdicao && l.posicaoPatio===posicaoPatio && Number(l.peso||0)>0);
-    if(ocupada){alert(`A posição ${posicaoPatio} já está ocupada.`);return;}
+    const ocupante = loteNaPosicao(posicaoPatio);
+    if(ocupante && ocupante[0] !== idEdicao){
+      alert(`A posição ${posicaoPatio} já está ocupada pelo lote ${ocupante[1].lote}.`);
+      return;
+    }
 
-    const dados={lote:loteStr,tipo,fardos,peso,posicaoPatio,observacao,
-      usuarioAtualizacao:auth.currentUser?.email||"Sistema",dataAtualizacao:agora()};
+    const payload = {
+      lote: loteStr,
+      tipo: tipo,
+      fardos: fardos,
+      peso: peso,
+      posicaoPatio: posicaoPatio,
+      observacao: observacao,
+      usuarioAtualizacao: auth.currentUser?.email || "Sistema",
+      dataAtualizacao: agora()
+    };
 
-    try{
+    try {
       if(idEdicao){
-        await update(ref(db,"lotesAlgodoeira/"+idEdicao),dados);
-        alert("Lote atualizado com sucesso.");
-        cancelarEdicaoProducao();
-      }else{
-        dados.usuarioCadastro=auth.currentUser?.email||"Sistema";
-        dados.dataCadastro=agora();
-        await push(ref(db,"lotesAlgodoeira"),dados);
-        alert("Novo lote registrado no pátio.");
-        limparCamposProducao();
+        await update(ref(db, `lotesAlgodoeira/${idEdicao}`), payload);
+        alert("Lote atualizado com sucesso!");
+      } else {
+        payload.dataCadastro = agora();
+        payload.usuarioCadastro = auth.currentUser?.email || "Sistema";
+        await push(ref(db, "lotesAlgodoeira"), payload);
+        alert("Lote cadastrado com sucesso!");
       }
-    }catch(e){alert("Erro ao salvar: "+e.message);}
-  };
-
-  window.editarLote=function(id){
-    const lote=lotesEstoqueCache[id]; if(!lote)return;
-    document.getElementById("idEdicaoProducao").value=id;
-    document.getElementById("prodLote").value=lote.lote||"";
-    document.getElementById("prodTipo").value=lote.tipo||"Pluma";
-    document.getElementById("prodFardos").value=lote.fardos||"";
-    document.getElementById("prodPeso").value=lote.peso||"";
-    document.getElementById("prodPosicaoPatio").value=lote.posicaoPatio||"";
-    document.getElementById("prodObs").value=lote.observacao||"";
-    document.getElementById("tituloFormProducao").innerText="Editar Parâmetros do Lote";
-    document.getElementById("btnCancelarProducao").classList.remove("hidden");
-  };
-
-  window.excluirLote=function(id){
-    if(confirm("Deseja excluir permanentemente este lote?")){
-      remove(ref(db,"lotesAlgodoeira/"+id)).then(()=>alert("Registro removido."));
+      limparFormularioProducao();
+    } catch(err) {
+      alert("Erro ao salvar lote: " + err.message);
     }
   };
 
-  window.cancelarEdicaoProducao=function(){limparCamposProducao();document.getElementById("tituloFormProducao").innerText="Registrar Lote Produzido";document.getElementById("btnCancelarProducao").classList.add("hidden");};
-  function limparCamposProducao(){["idEdicaoProducao","prodLote","prodFardos","prodPeso","prodObs","prodPosicaoPatio"].forEach(id=>document.getElementById(id).value="");}
+  function limparFormularioProducao(){
+    document.getElementById("idEdicaoProducao").value="";
+    document.getElementById("prodLote").value="";
+    document.getElementById("prodFardos").value="";
+    document.getElementById("prodPeso").value="";
+    document.getElementById("prodPosicaoPatio").value="";
+    document.getElementById("prodObs").value="";
+    document.getElementById("tituloFormProducao").innerText="Registrar Lote Produzido";
+    document.getElementById("btnSalvarProducao").innerText="Salvar no Estoque";
+    document.getElementById("btnCancelarProducao").classList.add("hidden");
+  }
+
+  window.cancelarEdicaoProducao = limparFormularioProducao;
+
+  window.editarLoteProducao = function(id){
+    const lote = lotesEstoqueCache[id];
+    if(!lote) return;
+    document.getElementById("idEdicaoProducao").value = id;
+    document.getElementById("prodLote").value = lote.lote || "";
+    document.getElementById("prodTipo").value = lote.tipo || "Pluma";
+    document.getElementById("prodFardos").value = lote.fardos || 0;
+    document.getElementById("prodPeso").value = lote.peso || 0;
+    document.getElementById("prodPosicaoPatio").value = lote.posicaoPatio || "";
+    document.getElementById("prodObs").value = lote.observacao || "";
+    document.getElementById("tituloFormProducao").innerText = "Editar Lote " + lote.lote;
+    document.getElementById("btnSalvarProducao").innerText = "Atualizar Lote";
+    document.getElementById("btnCancelarProducao").classList.remove("hidden");
+  };
+
+  window.excluirLoteProducao = async function(id){
+    if(confirm("Tem certeza que deseja remover este lote do estoque?")){
+      await remove(ref(db, `lotesAlgodoeira/${id}`));
+      alert("Lote removido!");
+    }
+  };
 
   function atualizarTabelaEstoque(){
-    const tbody=document.getElementById("tabelaLotesEstoque"); if(!tbody)return;
-    tbody.innerHTML="";
-    Object.entries(lotesEstoqueCache).forEach(([id,lote])=>{
-      if(Number(lote.peso||0)<=0)return;
-      tbody.innerHTML+=`
-        <tr>
-          <td><strong>${escapeHtml(lote.lote||"")}</strong></td>
-          <td><span class="status ${(lote.tipo||"").toLowerCase()}">${escapeHtml(lote.tipo||"")}</span></td>
-          <td>${lote.fardos||0} fds</td>
-          <td>${formatarNumero(lote.peso||0)}</td>
-          <td><span class="badge">${escapeHtml(lote.posicaoPatio||"N/A")}</span></td>
-          <td>${escapeHtml(lote.dataCadastro||"")}</td>
-          <td>${escapeHtml(lote.usuarioCadastro||"")}</td>
-          <td><button class="btn-edit" onclick="editarLote('${id}')">Editar</button> <button class="btn-danger" onclick="excluirLote('${id}')">Excluir</button></td>
-        </tr>`;
+    const tbody = document.getElementById("tabelaLotesEstoque");
+    if(!tbody) return;
+    tbody.innerHTML = "";
+
+    const lotes = Object.entries(lotesEstoqueCache).filter(([_, l]) => Number(l.peso||0) > 0);
+
+    if(!lotes.length){
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;">Nenhum lote armazenado no estoque.</td></tr>';
+      return;
+    }
+
+    lotes.forEach(([id, l]) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><strong>${escapeHtml(l.lote)}</strong></td>
+        <td><span class="status ${(l.tipo||"").toLowerCase()}">${escapeHtml(l.tipo)}</span></td>
+        <td>${formatarNumero(l.fardos)}</td>
+        <td>${formatarNumero(l.peso)}</td>
+        <td><span class="badge">${escapeHtml(l.posicaoPatio)}</span></td>
+        <td>${escapeHtml(l.dataCadastro || l.dataAtualizacao || "-")}</td>
+        <td>${escapeHtml(l.usuarioCadastro || l.usuarioAtualizacao || "Sistema")}</td>
+        <td>
+          <button class="btn-edit" onclick="editarLoteProducao('${id}')">Editar</button>
+          <button class="btn-danger" onclick="excluirLoteProducao('${id}')">Excluir</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
     });
   }
 
   function atualizarSelectsPosicoes(){
-    const select=document.getElementById("prodPosicaoPatio"); if(!select)return;
-    const atual=select.value;
-    select.innerHTML='<option value="">Selecione uma posição...</option>';
-    todasPosicoes().forEach(p=>{
-      const ocupada=!!loteNaPosicao(p.nome);
-      select.innerHTML+=`<option value="${escapeHtml(p.nome)}" ${ocupada?"disabled":""}>${escapeHtml(p.nome)} - ${escapeHtml(p.areaNome)} ${ocupada?"(Ocupado)":"(Livre)"}</option>`;
+    const selectProd = document.getElementById("prodPosicaoPatio");
+    if(!selectProd) return;
+
+    const valorAtual = selectProd.value;
+    selectProd.innerHTML = '<option value="">Selecione uma posição...</option>';
+
+    todasPosicoes().forEach(p => {
+      const ocupante = loteNaPosicao(p.nome);
+      const isSelf = ocupante && ocupante[0] === document.getElementById("idEdicaoProducao").value;
+      const desabilitado = ocupante && !isSelf ? "disabled" : "";
+      const label = p.nome + (ocupante && !isSelf ? ` (Ocupado por ${ocupante[1].lote})` : ` - ${p.areaNome}`);
+      
+      selectProd.innerHTML += `<option value="${escapeHtml(p.nome)}" ${desabilitado}>${escapeHtml(label)}</option>`;
     });
-    if(atual)select.value=atual;
+
+    selectProd.value = valorAtual;
   }
 
+  /* --- MÓDULO DE EXPEDIÇÃO & FATURAMENTO --- */
   function atualizarSelectLotesExpedicao(){
-    const select=document.getElementById("expLoteSelec"); if(!select)return;
-    select.innerHTML='<option value="">Selecione um lote disponível...</option>';
-    Object.entries(lotesEstoqueCache).forEach(([id,lote])=>{
-      if(Number(lote.peso||0)>0)select.innerHTML+=`<option value="${id}">${escapeHtml(lote.lote)} (${escapeHtml(lote.tipo)}) | ${escapeHtml(lote.posicaoPatio||"Sem posição")}</option>`;
+    const selectExp = document.getElementById("expLoteSelec");
+    if(!selectExp) return;
+
+    selectExp.innerHTML = '<option value="">Selecione um lote disponível...</option>';
+
+    Object.entries(lotesEstoqueCache).forEach(([id, l]) => {
+      if(Number(l.peso || 0) > 0){
+        selectExp.innerHTML += `<option value="${id}">${escapeHtml(l.lote)} (${escapeHtml(l.tipo)} - ${formatarNumero(l.peso)} Kg)</option>`;
+      }
     });
   }
 
-  window.atualizarDadosLoteExpedicao=function(){
-    const id=document.getElementById("expLoteSelec").value;
-    document.getElementById("expPesoDisponivel").value="";
-    if(id && lotesEstoqueCache[id]){
-      const l=lotesEstoqueCache[id];
-      document.getElementById("expPesoDisponivel").value=`${formatarNumero(l.peso)} Kg (${l.fardos} Fardos)`;
+  window.atualizarDadosLoteExpedicao = function(){
+    const id = document.getElementById("expLoteSelec").value;
+    const lote = lotesEstoqueCache[id];
+    document.getElementById("expPesoDisponivel").value = lote ? formatarNumero(lote.peso) + " Kg" : "";
+  };
+
+  window.registrarExpedicaoCarga = async function(){
+    const idLote = document.getElementById("expLoteSelec").value;
+    const cliente = document.getElementById("expCliente").value.trim();
+    const motorista = document.getElementById("expMotorista").value.trim();
+    const caminhao = document.getElementById("expCaminhao").value.trim();
+    const nf = document.getElementById("expNF").value.trim();
+
+    if(!idLote){ alert("Selecione um lote para expedição."); return; }
+    if(!cliente || !motorista || !caminhao || !nf){ alert("Preencha todos os campos da ordem de carregamento."); return; }
+
+    const lote = lotesEstoqueCache[idLote];
+
+    const expedicaoData = {
+      loteId: idLote,
+      lote: lote.lote,
+      tipo: lote.tipo,
+      peso: lote.peso,
+      fardos: lote.fardos,
+      cliente: cliente,
+      motorista: motorista,
+      caminhao: caminhao,
+      nf: nf,
+      dataSaida: agora(),
+      operador: auth.currentUser?.email || "Sistema"
+    };
+
+    try {
+      await push(ref(db, "expedicaoAlgodoeira"), expedicaoData);
+      await update(ref(db, `lotesAlgodoeira/${idLote}`), {
+        peso: 0,
+        fardos: 0,
+        posicaoPatio: "",
+        dataExpedicao: agora()
+      });
+
+      alert("Carga autorizada e estoque baixado com sucesso!");
+      document.getElementById("expCliente").value = "";
+      document.getElementById("expMotorista").value = "";
+      document.getElementById("expCaminhao").value = "";
+      document.getElementById("expNF").value = "";
+      document.getElementById("expLoteSelec").value = "";
+      document.getElementById("expPesoDisponivel").value = "";
+    } catch(err) {
+      alert("Erro ao registrar expedição: " + err.message);
     }
   };
 
-  window.registrarExpedicaoCarga=async function(){
-    const cliente=document.getElementById("expCliente").value.trim();
-    const motorista=document.getElementById("expMotorista").value.trim();
-    const caminhao=document.getElementById("expCaminhao").value.trim();
-    const nf=document.getElementById("expNF").value.trim();
-    const idLote=document.getElementById("expLoteSelec").value;
-    if(!cliente||!motorista||!caminhao||!nf||!idLote){alert("Preencha todos os campos.");return;}
-    const lote=lotesEstoqueCache[idLote]; if(!lote)return;
-    if(!confirm(`Confirmar carregamento do lote ${lote.lote}? A posição ${lote.posicaoPatio} será liberada.`))return;
-
-    await push(ref(db,"expedicaoAlgodoeira"),{
-      cliente,lote:lote.lote,tipo:lote.tipo,fardos:lote.fardos,peso:lote.peso,motorista,caminhao,nf,
-      posicaoPatio:lote.posicaoPatio,dataSaida:agora(),operador:auth.currentUser?.email||"Sistema"
-    });
-
-    await update(ref(db,`lotesAlgodoeira/${idLote}`),{
-      peso:0,fardos:0,posicaoAnterior:lote.posicaoPatio,posicaoPatio:"",
-      usuarioAtualizacao:auth.currentUser?.email||"Sistema",dataAtualizacao:agora()
-    });
-
-    alert("Carga despachada com sucesso.");
-    limparCamposExpedicao();
-  };
-
-  function limparCamposExpedicao(){
-    ["expCliente","expMotorista","expCaminhao","expNF","expLoteSelec","expPesoDisponivel"].forEach(id=>document.getElementById(id).value="");
-  }
-
   function atualizarTabelaExpedicao(){
-    const tbody=document.getElementById("tabelaHistoricoExpedicao"); if(!tbody)return;
-    tbody.innerHTML="";
-    Object.values(historicoCargasCache).reverse().forEach(carga=>{
-      tbody.innerHTML+=`
-        <tr><td>${escapeHtml(carga.cliente||"")}</td><td><strong>${escapeHtml(carga.lote||"")}</strong></td>
-        <td><span class="status carregado">${escapeHtml(carga.tipo||"")}</span></td><td>${formatarNumero(carga.peso||0)} Kg</td>
-        <td>${escapeHtml(carga.motorista||"")}</td><td>${escapeHtml(carga.caminhao||"")}</td><td>${escapeHtml(carga.nf||"")}</td><td>${escapeHtml(carga.dataSaida||"")}</td></tr>`;
-    });
-  }
+    const tbody = document.getElementById("tabelaHistoricoExpedicao");
+    if(!tbody) return;
+    tbody.innerHTML = "";
 
-  function renderizarConfiguracaoAreas(){
-    const container=document.getElementById("listaAreasConfiguracao"); if(!container)return;
-    container.innerHTML="";
-    const entries=Object.entries(areasPatioCache);
-    if(!entries.length){container.innerHTML="<p class='small-note'>Nenhuma área cadastrada.</p>";return;}
-
-    entries.forEach(([areaId,area])=>{
-      const posicoes=Object.keys(area.posicoes||{});
-      const ocupadas=posicoes.filter(p=>!!loteNaPosicao(p)).length;
-      const div=document.createElement("div");
-      div.className="area-admin";
-      div.innerHTML=`
-        <div class="top-bar">
-          <div><h4>${escapeHtml(area.nome||areaId)}</h4><div class="small-note">Prefixo: ${escapeHtml(area.prefixo||"")} · ${posicoes.length} posições · ${ocupadas} ocupadas · ${posicoes.length-ocupadas} livres</div></div>
-          <div>
-            <button class="btn-edit" onclick="abrirConfiguracaoArea('${areaId}')">Editar</button>
-            <button class="btn-danger" onclick="excluirAreaPatio('${areaId}')">Excluir</button>
-          </div>
-        </div>`;
-      container.appendChild(div);
-    });
-  }
-
-  window.abrirModalNovaArea=function(){
-    document.getElementById("novaAreaNome").value="";
-    document.getElementById("novaAreaPrefixo").value="";
-    document.getElementById("novaAreaLinhas").value=2;
-    document.getElementById("novaAreaColunas").value=5;
-    document.getElementById("modalNovaArea").classList.remove("hidden");
-  };
-  window.fecharModalNovaArea=function(){document.getElementById("modalNovaArea").classList.add("hidden");};
-
-  window.criarNovaArea=async function(){
-    const nome=document.getElementById("novaAreaNome").value.trim();
-    const prefixo=document.getElementById("novaAreaPrefixo").value.trim().toUpperCase();
-    const linhas=Math.max(1,Number(document.getElementById("novaAreaLinhas").value||1));
-    const colunas=Math.max(1,Number(document.getElementById("novaAreaColunas").value||1));
-
-    if(!nome||!prefixo){alert("Informe o nome e o prefixo da nova área.");return;}
-    if(todasPosicoes().some(p=>p.nome.toUpperCase().startsWith(prefixo.toUpperCase()))){
-      alert("Já existe uma posição usando esse prefixo. Escolha outro.");
+    const historico = Object.values(historicoCargasCache);
+    if(!historico.length){
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;">Nenhuma expedição registrada.</td></tr>';
       return;
     }
 
-    const posicoes={};
-    let numero=1;
-    for(let r=0;r<linhas;r++){
-      for(let c=0;c<colunas;c++){
-        const nomePos=`${prefixo}${String(numero).padStart(2,"0")}`;
-        posicoes[nomePos]={nome:nomePos};
-        numero++;
+    historico.forEach(c => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><strong>${escapeHtml(c.cliente)}</strong></td>
+        <td>${escapeHtml(c.lote)}</td>
+        <td><span class="status ${(c.tipo||"").toLowerCase()}">${escapeHtml(c.tipo)}</span></td>
+        <td>${formatarNumero(c.peso)}</td>
+        <td>${escapeHtml(c.motorista)}</td>
+        <td>${escapeHtml(c.caminhao)}</td>
+        <td>${escapeHtml(c.nf)}</td>
+        <td>${escapeHtml(c.dataSaida)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  /* --- CONFIGURAÇÃO DE ÁREAS DO PÁTIO --- */
+  function renderizarConfiguracaoAreas(){
+    const container = document.getElementById("listaAreasConfiguracao");
+    if(!container) return;
+    container.innerHTML = "";
+
+    Object.entries(areasPatioCache).forEach(([id, area]) => {
+      const posCount = Object.keys(area.posicoes || {}).length;
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="top-bar">
+          <div>
+            <h3>${escapeHtml(area.nome)} (Prefixo: ${escapeHtml(area.prefixo)})</h3>
+            <p class="small-note">${area.linhas || 1} linha(s) x ${area.colunas || 5} coluna(s) — Total: ${posCount} posições</p>
+          </div>
+          <div>
+            <button class="btn-edit" onclick="abrirConfiguracaoArea('${id}')">Editar</button>
+            <button class="btn-danger" onclick="excluirAreaPatio('${id}')">Excluir</button>
+          </div>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+  }
+
+  window.abrirModalNovaArea = function(){
+    document.getElementById("idAreaEdicao").value = "";
+    document.getElementById("novaAreaNome").value = "";
+    document.getElementById("novaAreaPrefixo").value = "";
+    document.getElementById("novaAreaLinhas").value = "2";
+    document.getElementById("novaAreaColunas").value = "5";
+    document.getElementById("tituloModalArea").innerText = "Criar Nova Área Física";
+    document.getElementById("modalNovaArea").classList.remove("hidden");
+  };
+
+  window.fecharModalNovaArea = function(){
+    document.getElementById("modalNovaArea").classList.add("hidden");
+  };
+
+  window.abrirConfiguracaoArea = function(id){
+    const area = areasPatioCache[id];
+    if(!area) return;
+    document.getElementById("idAreaEdicao").value = id;
+    document.getElementById("novaAreaNome").value = area.nome || "";
+    document.getElementById("novaAreaPrefixo").value = area.prefixo || "";
+    document.getElementById("novaAreaLinhas").value = area.linhas || 1;
+    document.getElementById("novaAreaColunas").value = area.colunas || 5;
+    document.getElementById("tituloModalArea").innerText = "Editar Área " + (area.nome || "");
+    document.getElementById("modalNovaArea").classList.remove("hidden");
+  };
+
+  window.criarNovaArea = async function(){
+    const idArea = document.getElementById("idAreaEdicao").value;
+    const nome = document.getElementById("novaAreaNome").value.trim();
+    const prefixo = document.getElementById("novaAreaPrefixo").value.trim().toUpperCase();
+    const linhas = Number(document.getElementById("novaAreaLinhas").value || 1);
+    const colunas = Number(document.getElementById("novaAreaColunas").value || 1);
+
+    if(!nome || !prefixo){ alert("Informe o nome e o prefixo da área."); return; }
+
+    const posicoes = {};
+    let contador = 1;
+    for(let r = 0; r < linhas; r++){
+      for(let c = 0; c < colunas; c++){
+        const numStr = String(contador).padStart(2, "0");
+        const posNome = `${prefixo}${numStr}`;
+        posicoes[posNome] = { nome: posNome };
+        contador++;
       }
     }
 
-    const novaRef=push(ref(db,"patioAreas"));
-    await set(novaRef,{nome,prefixo,linhas,colunas,posicoes,criadoPor:auth.currentUser?.email||"Sistema",criadoEm:agora()});
-    fecharModalNovaArea();
-    alert(`Área "${nome}" criada com ${Object.keys(posicoes).length} posições.`);
-  };
+    const areaPayload = {
+      nome: nome,
+      prefixo: prefixo,
+      linhas: linhas,
+      colunas: colunas,
+      posicoes: posicoes
+    };
 
-  window.abrirConfiguracaoArea=function(areaId){
-    const area=areasPatioCache[areaId]; if(!area)return;
-    const novasColunas=prompt(`Quantidade de colunas para "${area.nome}"`,area.colunas||5);
-    if(novasColunas===null)return;
-    const novasLinhas=prompt(`Quantidade de linhas para "${area.nome}"`,area.linhas||1);
-    if(novasLinhas===null)return;
-    const colunas=Math.max(1,Number(novasColunas)),linhas=Math.max(1,Number(novasLinhas));
+    const targetId = idArea || `area_${Date.now()}`;
 
-    if(colunas===Number(area.colunas||5)&&linhas===Number(area.linhas||1)){
-      alert("Nenhuma alteração de tamanho realizada.");
-      return;
-    }
-
-    const quantidadeNova=linhas*colunas;
-    const antigas=Object.keys(area.posicoes||{});
-    const ocupadas=antigas.filter(p=>!!loteNaPosicao(p));
-
-    if(quantidadeNova<ocupadas.length){
-      alert(`Não é possível reduzir esta área para ${quantidadeNova} posições. Existem ${ocupadas.length} posições ocupadas.`);
-      return;
-    }
-
-    const prefixo=area.prefixo||"P";
-    const posicoes={};
-    let numero=1;
-    for(let i=0;i<quantidadeNova;i++){
-      const nomePos=`${prefixo}${String(numero).padStart(2,"0")}`;
-      posicoes[nomePos]={nome:nomePos};
-      numero++;
-    }
-
-    const conflitos=ocupadas.filter(p=>!posicoes[p]);
-    if(conflitos.length){
-      alert("A alteração removeria posições ocupadas: "+conflitos.join(", "));
-      return;
-    }
-
-    if(confirm(`Atualizar "${area.nome}" para ${linhas} x ${colunas} (${quantidadeNova} posições)?`)){
-      await update(ref(db,`patioAreas/${areaId}`),{linhas,colunas,posicoes,atualizadoPor:auth.currentUser?.email||"Sistema",atualizadoEm:agora()});
-      alert("Área atualizada.");
+    try {
+      await set(ref(db, `patioAreas/${targetId}`), areaPayload);
+      fecharModalNovaArea();
+      alert("Área configurada com sucesso!");
+    } catch(err) {
+      alert("Erro ao salvar área: " + err.message);
     }
   };
 
-  window.excluirAreaPatio=async function(areaId){
-    const area=areasPatioCache[areaId]; if(!area)return;
-    const ocupadas=Object.keys(area.posicoes||{}).filter(p=>!!loteNaPosicao(p));
-    if(ocupadas.length){
-      alert(`Não é possível excluir "${area.nome}". Existem posições ocupadas: ${ocupadas.join(", ")}`);
-      return;
+  window.excluirAreaPatio = async function(id){
+    if(confirm("Confirma a exclusão desta área física do pátio?")){
+      await remove(ref(db, `patioAreas/${id}`));
+      alert("Área excluída!");
     }
-    if(!confirm(`Excluir a área "${area.nome}" e todas as suas posições?`))return;
-    await remove(ref(db,`patioAreas/${areaId}`));
-    alert("Área excluída.");
   };
-
-  atualizarSelectsPosicoes();
 </script>
 </body>
 </html>
