@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -24,7 +23,7 @@
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
     input,select,textarea{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;color:#334155;background:#fff}
     input:focus,select:focus,textarea:focus{outline:none;border-color:#3b82f6}
-    input[readonly]{background:#f1f5f9;color:#64748b}
+    input[readonly], input[disabled]{background:#f1f5f9;color:#94a3b8;cursor:not-allowed}
     textarea{resize:none}
     button{background:#1e3a8a;color:white;border:none;padding:11px 16px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px}
     button:hover{background:#1d4ed8}
@@ -100,7 +99,7 @@
   <div id="abaDashboard" class="aba-setor ativa">
     <div class="cards">
       <div class="card-info pluma"><h3>Fardos de Pluma</h3><p id="dashFardosPluma">0</p></div>
-      <div class="card-info caroco"><h3>Fardos de Caroço</h3><p id="dashFardosCaroco">0</p></div>
+      <div class="card-info caroco"><h3>Total Caroço (Kg)</h3><p id="dashPesoCarocoTopo">0 Kg</p></div>
       <div class="card-info fibrilha"><h3>Fardos de Fibrilha</h3><p id="dashFardosFibrilha">0</p></div>
       <div class="card-info"><h3>Ocupação do Pátio</h3><p id="dashOcupacaoPatio">0%</p></div>
       <div class="card-info"><h3>Posições Livres</h3><p id="dashPosicoesLivres">0</p></div>
@@ -131,7 +130,7 @@
       <div class="grid" style="margin-top:15px;">
         <div><label class="small-note">Identificação do Lote</label><input type="text" id="prodLote" placeholder="Ex: LOTE-2026-01"></div>
         <div><label class="small-note">Tipo de Produto</label>
-          <select id="prodTipo"><option value="Pluma">Pluma</option><option value="Caroço">Caroço</option><option value="Fibrilha">Fibrilha</option></select>
+          <select id="prodTipo" onchange="tratarAlteracaoTipoProduto()"><option value="Pluma">Pluma</option><option value="Caroço">Caroço</option><option value="Fibrilha">Fibrilha</option></select>
         </div>
         <div><label class="small-note">Quantidade de Fardos</label><input type="number" id="prodFardos" placeholder="Quantidade de fardos"></div>
         <div><label class="small-note">Peso Líquido Balança (Kg)</label><input type="text" id="prodPeso" placeholder="Ex: 24760 ou 24.760"></div>
@@ -272,6 +271,18 @@
   function formatarNumero(num){ return new Intl.NumberFormat("pt-BR").format(num || 0); }
   function agora(){ return new Date().toLocaleString("pt-BR"); }
 
+  window.tratarAlteracaoTipoProduto = function(){
+    const tipo = document.getElementById("prodTipo").value;
+    const inputFardos = document.getElementById("prodFardos");
+    if(tipo === "Caroço"){
+      inputFardos.value = "0";
+      inputFardos.disabled = true;
+    } else {
+      inputFardos.disabled = false;
+      if(inputFardos.value === "0") inputFardos.value = "";
+    }
+  };
+
   function mostrarErroLogin(mensagem){
     let el=document.getElementById("erroLogin");
     if(!el){
@@ -328,6 +339,7 @@
       document.getElementById("sistemaTela").classList.remove("hidden");
       document.getElementById("areaUsuario").classList.remove("hidden");
       document.getElementById("usuarioLogado").innerText="Usuário: "+user.email;
+      tratarAlteracaoTipoProduto();
       atualizarSelectsPosicoes();
       if(!dadosIniciados){ inicializarEscutasFirebase(); dadosIniciados=true; }
     }else{
@@ -410,23 +422,23 @@
   }
 
   function processarDashboardsEPatio(){
-    let fardosPluma=0,fardosCaroco=0,fardosFibrilha=0;
-    let pesoPluma=0,pesoCaroco=0,pesoFibrilha=0;
+    let fardosPluma=0, fardosFibrilha=0;
+    let pesoPluma=0, pesoCaroco=0, pesoFibrilha=0;
     const posicoes=todasPosicoes();
     const ocupadas=new Set();
 
     Object.values(lotesEstoqueCache).forEach(lote=>{
       if(Number(lote.peso||0)>0 && lote.posicaoPatio){
         ocupadas.add(lote.posicaoPatio.trim().toUpperCase());
-        const f=Number(lote.fardos||0),p=Number(lote.peso||0);
-        if(lote.tipo==="Pluma"){fardosPluma+=f;pesoPluma+=p;}
-        else if(lote.tipo==="Caroço"){fardosCaroco+=f;pesoCaroco+=p;}
-        else if(lote.tipo==="Fibrilha"){fardosFibrilha+=f;pesoFibrilha+=p;}
+        const f=Number(lote.fardos||0), p=Number(lote.peso||0);
+        if(lote.tipo==="Pluma"){ fardosPluma+=f; pesoPluma+=p; }
+        else if(lote.tipo==="Caroço"){ pesoCaroco+=p; }
+        else if(lote.tipo==="Fibrilha"){ fardosFibrilha+=f; pesoFibrilha+=p; }
       }
     });
 
     document.getElementById("dashFardosPluma").innerText=formatarNumero(fardosPluma);
-    document.getElementById("dashFardosCaroco").innerText=formatarNumero(fardosCaroco);
+    document.getElementById("dashPesoCarocoTopo").innerText=formatarNumero(pesoCaroco)+" Kg";
     document.getElementById("dashFardosFibrilha").innerText=formatarNumero(fardosFibrilha);
     document.getElementById("dashPesoPluma").innerText=formatarNumero(pesoPluma)+" Kg";
     document.getElementById("dashPesoCaroco").innerText=formatarNumero(pesoCaroco)+" Kg";
@@ -482,10 +494,13 @@
           if(lote.tipo==="Caroço") classe="p-caroco";
           if(lote.tipo==="Fibrilha") classe="p-fibrilha";
           el.classList.add(classe);
+
+          const detalheQtd = lote.tipo === "Caroço" ? `${formatarNumero(lote.peso)} Kg` : `${formatarNumero(lote.peso)} Kg · ${lote.fardos||0} fds`;
+
           el.innerHTML=`
             <span class="bloco-nome">${escapeHtml(pos.nome||posId)}</span>
             <span class="bloco-meta"><strong>${escapeHtml(lote.lote||"")}</strong></span><br>
-            <span class="bloco-meta">${formatarNumero(lote.peso)} Kg · ${lote.fardos||0} fds</span>
+            <span class="bloco-meta">${detalheQtd}</span>
           `;
           el.onclick=()=>inspecionarPosicaoPatio(ocupante[0],pos.nome||posId);
         }else{
@@ -513,12 +528,14 @@
     const painel=document.getElementById("conteudoInspecaoPatio");
     if(!lote){ painel.innerHTML="<p>Lote não encontrado.</p>"; return; }
 
+    const textoFardos = lote.tipo === "Caroço" ? "A granel (N/A)" : (lote.fardos||0);
+
     painel.innerHTML=`
       <div style="font-size:13.5px;line-height:1.7;">
         <p><strong>Posição:</strong> <span class="badge" style="background:#1e3a8a;color:white;">${escapeHtml(posicao)}</span></p>
         <p><strong>Lote:</strong> ${escapeHtml(lote.lote)}</p>
         <p><strong>Produto:</strong> <span class="status ${(lote.tipo||"").toLowerCase()}">${escapeHtml(lote.tipo)}</span></p>
-        <p><strong>Fardos:</strong> ${lote.fardos||0}</p>
+        <p><strong>Fardos:</strong> ${textoFardos}</p>
         <p><strong>Peso:</strong> ${formatarNumero(lote.peso)} Kg</p>
         <p><strong>Entrada:</strong> ${escapeHtml(lote.dataCadastro||"N/D")}</p>
         <hr style="margin:12px 0;border:0;border-top:1px solid #e2e8f0;">
@@ -562,14 +579,14 @@
     const idEdicao=document.getElementById("idEdicaoProducao").value;
     const loteStr=document.getElementById("prodLote").value.trim();
     const tipo=document.getElementById("prodTipo").value;
-    const fardos=Number(document.getElementById("prodFardos").value||0);
+    const fardos=tipo === "Caroço" ? 0 : Number(document.getElementById("prodFardos").value||0);
     const pesoRaw=document.getElementById("prodPeso").value;
     const posicaoPatio=document.getElementById("prodPosicaoPatio").value;
     const observacao=document.getElementById("prodObs").value.trim();
     const peso=Number(String(pesoRaw).replace(/\./g,"").replace(",",".")||0);
 
     if(!loteStr){alert("Preencha a identificação do lote.");return;}
-    if(fardos<=0){alert("Informe uma quantidade válida de fardos.");return;}
+    if(tipo !== "Caroço" && fardos<=0){alert("Informe uma quantidade válida de fardos.");return;}
     if(peso<=0){alert("Informe um peso válido.");return;}
     if(!posicaoPatio){alert("Selecione uma posição do pátio.");return;}
 
@@ -609,6 +626,7 @@
   function limparFormularioProducao(){
     document.getElementById("idEdicaoProducao").value="";
     document.getElementById("prodLote").value="";
+    document.getElementById("prodTipo").value="Pluma";
     document.getElementById("prodFardos").value="";
     document.getElementById("prodPeso").value="";
     document.getElementById("prodPosicaoPatio").value="";
@@ -616,6 +634,7 @@
     document.getElementById("tituloFormProducao").innerText="Registrar Lote Produzido";
     document.getElementById("btnSalvarProducao").innerText="Salvar no Estoque";
     document.getElementById("btnCancelarProducao").classList.add("hidden");
+    tratarAlteracaoTipoProduto();
   }
 
   window.cancelarEdicaoProducao = limparFormularioProducao;
@@ -626,6 +645,7 @@
     document.getElementById("idEdicaoProducao").value = id;
     document.getElementById("prodLote").value = lote.lote || "";
     document.getElementById("prodTipo").value = lote.tipo || "Pluma";
+    tratarAlteracaoTipoProduto();
     document.getElementById("prodFardos").value = lote.fardos || 0;
     document.getElementById("prodPeso").value = lote.peso || 0;
     document.getElementById("prodPosicaoPatio").value = lote.posicaoPatio || "";
@@ -636,9 +656,9 @@
   };
 
   window.excluirLoteProducao = async function(id){
-    if(confirm("Tem certeza que deseja remover este lote do estoque?")){
+    if(confirm("Tem certeza que deseja excluir este lote do estoque?")){
       await remove(ref(db, `lotesAlgodoeira/${id}`));
-      alert("Lote removido!");
+      alert("Lote excluído com sucesso.");
     }
   };
 
@@ -647,22 +667,23 @@
     if(!tbody) return;
     tbody.innerHTML = "";
 
-    const lotes = Object.entries(lotesEstoqueCache).filter(([_, l]) => Number(l.peso||0) > 0);
-
+    const lotes = Object.entries(lotesEstoqueCache);
     if(!lotes.length){
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;">Nenhum lote armazenado no estoque.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;">Nenhum lote registrado em estoque.</td></tr>';
       return;
     }
 
     lotes.forEach(([id, l]) => {
       const tr = document.createElement("tr");
+      const fardosTexto = l.tipo === "Caroço" ? "-" : (l.fardos || 0);
+
       tr.innerHTML = `
         <td><strong>${escapeHtml(l.lote)}</strong></td>
         <td><span class="status ${(l.tipo||"").toLowerCase()}">${escapeHtml(l.tipo)}</span></td>
-        <td>${formatarNumero(l.fardos)}</td>
-        <td>${formatarNumero(l.peso)}</td>
+        <td>${fardosTexto}</td>
+        <td>${formatarNumero(l.peso)} Kg</td>
         <td><span class="badge">${escapeHtml(l.posicaoPatio)}</span></td>
-        <td>${escapeHtml(l.dataCadastro || l.dataAtualizacao || "-")}</td>
+        <td>${escapeHtml(l.dataCadastro || l.dataAtualizacao || "N/D")}</td>
         <td>${escapeHtml(l.usuarioCadastro || l.usuarioAtualizacao || "Sistema")}</td>
         <td>
           <button class="btn-edit" onclick="editarLoteProducao('${id}')">Editar</button>
@@ -674,42 +695,46 @@
   }
 
   function atualizarSelectsPosicoes(){
-    const selectProd = document.getElementById("prodPosicaoPatio");
-    if(!selectProd) return;
+    const selProd = document.getElementById("prodPosicaoPatio");
+    if(!selProd) return;
 
-    const valorAtual = selectProd.value;
-    selectProd.innerHTML = '<option value="">Selecione uma posição...</option>';
+    const valAnterior = selProd.value;
+    selProd.innerHTML = '<option value="">Selecione uma posição...</option>';
 
     todasPosicoes().forEach(p => {
-      const ocupante = loteNaPosicao(p.nome);
-      const isSelf = ocupante && ocupante[0] === document.getElementById("idEdicaoProducao").value;
-      const desabilitado = ocupante && !isSelf ? "disabled" : "";
-      const label = p.nome + (ocupante && !isSelf ? ` (Ocupado por ${ocupante[1].lote})` : ` - ${p.areaNome}`);
-      
-      selectProd.innerHTML += `<option value="${escapeHtml(p.nome)}" ${desabilitado}>${escapeHtml(label)}</option>`;
+      const opt = document.createElement("option");
+      opt.value = p.nome;
+      opt.textContent = `${p.nome} (${p.areaNome})`;
+      selProd.appendChild(opt);
     });
 
-    selectProd.value = valorAtual;
+    selProd.value = valAnterior;
   }
 
-  /* --- MÓDULO DE EXPEDIÇÃO & FATURAMENTO --- */
+  /* --- MÓDULO DE EXPEDIÇÃO & CARREGAMENTO --- */
   function atualizarSelectLotesExpedicao(){
-    const selectExp = document.getElementById("expLoteSelec");
-    if(!selectExp) return;
+    const sel = document.getElementById("expLoteSelec");
+    if(!sel) return;
 
-    selectExp.innerHTML = '<option value="">Selecione um lote disponível...</option>';
-
+    sel.innerHTML = '<option value="">Selecione um lote disponível...</option>';
     Object.entries(lotesEstoqueCache).forEach(([id, l]) => {
       if(Number(l.peso || 0) > 0){
-        selectExp.innerHTML += `<option value="${id}">${escapeHtml(l.lote)} (${escapeHtml(l.tipo)} - ${formatarNumero(l.peso)} Kg)</option>`;
+        const opt = document.createElement("option");
+        opt.value = id;
+        opt.textContent = `${l.lote} - ${l.tipo} (${formatarNumero(l.peso)} Kg) - Pos: ${l.posicaoPatio}`;
+        sel.appendChild(opt);
       }
     });
   }
 
   window.atualizarDadosLoteExpedicao = function(){
     const id = document.getElementById("expLoteSelec").value;
-    const lote = lotesEstoqueCache[id];
-    document.getElementById("expPesoDisponivel").value = lote ? formatarNumero(lote.peso) + " Kg" : "";
+    const inputPeso = document.getElementById("expPesoDisponivel");
+    if(!id || !lotesEstoqueCache[id]){
+      inputPeso.value = "";
+      return;
+    }
+    inputPeso.value = formatarNumero(lotesEstoqueCache[id].peso) + " Kg";
   };
 
   window.registrarExpedicaoCarga = async function(){
@@ -719,35 +744,31 @@
     const caminhao = document.getElementById("expCaminhao").value.trim();
     const nf = document.getElementById("expNF").value.trim();
 
-    if(!idLote){ alert("Selecione um lote para expedição."); return; }
-    if(!cliente || !motorista || !caminhao || !nf){ alert("Preencha todos os campos da ordem de carregamento."); return; }
+    if(!idLote){ alert("Selecione o lote para expedição."); return; }
+    if(!cliente || !motorista || !caminhao || !nf){ alert("Preencha todos os campos do transporte e NF."); return; }
 
     const lote = lotesEstoqueCache[idLote];
+    if(!lote){ alert("Lote não encontrado."); return; }
 
-    const expedicaoData = {
-      loteId: idLote,
+    const payloadExp = {
+      idLote: idLote,
       lote: lote.lote,
       tipo: lote.tipo,
+      fardos: lote.fardos || 0,
       peso: lote.peso,
-      fardos: lote.fardos,
       cliente: cliente,
       motorista: motorista,
       caminhao: caminhao,
       nf: nf,
       dataSaida: agora(),
-      operador: auth.currentUser?.email || "Sistema"
+      usuario: auth.currentUser?.email || "Sistema"
     };
 
     try {
-      await push(ref(db, "expedicaoAlgodoeira"), expedicaoData);
-      await update(ref(db, `lotesAlgodoeira/${idLote}`), {
-        peso: 0,
-        fardos: 0,
-        posicaoPatio: "",
-        dataExpedicao: agora()
-      });
+      await push(ref(db, "expedicaoAlgodoeira"), payloadExp);
+      await remove(ref(db, `lotesAlgodoeira/${idLote}`));
 
-      alert("Carga autorizada e estoque baixado com sucesso!");
+      alert("Expedição registrada com sucesso! Estoque baixado.");
       document.getElementById("expCliente").value = "";
       document.getElementById("expMotorista").value = "";
       document.getElementById("expCaminhao").value = "";
@@ -764,19 +785,19 @@
     if(!tbody) return;
     tbody.innerHTML = "";
 
-    const historico = Object.values(historicoCargasCache);
-    if(!historico.length){
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;">Nenhuma expedição registrada.</td></tr>';
+    const cargas = Object.values(historicoCargasCache);
+    if(!cargas.length){
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;">Nenhuma saída registrada.</td></tr>';
       return;
     }
 
-    historico.forEach(c => {
+    cargas.reverse().forEach(c => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td><strong>${escapeHtml(c.cliente)}</strong></td>
         <td>${escapeHtml(c.lote)}</td>
         <td><span class="status ${(c.tipo||"").toLowerCase()}">${escapeHtml(c.tipo)}</span></td>
-        <td>${formatarNumero(c.peso)}</td>
+        <td>${formatarNumero(c.peso)} Kg</td>
         <td>${escapeHtml(c.motorista)}</td>
         <td>${escapeHtml(c.caminhao)}</td>
         <td>${escapeHtml(c.nf)}</td>
@@ -787,31 +808,6 @@
   }
 
   /* --- CONFIGURAÇÃO DE ÁREAS DO PÁTIO --- */
-  function renderizarConfiguracaoAreas(){
-    const container = document.getElementById("listaAreasConfiguracao");
-    if(!container) return;
-    container.innerHTML = "";
-
-    Object.entries(areasPatioCache).forEach(([id, area]) => {
-      const posCount = Object.keys(area.posicoes || {}).length;
-      const card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML = `
-        <div class="top-bar">
-          <div>
-            <h3>${escapeHtml(area.nome)} (Prefixo: ${escapeHtml(area.prefixo)})</h3>
-            <p class="small-note">${area.linhas || 1} linha(s) x ${area.colunas || 5} coluna(s) — Total: ${posCount} posições</p>
-          </div>
-          <div>
-            <button class="btn-edit" onclick="abrirConfiguracaoArea('${id}')">Editar</button>
-            <button class="btn-danger" onclick="excluirAreaPatio('${id}')">Excluir</button>
-          </div>
-        </div>
-      `;
-      container.appendChild(card);
-    });
-  }
-
   window.abrirModalNovaArea = function(){
     document.getElementById("idAreaEdicao").value = "";
     document.getElementById("novaAreaNome").value = "";
@@ -826,18 +822,6 @@
     document.getElementById("modalNovaArea").classList.add("hidden");
   };
 
-  window.abrirConfiguracaoArea = function(id){
-    const area = areasPatioCache[id];
-    if(!area) return;
-    document.getElementById("idAreaEdicao").value = id;
-    document.getElementById("novaAreaNome").value = area.nome || "";
-    document.getElementById("novaAreaPrefixo").value = area.prefixo || "";
-    document.getElementById("novaAreaLinhas").value = area.linhas || 1;
-    document.getElementById("novaAreaColunas").value = area.colunas || 5;
-    document.getElementById("tituloModalArea").innerText = "Editar Área " + (area.nome || "");
-    document.getElementById("modalNovaArea").classList.remove("hidden");
-  };
-
   window.criarNovaArea = async function(){
     const idArea = document.getElementById("idAreaEdicao").value;
     const nome = document.getElementById("novaAreaNome").value.trim();
@@ -847,18 +831,17 @@
 
     if(!nome || !prefixo){ alert("Informe o nome e o prefixo da área."); return; }
 
+    const key = idArea || ("area_" + Date.now());
+    const totalPos = linhas * colunas;
     const posicoes = {};
-    let contador = 1;
-    for(let r = 0; r < linhas; r++){
-      for(let c = 0; c < colunas; c++){
-        const numStr = String(contador).padStart(2, "0");
-        const posNome = `${prefixo}${numStr}`;
-        posicoes[posNome] = { nome: posNome };
-        contador++;
-      }
+
+    for(let i=1; i<=totalPos; i++){
+      const suf = String(i).padStart(2, "0");
+      const posKey = prefixo + suf;
+      posicoes[posKey] = { nome: posKey };
     }
 
-    const areaPayload = {
+    const payload = {
       nome: nome,
       prefixo: prefixo,
       linhas: linhas,
@@ -866,23 +849,65 @@
       posicoes: posicoes
     };
 
-    const targetId = idArea || `area_${Date.now()}`;
-
     try {
-      await set(ref(db, `patioAreas/${targetId}`), areaPayload);
-      fecharModalNovaArea();
+      await set(ref(db, `patioAreas/${key}`), payload);
       alert("Área configurada com sucesso!");
+      fecharModalNovaArea();
     } catch(err) {
       alert("Erro ao salvar área: " + err.message);
     }
   };
 
-  window.excluirAreaPatio = async function(id){
-    if(confirm("Confirma a exclusão desta área física do pátio?")){
-      await remove(ref(db, `patioAreas/${id}`));
-      alert("Área excluída!");
+  window.abrirConfiguracaoArea = function(key){
+    const area = areasPatioCache[key];
+    if(!area) return;
+    document.getElementById("idAreaEdicao").value = key;
+    document.getElementById("novaAreaNome").value = area.nome || "";
+    document.getElementById("novaAreaPrefixo").value = area.prefixo || "";
+    document.getElementById("novaAreaLinhas").value = area.linhas || 1;
+    document.getElementById("novaAreaColunas").value = area.colunas || 5;
+    document.getElementById("tituloModalArea").innerText = "Editar " + area.nome;
+    document.getElementById("modalNovaArea").classList.remove("hidden");
+  };
+
+  window.excluirAreaConfigurada = async function(key){
+    if(confirm("Tem certeza que deseja excluir esta área física? Isso afetará os blocos mapeados.")){
+      await remove(ref(db, `patioAreas/${key}`));
+      alert("Área removida.");
     }
   };
+
+  function renderizarConfiguracaoAreas(){
+    const cont = document.getElementById("listaAreasConfiguracao");
+    if(!cont) return;
+    cont.innerHTML = "";
+
+    const entries = Object.entries(areasPatioCache);
+    if(!entries.length){
+      cont.innerHTML = '<p style="color:#64748b;padding:15px 0;">Nenhuma área física configurada.</p>';
+      return;
+    }
+
+    entries.forEach(([key, a]) => {
+      const div = document.createElement("div");
+      div.className = "card";
+      div.style.cssText = "margin-bottom:12px;padding:15px;display:flex;justify-content:space-between;align-items:center;";
+      const qntPos = Object.keys(a.posicoes || {}).length;
+
+      div.innerHTML = `
+        <div>
+          <h3 style="color:#1e3a8a;font-size:16px;">${escapeHtml(a.nome)}</h3>
+          <p class="small-note">Prefixo: <strong>${escapeHtml(a.prefixo)}</strong> | Dimensões: ${a.linhas}x${a.colunas} (${qntPos} posições)</p>
+        </div>
+        <div>
+          <button class="btn-edit" onclick="abrirConfiguracaoArea('${key}')">Editar</button>
+          <button class="btn-danger" onclick="excluirAreaConfigurada('${key}')">Excluir</button>
+        </div>
+      `;
+      cont.appendChild(div);
+    });
+  }
 </script>
+
 </body>
 </html>
