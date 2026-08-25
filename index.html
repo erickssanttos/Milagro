@@ -67,7 +67,6 @@
   </style>
 </head>
 <body>
-
 <header>
   <h1>Algodoeira ERP & Yard Management</h1>
   <p>Controle de Produção, Armazenamento Geográfico e Expedição de Lotes</p>
@@ -87,7 +86,6 @@
 </div>
 
 <div id="sistemaTela" class="container hidden">
-
   <div class="menu-abas">
     <button class="aba-btn ativa" onclick="abrirAbaSistema('abaDashboard', this)">Dashboard Operacional</button>
     <button class="aba-btn" onclick="abrirAbaSistema('abaProducao', this)">Entrada & Produção</button>
@@ -141,7 +139,6 @@
       <button onclick="salvarLoteProducao()" id="btnSalvarProducao">Salvar no Estoque</button>
       <button onclick="cancelarEdicaoProducao()" id="btnCancelarProducao" class="btn-danger hidden">Cancelar</button>
     </div>
-
     <div class="card">
       <h2>Lotes Armazenados no Pátio</h2>
       <table>
@@ -163,7 +160,6 @@
       <div class="legend">
         <span>⚪ Livre</span><span>🟢 Pluma</span><span>🔵 Caroço</span><span>🟠 Fibrilha</span>
       </div>
-
       <div class="patio-layout" style="margin-top:15px;">
         <div class="mapa-patio" id="containerMapaPatio"></div>
         <div class="card split-detail" id="painelInspecaoPatio">
@@ -340,7 +336,6 @@
       document.getElementById("areaUsuario").classList.remove("hidden");
       document.getElementById("usuarioLogado").innerText="Usuário: "+user.email;
       tratarAlteracaoTipoProduto();
-      atualizarSelectsPosicoes();
       if(!dadosIniciados){ inicializarEscutasFirebase(); dadosIniciados=true; }
     }else{
       document.getElementById("loginTela").classList.remove("hidden");
@@ -409,16 +404,40 @@
     const lista=[];
     Object.entries(areasPatioCache).forEach(([areaId,area])=>{
       Object.entries(area.posicoes || {}).forEach(([posId,pos])=>{
-        lista.push({id:posId,nome:pos.nome || posId,areaId,areaNome:area.nome || areaId});
+        const nomePos = pos.nome || posId;
+        lista.push({id:posId, nome:nomePos, areaId, areaNome:area.nome || areaId});
       });
     });
     return lista;
   }
 
   function loteNaPosicao(posicao){
+    if(!posicao) return null;
     return Object.entries(lotesEstoqueCache).find(([id,l])=>
-      l.posicaoPatio && l.posicaoPatio.trim().toUpperCase()===posicao.toUpperCase() && Number(l.peso||0)>0
+      l.posicaoPatio && l.posicaoPatio.trim().toUpperCase()===posicao.trim().toUpperCase() && Number(l.peso||0)>0
     );
+  }
+
+  function atualizarSelectsPosicoes(){
+    const select = document.getElementById("prodPosicaoPatio");
+    if(!select) return;
+    const valorAtual = select.value;
+
+    select.innerHTML = '<option value="">Selecione uma posição...</option>';
+    
+    todasPosicoes().forEach(p => {
+      const ocupante = loteNaPosicao(p.nome);
+      const option = document.createElement("option");
+      option.value = p.nome;
+      if(ocupante){
+        option.textContent = `${p.nome} - ${p.areaNome} (Ocupada: Lote ${ocupante[1].lote})`;
+      } else {
+        option.textContent = `${p.nome} - ${p.areaNome} (Livre)`;
+      }
+      select.appendChild(option);
+    });
+
+    select.value = valorAtual;
   }
 
   function processarDashboardsEPatio(){
@@ -445,7 +464,7 @@
     document.getElementById("dashPesoFibrilha").innerText=formatarNumero(pesoFibrilha)+" Kg";
 
     const total=posicoes.length;
-    const ocupadasQtd=posicoes.filter(p=>ocupadas.has(p.id.toUpperCase())).length;
+    const ocupadasQtd=posicoes.filter(p=>ocupadas.has(p.id.toUpperCase()) || ocupadas.has(p.nome.toUpperCase())).length;
     document.getElementById("dashOcupacaoPatio").innerText=(total?Math.round(ocupadasQtd/total*100):0)+"%";
     document.getElementById("dashPosicoesLivres").innerText=formatarNumero(Math.max(0,total-ocupadasQtd));
     renderizarCroquiPatio();
@@ -475,7 +494,6 @@
             <div class="area-titulo">${escapeHtml(area.nome || areaId)}</div>
             <div class="area-info">Prefixo: ${escapeHtml(area.prefixo||"")} · ${posicoes.length} posições</div>
           </div>
-          <button class="btn-edit" onclick="abrirConfiguracaoArea('${areaId}')">Editar área</button>
         </div>
       `;
 
@@ -484,7 +502,8 @@
       grid.style.gridTemplateColumns=`repeat(${colunas},minmax(90px,1fr))`;
 
       posicoes.forEach(([posId,pos])=>{
-        const ocupante=loteNaPosicao(pos.nome||posId);
+        const nomePosicao = pos.nome || posId;
+        const ocupante=loteNaPosicao(nomePosicao);
         const el=document.createElement("div");
         el.className="bloco-patio";
 
@@ -498,18 +517,18 @@
           const detalheQtd = lote.tipo === "Caroço" ? `${formatarNumero(lote.peso)} Kg` : `${formatarNumero(lote.peso)} Kg · ${lote.fardos||0} fds`;
 
           el.innerHTML=`
-            <span class="bloco-nome">${escapeHtml(pos.nome||posId)}</span>
+            <span class="bloco-nome">${escapeHtml(nomePosicao)}</span>
             <span class="bloco-meta"><strong>${escapeHtml(lote.lote||"")}</strong></span><br>
             <span class="bloco-meta">${detalheQtd}</span>
           `;
-          el.onclick=()=>inspecionarPosicaoPatio(ocupante[0],pos.nome||posId);
+          el.onclick=()=>inspecionarPosicaoPatio(ocupante[0],nomePosicao);
         }else{
           el.classList.add("p-livre");
           el.innerHTML=`
-            <span class="bloco-nome">${escapeHtml(pos.nome||posId)}</span>
+            <span class="bloco-nome">${escapeHtml(nomePosicao)}</span>
             <span class="bloco-meta">Livre</span>
           `;
-          el.onclick=()=>exibirPosicaoVazia(pos.nome||posId,area.nome||areaId);
+          el.onclick=()=>exibirPosicaoVazia(nomePosicao,area.nome||areaId);
         }
         grid.appendChild(el);
       });
@@ -554,10 +573,16 @@
         <h3 style="color:#94a3b8;font-size:18px;">${escapeHtml(posicao)}</h3>
         <p style="font-size:13px;margin-top:8px;color:#64748b;">Área: ${escapeHtml(areaNome)}</p>
         <p style="font-size:13px;margin-top:8px;color:#64748b;">Posição livre.</p>
-        <button class="btn-success" style="margin-top:12px" onclick="abrirAbaPorId('abaProducao')">Registrar Lote Aqui</button>
+        <button class="btn-success" style="margin-top:12px" onclick="selecionarPosicaoParaProducao('${escapeHtml(posicao)}')">Registrar Lote Aqui</button>
       </div>
     `;
   }
+
+  window.selecionarPosicaoParaProducao = function(posicao){
+    abrirAbaPorId('abaProducao');
+    const select = document.getElementById("prodPosicaoPatio");
+    if(select) select.value = posicao;
+  };
 
   window.executarRemanejamentoFisico=async function(idLote,posicaoAntiga){
     const novaPosicao=document.getElementById("remanejarNovaPosicao").value;
@@ -635,32 +660,10 @@
     document.getElementById("btnSalvarProducao").innerText="Salvar no Estoque";
     document.getElementById("btnCancelarProducao").classList.add("hidden");
     tratarAlteracaoTipoProduto();
+    atualizarSelectsPosicoes();
   }
 
   window.cancelarEdicaoProducao = limparFormularioProducao;
-
-  window.editarLoteProducao = function(id){
-    const lote = lotesEstoqueCache[id];
-    if(!lote) return;
-    document.getElementById("idEdicaoProducao").value = id;
-    document.getElementById("prodLote").value = lote.lote || "";
-    document.getElementById("prodTipo").value = lote.tipo || "Pluma";
-    tratarAlteracaoTipoProduto();
-    document.getElementById("prodFardos").value = lote.fardos || 0;
-    document.getElementById("prodPeso").value = lote.peso || 0;
-    document.getElementById("prodPosicaoPatio").value = lote.posicaoPatio || "";
-    document.getElementById("prodObs").value = lote.observacao || "";
-    document.getElementById("tituloFormProducao").innerText = "Editar Lote " + lote.lote;
-    document.getElementById("btnSalvarProducao").innerText = "Atualizar Lote";
-    document.getElementById("btnCancelarProducao").classList.remove("hidden");
-  };
-
-  window.excluirLoteProducao = async function(id){
-    if(confirm("Tem certeza que deseja excluir este lote do estoque?")){
-      await remove(ref(db, `lotesAlgodoeira/${id}`));
-      alert("Lote excluído com sucesso.");
-    }
-  };
 
   function atualizarTabelaEstoque(){
     const tbody = document.getElementById("tabelaLotesEstoque");
@@ -669,22 +672,20 @@
 
     const lotes = Object.entries(lotesEstoqueCache);
     if(!lotes.length){
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;">Nenhum lote registrado em estoque.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;">Nenhum lote em estoque.</td></tr>';
       return;
     }
 
-    lotes.forEach(([id, l]) => {
+    lotes.forEach(([id, lote]) => {
       const tr = document.createElement("tr");
-      const fardosTexto = l.tipo === "Caroço" ? "-" : (l.fardos || 0);
-
       tr.innerHTML = `
-        <td><strong>${escapeHtml(l.lote)}</strong></td>
-        <td><span class="status ${(l.tipo||"").toLowerCase()}">${escapeHtml(l.tipo)}</span></td>
-        <td>${fardosTexto}</td>
-        <td>${formatarNumero(l.peso)} Kg</td>
-        <td><span class="badge">${escapeHtml(l.posicaoPatio)}</span></td>
-        <td>${escapeHtml(l.dataCadastro || l.dataAtualizacao || "N/D")}</td>
-        <td>${escapeHtml(l.usuarioCadastro || l.usuarioAtualizacao || "Sistema")}</td>
+        <td><strong>${escapeHtml(lote.lote)}</strong></td>
+        <td><span class="status ${(lote.tipo||"").toLowerCase()}">${escapeHtml(lote.tipo)}</span></td>
+        <td>${lote.tipo === "Caroço" ? "N/A" : formatarNumero(lote.fardos)}</td>
+        <td>${formatarNumero(lote.peso)} Kg</td>
+        <td><span class="badge">${escapeHtml(lote.posicaoPatio||"N/D")}</span></td>
+        <td>${escapeHtml(lote.dataCadastro||"-")}</td>
+        <td>${escapeHtml(lote.usuarioCadastro||"-")}</td>
         <td>
           <button class="btn-edit" onclick="editarLoteProducao('${id}')">Editar</button>
           <button class="btn-danger" onclick="excluirLoteProducao('${id}')">Excluir</button>
@@ -694,89 +695,84 @@
     });
   }
 
-  function atualizarSelectsPosicoes(){
-    const selProd = document.getElementById("prodPosicaoPatio");
-    if(!selProd) return;
+  window.editarLoteProducao = function(id){
+    const lote = lotesEstoqueCache[id];
+    if(!lote) return;
+    document.getElementById("idEdicaoProducao").value = id;
+    document.getElementById("prodLote").value = lote.lote || "";
+    document.getElementById("prodTipo").value = lote.tipo || "Pluma";
+    document.getElementById("prodFardos").value = lote.fardos || "";
+    document.getElementById("prodPeso").value = lote.peso || "";
+    document.getElementById("prodPosicaoPatio").value = lote.posicaoPatio || "";
+    document.getElementById("prodObs").value = lote.observacao || "";
+    document.getElementById("tituloFormProducao").innerText = "Editar Lote Produzido";
+    document.getElementById("btnSalvarProducao").innerText = "Atualizar Lote";
+    document.getElementById("btnCancelarProducao").classList.remove("hidden");
+    tratarAlteracaoTipoProduto();
+  };
 
-    const valAnterior = selProd.value;
-    selProd.innerHTML = '<option value="">Selecione uma posição...</option>';
+  window.excluirLoteProducao = async function(id){
+    if(confirm("Tem certeza que deseja excluir este lote do estoque?")){
+      await remove(ref(db, `lotesAlgodoeira/${id}`));
+      alert("Lote excluído com sucesso!");
+    }
+  };
 
-    todasPosicoes().forEach(p => {
-      const opt = document.createElement("option");
-      opt.value = p.nome;
-      opt.textContent = `${p.nome} (${p.areaNome})`;
-      selProd.appendChild(opt);
-    });
-
-    selProd.value = valAnterior;
-  }
-
-  /* --- MÓDULO DE EXPEDIÇÃO & CARREGAMENTO --- */
+  /* --- EXPEDIÇÃO E CONFIGURAÇÕES --- */
   function atualizarSelectLotesExpedicao(){
-    const sel = document.getElementById("expLoteSelec");
-    if(!sel) return;
-
-    sel.innerHTML = '<option value="">Selecione um lote disponível...</option>';
-    Object.entries(lotesEstoqueCache).forEach(([id, l]) => {
-      if(Number(l.peso || 0) > 0){
+    const select = document.getElementById("expLoteSelec");
+    if(!select) return;
+    select.innerHTML = '<option value="">Selecione um lote disponível...</option>';
+    Object.entries(lotesEstoqueCache).forEach(([id, lote]) => {
+      if(Number(lote.peso||0) > 0){
         const opt = document.createElement("option");
         opt.value = id;
-        opt.textContent = `${l.lote} - ${l.tipo} (${formatarNumero(l.peso)} Kg) - Pos: ${l.posicaoPatio}`;
-        sel.appendChild(opt);
+        opt.textContent = `${lote.lote} - ${lote.tipo} (${formatarNumero(lote.peso)} Kg - Pos: ${lote.posicaoPatio})`;
+        select.appendChild(opt);
       }
     });
   }
 
   window.atualizarDadosLoteExpedicao = function(){
     const id = document.getElementById("expLoteSelec").value;
-    const inputPeso = document.getElementById("expPesoDisponivel");
-    if(!id || !lotesEstoqueCache[id]){
-      inputPeso.value = "";
-      return;
-    }
-    inputPeso.value = formatarNumero(lotesEstoqueCache[id].peso) + " Kg";
+    const lote = lotesEstoqueCache[id];
+    document.getElementById("expPesoDisponivel").value = lote ? `${formatarNumero(lote.peso)} Kg` : "";
   };
 
   window.registrarExpedicaoCarga = async function(){
-    const idLote = document.getElementById("expLoteSelec").value;
     const cliente = document.getElementById("expCliente").value.trim();
     const motorista = document.getElementById("expMotorista").value.trim();
     const caminhao = document.getElementById("expCaminhao").value.trim();
     const nf = document.getElementById("expNF").value.trim();
+    const idLote = document.getElementById("expLoteSelec").value;
 
-    if(!idLote){ alert("Selecione o lote para expedição."); return; }
-    if(!cliente || !motorista || !caminhao || !nf){ alert("Preencha todos os campos do transporte e NF."); return; }
-
+    if(!cliente || !idLote){ alert("Preencha o cliente e escolha o lote."); return; }
     const lote = lotesEstoqueCache[idLote];
     if(!lote){ alert("Lote não encontrado."); return; }
 
-    const payloadExp = {
-      idLote: idLote,
+    const payload = {
+      cliente, motorista, caminhao, nf,
       lote: lote.lote,
       tipo: lote.tipo,
-      fardos: lote.fardos || 0,
       peso: lote.peso,
-      cliente: cliente,
-      motorista: motorista,
-      caminhao: caminhao,
-      nf: nf,
+      fardos: lote.fardos,
+      posicaoOrigem: lote.posicaoPatio,
       dataSaida: agora(),
-      usuario: auth.currentUser?.email || "Sistema"
+      operador: auth.currentUser?.email || "Sistema"
     };
 
     try {
-      await push(ref(db, "expedicaoAlgodoeira"), payloadExp);
+      await push(ref(db, "expedicaoAlgodoeira"), payload);
       await remove(ref(db, `lotesAlgodoeira/${idLote}`));
-
-      alert("Expedição registrada com sucesso! Estoque baixado.");
+      alert("Saída autorizada e lote baixado do estoque!");
       document.getElementById("expCliente").value = "";
       document.getElementById("expMotorista").value = "";
       document.getElementById("expCaminhao").value = "";
       document.getElementById("expNF").value = "";
       document.getElementById("expLoteSelec").value = "";
       document.getElementById("expPesoDisponivel").value = "";
-    } catch(err) {
-      alert("Erro ao registrar expedição: " + err.message);
+    } catch(err){
+      alert("Erro ao expedir: " + err.message);
     }
   };
 
@@ -784,37 +780,53 @@
     const tbody = document.getElementById("tabelaHistoricoExpedicao");
     if(!tbody) return;
     tbody.innerHTML = "";
-
-    const cargas = Object.values(historicoCargasCache);
-    if(!cargas.length){
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;">Nenhuma saída registrada.</td></tr>';
+    const lista = Object.values(historicoCargasCache);
+    if(!lista.length){
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;">Nenhuma expedição realizada.</td></tr>';
       return;
     }
-
-    cargas.reverse().forEach(c => {
+    lista.forEach(item => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td><strong>${escapeHtml(c.cliente)}</strong></td>
-        <td>${escapeHtml(c.lote)}</td>
-        <td><span class="status ${(c.tipo||"").toLowerCase()}">${escapeHtml(c.tipo)}</span></td>
-        <td>${formatarNumero(c.peso)} Kg</td>
-        <td>${escapeHtml(c.motorista)}</td>
-        <td>${escapeHtml(c.caminhao)}</td>
-        <td>${escapeHtml(c.nf)}</td>
-        <td>${escapeHtml(c.dataSaida)}</td>
+        <td>${escapeHtml(item.cliente)}</td>
+        <td><strong>${escapeHtml(item.lote)}</strong></td>
+        <td><span class="status ${(item.tipo||"").toLowerCase()}">${escapeHtml(item.tipo)}</span></td>
+        <td>${formatarNumero(item.peso)} Kg</td>
+        <td>${escapeHtml(item.motorista||"-")}</td>
+        <td>${escapeHtml(item.caminhao||"-")}</td>
+        <td>${escapeHtml(item.nf||"-")}</td>
+        <td>${escapeHtml(item.dataSaida||"-")}</td>
       `;
       tbody.appendChild(tr);
     });
   }
 
-  /* --- CONFIGURAÇÃO DE ÁREAS DO PÁTIO --- */
+  function renderizarConfiguracaoAreas(){
+    const cont = document.getElementById("listaAreasConfiguracao");
+    if(!cont) return;
+    cont.innerHTML = "";
+    Object.entries(areasPatioCache).forEach(([id, area]) => {
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <h3>${escapeHtml(area.nome)} (Prefixo: ${escapeHtml(area.prefixo)})</h3>
+            <p class="small-note">${area.linhas} linhas x ${area.colunas} colunas (${Object.keys(area.posicoes||{}).length} posições)</p>
+          </div>
+          <button class="btn-danger" onclick="excluirAreaPatio('${id}')">Excluir Área</button>
+        </div>
+      `;
+      cont.appendChild(div);
+    });
+  }
+
   window.abrirModalNovaArea = function(){
     document.getElementById("idAreaEdicao").value = "";
     document.getElementById("novaAreaNome").value = "";
     document.getElementById("novaAreaPrefixo").value = "";
     document.getElementById("novaAreaLinhas").value = "2";
     document.getElementById("novaAreaColunas").value = "5";
-    document.getElementById("tituloModalArea").innerText = "Criar Nova Área Física";
     document.getElementById("modalNovaArea").classList.remove("hidden");
   };
 
@@ -823,91 +835,38 @@
   };
 
   window.criarNovaArea = async function(){
-    const idArea = document.getElementById("idAreaEdicao").value;
     const nome = document.getElementById("novaAreaNome").value.trim();
     const prefixo = document.getElementById("novaAreaPrefixo").value.trim().toUpperCase();
-    const linhas = Number(document.getElementById("novaAreaLinhas").value || 1);
-    const colunas = Number(document.getElementById("novaAreaColunas").value || 1);
+    const linhas = Number(document.getElementById("novaAreaLinhas").value||1);
+    const colunas = Number(document.getElementById("novaAreaColunas").value||1);
 
-    if(!nome || !prefixo){ alert("Informe o nome e o prefixo da área."); return; }
+    if(!nome || !prefixo){ alert("Preencha nome e prefixo."); return; }
 
-    const key = idArea || ("area_" + Date.now());
-    const totalPos = linhas * colunas;
     const posicoes = {};
-
-    for(let i=1; i<=totalPos; i++){
-      const suf = String(i).padStart(2, "0");
-      const posKey = prefixo + suf;
-      posicoes[posKey] = { nome: posKey };
+    let total = 1;
+    for(let r=0; r<linhas; r++){
+      for(let c=0; c<colunas; c++){
+        const num = String(total).padStart(2, '0');
+        const posKey = `${prefixo}${num}`;
+        posicoes[posKey] = { nome: posKey };
+        total++;
+      }
     }
 
-    const payload = {
-      nome: nome,
-      prefixo: prefixo,
-      linhas: linhas,
-      colunas: colunas,
-      posicoes: posicoes
-    };
+    const novaArea = { nome, prefixo, linhas, colunas, posicoes };
+    const areaId = "area_" + Date.now();
 
-    try {
-      await set(ref(db, `patioAreas/${key}`), payload);
-      alert("Área configurada com sucesso!");
-      fecharModalNovaArea();
-    } catch(err) {
-      alert("Erro ao salvar área: " + err.message);
-    }
+    await set(ref(db, `patioAreas/${areaId}`), novaArea);
+    fecharModalNovaArea();
+    alert("Área cadastrada com sucesso!");
   };
 
-  window.abrirConfiguracaoArea = function(key){
-    const area = areasPatioCache[key];
-    if(!area) return;
-    document.getElementById("idAreaEdicao").value = key;
-    document.getElementById("novaAreaNome").value = area.nome || "";
-    document.getElementById("novaAreaPrefixo").value = area.prefixo || "";
-    document.getElementById("novaAreaLinhas").value = area.linhas || 1;
-    document.getElementById("novaAreaColunas").value = area.colunas || 5;
-    document.getElementById("tituloModalArea").innerText = "Editar " + area.nome;
-    document.getElementById("modalNovaArea").classList.remove("hidden");
-  };
-
-  window.excluirAreaConfigurada = async function(key){
-    if(confirm("Tem certeza que deseja excluir esta área física? Isso afetará os blocos mapeados.")){
-      await remove(ref(db, `patioAreas/${key}`));
-      alert("Área removida.");
+  window.excluirAreaPatio = async function(id){
+    if(confirm("Deseja realmente excluir esta área física do pátio?")){
+      await remove(ref(db, `patioAreas/${id}`));
+      alert("Área excluída!");
     }
   };
-
-  function renderizarConfiguracaoAreas(){
-    const cont = document.getElementById("listaAreasConfiguracao");
-    if(!cont) return;
-    cont.innerHTML = "";
-
-    const entries = Object.entries(areasPatioCache);
-    if(!entries.length){
-      cont.innerHTML = '<p style="color:#64748b;padding:15px 0;">Nenhuma área física configurada.</p>';
-      return;
-    }
-
-    entries.forEach(([key, a]) => {
-      const div = document.createElement("div");
-      div.className = "card";
-      div.style.cssText = "margin-bottom:12px;padding:15px;display:flex;justify-content:space-between;align-items:center;";
-      const qntPos = Object.keys(a.posicoes || {}).length;
-
-      div.innerHTML = `
-        <div>
-          <h3 style="color:#1e3a8a;font-size:16px;">${escapeHtml(a.nome)}</h3>
-          <p class="small-note">Prefixo: <strong>${escapeHtml(a.prefixo)}</strong> | Dimensões: ${a.linhas}x${a.colunas} (${qntPos} posições)</p>
-        </div>
-        <div>
-          <button class="btn-edit" onclick="abrirConfiguracaoArea('${key}')">Editar</button>
-          <button class="btn-danger" onclick="excluirAreaConfigurada('${key}')">Excluir</button>
-        </div>
-      `;
-      cont.appendChild(div);
-    });
-  }
 </script>
-
 </body>
 </html>
