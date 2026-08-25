@@ -21,14 +21,24 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
     body { background-color: var(--bg); color: var(--text); padding: 20px; }
     
-    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .container { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     .hidden { display: none !important; }
     
-    button { cursor: pointer; padding: 8px 16px; border-radius: 6px; border: none; font-weight: 600; transition: background 0.2s; }
+    h2 { color: var(--primary); font-size: 1.25rem; margin-bottom: 15px; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
+    .form-group { display: flex; flex-direction: column; gap: 5px; }
+    .form-group label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+    .form-group input, .form-group select { padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; }
+    .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
+    
+    .actions { display: flex; gap: 10px; }
+    button { cursor: pointer; padding: 8px 16px; border-radius: 6px; border: none; font-weight: 600; font-size: 14px; transition: background 0.2s; }
     .btn-primary { background: var(--primary); color: #fff; }
     .btn-primary:hover { background: var(--primary-hover); }
+    .btn-secondary { background: var(--border); color: var(--text); }
     .btn-danger { background: var(--danger); color: #fff; }
-    .btn-edit { background: var(--warning); color: #fff; margin-right: 4px; }
+    .btn-edit { background: var(--warning); color: #fff; }
     
     .status { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
     .status.pluma { background: #e0f2fe; color: #0369a1; }
@@ -38,7 +48,7 @@
     
     table { width: 100%; border-collapse: collapse; margin-top: 10px; }
     th, td { border: 1px solid var(--border); padding: 10px; text-align: left; font-size: 14px; }
-    th { background: #f1f5f9; }
+    th { background: #f1f5f9; color: var(--text-muted); font-size: 12px; text-transform: uppercase; }
     
     .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
     .modal-content { background: #fff; border-radius: 8px; padding: 24px; width: 100%; max-width: 500px; }
@@ -46,13 +56,175 @@
 </head>
 <body>
 
-  <!-- Início do Módulo de Script JS -->
+  <div class="container">
+    <!-- Formulário de Registro de Produção -->
+    <div class="card">
+      <h2 id="tituloFormProducao">Registrar Lote Produzido</h2>
+      <input type="hidden" id="idEdicaoProducao">
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Identificação do Lote</label>
+          <input type="text" id="prodLote" placeholder="Ex: LOTE-2026-01">
+        </div>
+        <div class="form-group">
+          <label>Tipo de Produto</label>
+          <select id="prodTipo" onchange="tratarAlteracaoTipoProduto()">
+            <option value="Pluma">Pluma</option>
+            <option value="Caroço">Caroço</option>
+            <option value="Fibrilha">Fibrilha</option>
+          </select>
+        </div>
+        <div class="form-group" id="containerProdFardos">
+          <label>Qtd. Fardos</label>
+          <input type="number" id="prodFardos" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label>Peso Líquido (Kg)</label>
+          <input type="text" id="prodPeso" placeholder="Ex: 22.500">
+        </div>
+        <div class="form-group">
+          <label>Posição no Pátio</label>
+          <input type="text" id="prodPosicaoPatio" placeholder="Ex: A01">
+        </div>
+        <div class="form-group">
+          <label>Observação</label>
+          <input type="text" id="prodObs" placeholder="Opcional">
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn-primary" id="btnSalvarProducao" onclick="salvarLoteProducao()">Salvar no Estoque</button>
+        <button class="btn-secondary hidden" id="btnCancelarProducao" onclick="cancelarEdicaoProducao()">Cancelar</button>
+      </div>
+    </div>
+
+    <!-- Tabela de Lotes no Estoque -->
+    <div class="card">
+      <h2>Lotes em Estoque (Pátio)</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Lote</th>
+            <th>Tipo</th>
+            <th>Fardos</th>
+            <th>Peso (Kg)</th>
+            <th>Posição</th>
+            <th>Data Cadastro</th>
+            <th>Usuário</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaLotesEstoque">
+          <tr><td colspan="8" style="text-align:center;color:#64748b;">Carregando dados...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Módulo de Expedição -->
+    <div class="card">
+      <h2>Expedição / Baixa de Carga</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Selecione o Lote</label>
+          <select id="expLoteSelec" onchange="atualizarDadosLoteExpedicao()">
+            <option value="">Selecione um lote...</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Peso Disponível</label>
+          <input type="text" id="expPesoDisponivel" readonly disabled>
+        </div>
+        <div class="form-group">
+          <label>Cliente</label>
+          <input type="text" id="expCliente" placeholder="Nome do Destinatário">
+        </div>
+        <div class="form-group">
+          <label>Motorista</label>
+          <input type="text" id="expMotorista" placeholder="Nome do Motorista">
+        </div>
+        <div class="form-group">
+          <label>Placa do Veículo</label>
+          <input type="text" id="expCaminhao" placeholder="AAA-0000">
+        </div>
+        <div class="form-group">
+          <label>Nota Fiscal</label>
+          <input type="text" id="expNF" placeholder="Nº da NF">
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn-primary" onclick="registrarExpedicaoCarga()">Liberar Carga / Dar Baixa</button>
+      </div>
+    </div>
+
+    <!-- Histórico de Expedição -->
+    <div class="card">
+      <h2>Histórico de Expedições</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Lote</th>
+            <th>Tipo</th>
+            <th>Peso</th>
+            <th>Motorista</th>
+            <th>Veículo</th>
+            <th>NF</th>
+            <th>Data Saída</th>
+          </tr>
+        </thead>
+        <tbody id="tabelaHistoricoExpedicao">
+          <tr><td colspan="8" style="text-align:center;color:#64748b;">Nenhuma expedição registrada.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Gerenciamento de Áreas do Pátio -->
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
+        <h2>Configuração de Áreas do Pátio</h2>
+        <button class="btn-primary" onclick="abrirModalNovaArea()">+ Nova Área</button>
+      </div>
+      <div id="listaAreasConfiguracao"></div>
+    </div>
+  </div>
+
+  <!-- Modal Criar Área -->
+  <div class="modal hidden" id="modalNovaArea">
+    <div class="modal-content">
+      <h2>Criar Nova Área no Pátio</h2>
+      <div class="form-group" style="margin-bottom:10px;">
+        <label>Nome da Área</label>
+        <input type="text" id="novaAreaNome" placeholder="Ex: Rua A - Pluma">
+      </div>
+      <div class="form-group" style="margin-bottom:10px;">
+        <label>Prefixo das Posições</label>
+        <input type="text" id="novaAreaPrefixo" placeholder="Ex: A">
+      </div>
+      <div class="form-grid" style="margin-bottom:15px;">
+        <div class="form-group">
+          <label>Linhas</label>
+          <input type="number" id="novaAreaLinhas" value="5">
+        </div>
+        <div class="form-group">
+          <label>Colunas</label>
+          <input type="number" id="novaAreaColunas" value="5">
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn-primary" onclick="criarNovaArea()">Gerar Posições</button>
+        <button class="btn-secondary" onclick="fecharModalNovaArea()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script Firebase -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, push, set, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
     import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    // Configuração do Firebase (Substitua pelos seus dados)
+    // Insira as credenciais do seu projeto Firebase aqui
     const firebaseConfig = {
       apiKey: "SUA_API_KEY",
       authDomain: "SEU_PROJECT.firebaseapp.com",
@@ -71,24 +243,11 @@
     let historicoCargasCache = {};
     let areasPatioCache = {};
 
-    // Funções Utilitárias Gerais
-    function agora() {
-      return new Date().toLocaleString('pt-BR');
-    }
+    function agora() { return new Date().toLocaleString('pt-BR'); }
+    function formatarNumero(val) { return Number(val || 0).toLocaleString('pt-BR'); }
+    function escapeHtml(str) { return String(str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+    function loteNaPosicao(pos) { return Object.entries(lotesEstoqueCache).find(([_, item]) => item.posicaoPatio === pos); }
 
-    function formatarNumero(val) {
-      return Number(val || 0).toLocaleString('pt-BR');
-    }
-
-    function escapeHtml(str) {
-      return String(str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
-
-    function loteNaPosicao(posicaoCode) {
-      return Object.entries(lotesEstoqueCache).find(([_, item]) => item.posicaoPatio === posicaoCode);
-    }
-
-    // Inicialização e Listeners
     onValue(ref(db, "lotesAlgodoeira"), (snapshot) => {
       lotesEstoqueCache = snapshot.val() || {};
       atualizarTabelaEstoque();
@@ -105,7 +264,6 @@
       renderizarConfiguracaoAreas();
     });
 
-    // Trata exibição do campo fardos dependendo do tipo do produto
     window.tratarAlteracaoTipoProduto = function() {
       const tipo = document.getElementById("prodTipo").value;
       const containerFardos = document.getElementById("containerProdFardos");
@@ -117,7 +275,6 @@
       }
     };
 
-    // Salvar/Atualizar Lote de Produção
     window.salvarLoteProducao = async function() {
       const idEdicao = document.getElementById("idEdicaoProducao").value;
       const loteStr = document.getElementById("prodLote").value.trim();
@@ -128,21 +285,18 @@
       const observacao = document.getElementById("prodObs").value.trim();
 
       const peso = parseFloat(pesoStr.replace(/\./g, "").replace(",", ".")) || 0;
-
-      // Tratamento para extrair apenas o código da posição (ex: "A01" em vez de "A01 - Rua 01 (Livre)")
       const posicao = posicaoBruta ? posicaoBruta.split(" - ")[0].trim() : "";
 
       if (!loteStr || !posicao || peso <= 0) {
-        alert("Preencha a Identificação do Lote, a Posição no Pátio e o Peso Líquido.");
+        alert("Preencha a Identificação do Lote, a Posição e o Peso Líquido.");
         return;
       }
 
       if (tipo !== "Caroço" && fardos <= 0) {
-        alert("Para o tipo Pluma ou Fibrilha, informe a quantidade de fardos.");
+        alert("Informe a quantidade de fardos para Pluma ou Fibrilha.");
         return;
       }
 
-      // Validação de posição ocupada (desconsiderando o próprio lote em caso de edição)
       const ocupante = loteNaPosicao(posicao);
       if (ocupante && ocupante[0] !== idEdicao) {
         alert(`A posição ${posicao} já está ocupada pelo Lote ${ocupante[1].lote}.`);
@@ -170,11 +324,11 @@
           alert("Lote atualizado com sucesso!");
         } else {
           await push(ref(db, "lotesAlgodoeira"), dadosLote);
-          alert("Lote cadastrado e armazenado no pátio!");
+          alert("Lote cadastrado no pátio!");
         }
         limparFormularioProducao();
       } catch (erro) {
-        alert("Erro ao salvar lote no Firebase: " + erro.message);
+        alert("Erro ao salvar: " + erro.message);
       }
     };
 
@@ -192,9 +346,7 @@
       tratarAlteracaoTipoProduto();
     };
 
-    window.cancelarEdicaoProducao = function() {
-      limparFormularioProducao();
-    };
+    window.cancelarEdicaoProducao = function() { limparFormularioProducao(); };
 
     window.editarLoteProducao = function(id) {
       const lote = lotesEstoqueCache[id];
@@ -205,12 +357,10 @@
       document.getElementById("prodTipo").value = lote.tipo || "Pluma";
       document.getElementById("prodFardos").value = lote.fardos || "";
       document.getElementById("prodPeso").value = lote.peso || "";
+      document.getElementById("prodPosicaoPatio").value = lote.posicaoPatio || "";
       document.getElementById("prodObs").value = lote.observacao || "";
       
       tratarAlteracaoTipoProduto();
-
-      const selectPos = document.getElementById("prodPosicaoPatio");
-      if (selectPos) selectPos.value = lote.posicaoPatio || "";
 
       document.getElementById("tituloFormProducao").innerText = "Editar Lote Produzido";
       document.getElementById("btnSalvarProducao").innerText = "Atualizar Lote";
@@ -222,9 +372,8 @@
     window.excluirLoteProducao = async function(id) {
       const lote = lotesEstoqueCache[id];
       if (!lote) return;
-      if (confirm(`Tem certeza que deseja remover o Lote ${lote.lote}?`)) {
+      if (confirm(`Remover Lote ${lote.lote}?`)) {
         await remove(ref(db, `lotesAlgodoeira/${id}`));
-        alert("Lote excluído do estoque!");
       }
     };
 
@@ -298,14 +447,14 @@
       const nf = document.getElementById("expNF").value.trim();
 
       if (!idLote || !cliente || !motorista || !caminhao) {
-        alert("Selecione um lote e preencha os dados de Cliente, Motorista e Placa do Veículo.");
+        alert("Preencha o Lote, Cliente, Motorista e Placa.");
         return;
       }
 
       const lote = lotesEstoqueCache[idLote];
       if (!lote) return;
 
-      if (confirm(`Confirmar saída do Lote ${lote.lote} (${formatarNumero(lote.peso)} Kg) para ${cliente}?`)) {
+      if (confirm(`Confirmar saída do Lote ${lote.lote}?`)) {
         const dadosExpedicao = {
           idLoteOriginal: idLote,
           lote: lote.lote,
@@ -324,8 +473,7 @@
         try {
           await push(ref(db, "expedicaoAlgodoeira"), dadosExpedicao);
           await remove(ref(db, `lotesAlgodoeira/${idLote}`));
-
-          alert("Carga liberada e dada baixa no pátio com sucesso!");
+          alert("Carga liberada!");
 
           document.getElementById("expCliente").value = "";
           document.getElementById("expMotorista").value = "";
@@ -333,9 +481,8 @@
           document.getElementById("expNF").value = "";
           document.getElementById("expLoteSelec").value = "";
           atualizarDadosLoteExpedicao();
-
         } catch (erro) {
-          alert("Erro ao registrar expedição: " + erro.message);
+          alert("Erro: " + erro.message);
         }
       }
     };
@@ -374,7 +521,7 @@
 
       const entradas = Object.entries(areasPatioCache);
       if (!entradas.length) {
-        container.innerHTML = '<p style="color:#64748b;">Nenhuma área ou rua configurada.</p>';
+        container.innerHTML = '<p style="color:#64748b;">Nenhuma área configurada.</p>';
         return;
       }
 
@@ -390,25 +537,18 @@
             <div>
               <h4 style="color:var(--primary);font-size:15px;">${escapeHtml(area.nome || areaId)}</h4>
               <p style="font-size:12px;color:var(--text-muted);margin-top:4px;">
-                Prefixo: <strong>${escapeHtml(area.prefixo)}</strong> | Dimensões: ${area.linhas}x${area.colunas} | Total de Posições: ${totalPosicoes}
+                Prefixo: <strong>${escapeHtml(area.prefixo)}</strong> | Posições Geradas: ${totalPosicoes}
               </p>
             </div>
-            <div>
-              <button class="btn-danger" onclick="excluirAreaPatio('${areaId}')">Excluir Área</button>
-            </div>
+            <button class="btn-danger" onclick="excluirAreaPatio('${areaId}')">Excluir</button>
           </div>
         `;
         container.appendChild(div);
       });
     }
 
-    window.abrirModalNovaArea = function() {
-      document.getElementById("modalNovaArea").classList.remove("hidden");
-    };
-
-    window.fecharModalNovaArea = function() {
-      document.getElementById("modalNovaArea").classList.add("hidden");
-    };
+    window.abrirModalNovaArea = function() { document.getElementById("modalNovaArea").classList.remove("hidden"); };
+    window.fecharModalNovaArea = function() { document.getElementById("modalNovaArea").classList.add("hidden"); };
 
     window.criarNovaArea = async function() {
       const nome = document.getElementById("novaAreaNome").value.trim();
@@ -417,7 +557,7 @@
       const colunas = Number(document.getElementById("novaAreaColunas").value || 1);
 
       if (!nome || !prefixo) {
-        alert("Preencha o Nome e o Prefixo da área.");
+        alert("Preencha Nome e Prefixo.");
         return;
       }
 
@@ -434,32 +574,18 @@
         }
       }
 
-      const novaAreaObj = {
-        nome: nome,
-        prefixo: prefixo,
-        linhas: linhas,
-        colunas: colunas,
-        posicoes: posicoesObj
-      };
-
       try {
-        await set(ref(db, `patioAreas/${areaKey}`), novaAreaObj);
-        alert("Nova área e posições geradas com sucesso!");
+        await set(ref(db, `patioAreas/${areaKey}`), { nome, prefixo, linhas, colunas, posicoes: posicoesObj });
+        alert("Área gerada!");
         fecharModalNovaArea();
-        document.getElementById("novaAreaNome").value = "";
-        document.getElementById("novaAreaPrefixo").value = "";
       } catch (erro) {
-        alert("Erro ao criar nova área: " + erro.message);
+        alert("Erro ao criar área: " + erro.message);
       }
     };
 
     window.excluirAreaPatio = async function(areaId) {
-      const area = areasPatioCache[areaId];
-      if (!area) return;
-
-      if (confirm(`Tem certeza que deseja excluir a área ${area.nome}?`)) {
+      if (confirm("Deseja excluir esta área?")) {
         await remove(ref(db, `patioAreas/${areaId}`));
-        alert("Área removida!");
       }
     };
   </script>
