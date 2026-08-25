@@ -1,593 +1,930 @@
+
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestão de Pátio e Algodoeira</title>
+  <title>Algodoeira - Gestão de Pátio & Expedição</title>
   <style>
-    :root {
-      --primary: #1e3a8a;
-      --primary-hover: #1d4ed8;
-      --bg: #f8fafc;
-      --card-bg: #ffffff;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --border: #e2e8f0;
-      --danger: #ef4444;
-      --success: #22c55e;
-      --warning: #f59e0b;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding: 20px; }
-    
-    .container { max-width: 1200px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
-    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .hidden { display: none !important; }
-    
-    h2 { color: var(--primary); font-size: 1.25rem; margin-bottom: 15px; }
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px; }
-    .form-group { display: flex; flex-direction: column; gap: 5px; }
-    .form-group label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
-    .form-group input, .form-group select { padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; outline: none; }
-    .form-group input:focus, .form-group select:focus { border-color: var(--primary); }
-    
-    .actions { display: flex; gap: 10px; }
-    button { cursor: pointer; padding: 8px 16px; border-radius: 6px; border: none; font-weight: 600; font-size: 14px; transition: background 0.2s; }
-    .btn-primary { background: var(--primary); color: #fff; }
-    .btn-primary:hover { background: var(--primary-hover); }
-    .btn-secondary { background: var(--border); color: var(--text); }
-    .btn-danger { background: var(--danger); color: #fff; }
-    .btn-edit { background: var(--warning); color: #fff; }
-    
-    .status { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
-    .status.pluma { background: #e0f2fe; color: #0369a1; }
-    .status.caroço { background: #fef3c7; color: #b45309; }
-    .status.fibrilha { background: #f3e8ff; color: #6b21a8; }
-    .badge { background: var(--border); padding: 2px 6px; border-radius: 4px; font-size: 12px; }
-    
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid var(--border); padding: 10px; text-align: left; font-size: 14px; }
-    th { background: #f1f5f9; color: var(--text-muted); font-size: 12px; text-transform: uppercase; }
-    
-    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-    .modal-content { background: #fff; border-radius: 8px; padding: 24px; width: 100%; max-width: 500px; }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:#334155}
+    header{background:linear-gradient(135deg,#1e3a8a,#0f172a);color:white;padding:20px;text-align:center;box-shadow:0 4px 6px -1px rgba(0,0,0,.1)}
+    header h1{font-size:26px;letter-spacing:1px}
+    header p{font-size:14px;color:#93c5fd;margin-top:4px}
+    .container{width:96%;max-width:1600px;margin:25px auto}
+    .hidden{display:none!important}
+    .login-box{max-width:400px;margin:100px auto;background:white;padding:35px;border-radius:16px;box-shadow:0 10px 25px -5px rgba(0,0,0,.1)}
+    .login-box h2{text-align:center;color:#1e3a8a;margin-bottom:25px}
+    .login-status{padding:10px;border-radius:8px;margin-top:12px;font-size:12px;line-height:1.45}
+    .login-status.ok{background:#dcfce7;color:#166534;border:1px solid #86efac}
+    .login-status.erro{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+    .login-status.info{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
+    .card{background:white;border-radius:14px;padding:22px;margin-bottom:22px;box-shadow:0 4px 6px -1px rgba(0,0,0,.05),0 2px 4px -1px rgba(0,0,0,.06)}
+    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:22px}
+    .card-info{background:white;border-radius:14px;padding:20px;box-shadow:0 4px 6px -1px rgba(0,0,0,.05);border-left:5px solid #1e3a8a}
+    .card-info.pluma{border-left-color:#10b981}.card-info.caroco{border-left-color:#3b82f6}.card-info.fibrilha{border-left-color:#f59e0b}
+    .card-info h3{color:#64748b;margin-bottom:8px;font-size:14px;text-transform:uppercase;letter-spacing:.5px}
+    .card-info p{font-size:26px;font-weight:bold;color:#1e293b}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+    input,select,textarea{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:8px;font-size:14px;color:#334155;background:#fff}
+    input:focus,select:focus,textarea:focus{outline:none;border-color:#3b82f6}
+    input[readonly]{background:#f1f5f9;color:#64748b}
+    textarea{resize:none}
+    button{background:#1e3a8a;color:white;border:none;padding:11px 16px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px}
+    button:hover{background:#1d4ed8}
+    button:disabled{opacity:.55;cursor:not-allowed}
+    .btn-danger{background:#ef4444}.btn-danger:hover{background:#dc2626}
+    .btn-edit{background:#0ea5e9}.btn-edit:hover{background:#0284c7}
+    .btn-dark{background:#334155}.btn-dark:hover{background:#1e293b}
+    .btn-gray{background:#94a3b8}.btn-gray:hover{background:#64748b}
+    .btn-success{background:#10b981}.btn-success:hover{background:#059669}
+    .btn-warning{background:#f59e0b}.btn-warning:hover{background:#d97706}
+    .top-bar{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap;align-items:center;margin-bottom:15px}
+    table{width:100%;border-collapse:separate;border-spacing:0;margin-top:12px;border-radius:8px;overflow:hidden;border:1px solid #e2e8f0}
+    th{background:#f8fafc;color:#475569;padding:14px;text-align:left;font-size:13px;font-weight:600;border-bottom:2px solid #e2e8f0}
+    td{padding:14px;border-bottom:1px solid #e2e8f0;font-size:13.5px;background:#fff}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:#f8fafc}
+    .status{padding:5px 10px;border-radius:12px;font-size:11px;font-weight:700;text-transform:uppercase}
+    .status.pluma{background:#d1fae5;color:#065f46}.status.caroco{background:#dbeafe;color:#1e40af}.status.fibrilha{background:#fef3c7;color:#92400e}
+    .status.livre{background:#f1f5f9;color:#475569}.status.carregado{background:#e2e8f0;color:#1e293b}
+    .status.pronto{background:#dcfce7;color:#166534}.status.pendente{background:#fef3c7;color:#92400e}
+    .user-area{text-align:right;margin-top:8px}.badge{display:inline-block;padding:6px 12px;border-radius:20px;background:#dbeafe;color:#1e40af;font-size:12px;font-weight:bold}
+    .small-note{font-size:12px;color:#64748b;margin-top:6px}
+    .menu-abas{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 25px;background:white;padding:12px;border-radius:14px;box-shadow:0 4px 6px -1px rgba(0,0,0,.05);position:sticky;top:0;z-index:100}
+    .aba-btn{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}.aba-btn:hover,.aba-btn.ativa{background:#1e3a8a;color:white;border-color:#1e3a8a}
+    .aba-setor{display:none}.aba-setor.ativa{display:block}
+    .patio-layout{display:grid;grid-template-columns:3fr 1fr;gap:20px;align-items:start}
+    .mapa-patio{background:#eef2f7;padding:20px;border-radius:14px;border:1px dashed #cbd5e1;min-height:450px}
+    .area-patio{background:#fff;border:2px solid #cbd5e1;border-radius:14px;padding:14px;margin-bottom:18px}
+    .area-header{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+    .area-titulo{font-weight:800;color:#1e3a8a;font-size:16px}.area-info{font-size:12px;color:#64748b}
+    .posicoes-grid{display:grid;gap:10px}
+    .bloco-patio{min-height:82px;background:white;border:2px solid #e2e8f0;border-radius:10px;padding:12px;text-align:center;cursor:pointer;transition:.2s}
+    .bloco-patio:hover{transform:translateY(-2px);box-shadow:0 8px 15px -5px rgba(0,0,0,.12)}
+    .bloco-patio.p-pluma{border-color:#10b981;background:#f0fdf4}.bloco-patio.p-caroco{border-color:#3b82f6;background:#eff6ff}
+    .bloco-patio.p-fibrilha{border-color:#f59e0b;background:#fffbeb}.bloco-patio.p-livre{border-color:#cbd5e1;background:#fafafa;color:#94a3b8}
+    .bloco-patio.p-pronto{box-shadow:0 0 0 2px rgba(16,185,129,.15)}
+    .bloco-nome{font-weight:bold;font-size:15px;color:#1e293b;display:block;margin-bottom:4px}.bloco-meta{font-size:12px;color:#64748b}
+    .split-detail{border:2px solid #1e3a8a}
+    .area-admin{border:1px solid #e2e8f0;border-radius:10px;padding:15px;margin-top:12px}
+    .area-admin h4{color:#1e3a8a;margin-bottom:8px}
+    .mini-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .danger-note{background:#fef2f2;color:#991b1b;padding:10px;border-radius:8px;font-size:12px;margin-top:10px}
+    .success-note{background:#ecfdf5;color:#065f46;padding:10px;border-radius:8px;font-size:12px;margin-top:10px}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;padding:20px;z-index:500}
+    .modal{background:#fff;width:min(680px,100%);border-radius:16px;padding:22px;box-shadow:0 20px 50px rgba(0,0,0,.25)}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:15px}
+    .modal-header h3{color:#1e3a8a}
+    .legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+    .legend span{font-size:12px;padding:6px 10px;border-radius:15px;background:#f8fafc;border:1px solid #e2e8f0}
+    @media(max-width:992px){.patio-layout{grid-template-columns:1fr}}
+    @media(max-width:768px){.top-bar{flex-direction:column;align-items:stretch}.mini-grid{grid-template-columns:1fr 1fr}.menu-abas{position:static}}
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <!-- Formulário de Registro de Produção -->
+<header>
+  <h1>Algodoeira ERP & Yard Management</h1>
+  <p>Controle de Produção, Armazenamento Geográfico e Expedição de Lotes</p>
+  <div id="areaUsuario" class="user-area hidden">
+    <span id="usuarioLogado"></span>
+    <button class="btn-dark" onclick="sair()">Sair</button>
+  </div>
+</header>
+
+<div id="loginTela" class="login-box">
+  <h2>Acesso ao Sistema</h2>
+  <input type="email" id="emailLogin" placeholder="E-mail Funcional">
+  <br><br>
+  <input type="password" id="senhaLogin" placeholder="Senha de Acesso">
+  <br><br>
+  <button id="btnLogin" style="width:100%" onclick="entrar()">Entrar no Sistema</button>
+</div>
+
+<div id="sistemaTela" class="container hidden">
+
+  <div class="menu-abas">
+    <button class="aba-btn ativa" onclick="abrirAbaSistema('abaDashboard', this)">Dashboard Operacional</button>
+    <button class="aba-btn" onclick="abrirAbaSistema('abaProducao', this)">Entrada & Produção</button>
+    <button class="aba-btn" onclick="abrirAbaSistema('abaCroqui', this)">Mapa do Pátio (Croqui)</button>
+    <button class="aba-btn" onclick="abrirAbaSistema('abaExpedicao', this)">Ordem de Carregamento</button>
+    <button class="aba-btn" onclick="abrirAbaSistema('abaConfiguracaoPatio', this)">⚙️ Configurar Pátio</button>
+  </div>
+
+  <div id="abaDashboard" class="aba-setor ativa">
+    <div class="cards">
+      <div class="card-info pluma"><h3>Fardos de Pluma</h3><p id="dashFardosPluma">0</p></div>
+      <div class="card-info caroco"><h3>Fardos de Caroço</h3><p id="dashFardosCaroco">0</p></div>
+      <div class="card-info fibrilha"><h3>Fardos de Fibrilha</h3><p id="dashFardosFibrilha">0</p></div>
+      <div class="card-info"><h3>Ocupação do Pátio</h3><p id="dashOcupacaoPatio">0%</p></div>
+      <div class="card-info"><h3>Posições Livres</h3><p id="dashPosicoesLivres">0</p></div>
+    </div>
+    <div class="card">
+      <h2>Resumo de Volumes Totais (Kg)</h2>
+      <div class="grid" style="margin-top:15px;">
+        <div style="background:#f8fafc;padding:15px;border-radius:8px;text-align:center;">
+          <h4 style="color:#64748b;font-size:13px;">PESO TOTAL PLUMA</h4>
+          <p style="font-size:22px;font-weight:bold;color:#10b981;" id="dashPesoPluma">0 Kg</p>
+        </div>
+        <div style="background:#f8fafc;padding:15px;border-radius:8px;text-align:center;">
+          <h4 style="color:#64748b;font-size:13px;">PESO TOTAL CAROÇO</h4>
+          <p style="font-size:22px;font-weight:bold;color:#3b82f6;" id="dashPesoCaroco">0 Kg</p>
+        </div>
+        <div style="background:#f8fafc;padding:15px;border-radius:8px;text-align:center;">
+          <h4 style="color:#64748b;font-size:13px;">PESO TOTAL FIBRILHA</h4>
+          <p style="font-size:22px;font-weight:bold;color:#f59e0b;" id="dashPesoFibrilha">0 Kg</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="abaProducao" class="aba-setor">
     <div class="card">
       <h2 id="tituloFormProducao">Registrar Lote Produzido</h2>
       <input type="hidden" id="idEdicaoProducao">
-      
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Identificação do Lote</label>
-          <input type="text" id="prodLote" placeholder="Ex: LOTE-2026-01">
+      <div class="grid" style="margin-top:15px;">
+        <div><label class="small-note">Identificação do Lote</label><input type="text" id="prodLote" placeholder="Ex: LOTE-2026-01"></div>
+        <div><label class="small-note">Tipo de Produto</label>
+          <select id="prodTipo"><option value="Pluma">Pluma</option><option value="Caroço">Caroço</option><option value="Fibrilha">Fibrilha</option></select>
         </div>
-        <div class="form-group">
-          <label>Tipo de Produto</label>
-          <select id="prodTipo" onchange="tratarAlteracaoTipoProduto()">
-            <option value="Pluma">Pluma</option>
-            <option value="Caroço">Caroço</option>
-            <option value="Fibrilha">Fibrilha</option>
-          </select>
-        </div>
-        <div class="form-group" id="containerProdFardos">
-          <label>Qtd. Fardos</label>
-          <input type="number" id="prodFardos" placeholder="0">
-        </div>
-        <div class="form-group">
-          <label>Peso Líquido (Kg)</label>
-          <input type="text" id="prodPeso" placeholder="Ex: 22.500">
-        </div>
-        <div class="form-group">
-          <label>Posição no Pátio</label>
-          <input type="text" id="prodPosicaoPatio" placeholder="Ex: A01">
-        </div>
-        <div class="form-group">
-          <label>Observação</label>
-          <input type="text" id="prodObs" placeholder="Opcional">
-        </div>
+        <div><label class="small-note">Quantidade de Fardos</label><input type="number" id="prodFardos" placeholder="Quantidade de fardos"></div>
+        <div><label class="small-note">Peso Líquido Balança (Kg)</label><input type="text" id="prodPeso" placeholder="Ex: 24760 ou 24.760"></div>
+        <div><label class="small-note">Posição no Pátio</label><select id="prodPosicaoPatio"><option value="">Selecione uma posição...</option></select></div>
+        <div><label class="small-note">Status do Emblocamento</label><select id="prodStatusEmblocamento">
+          <option value="Pendente">Pendente</option>
+          <option value="Em andamento">Em andamento</option>
+          <option value="Concluído">Concluído</option>
+        </select></div>
       </div>
-
-      <div class="actions">
-        <button class="btn-primary" id="btnSalvarProducao" onclick="salvarLoteProducao()">Salvar no Estoque</button>
-        <button class="btn-secondary hidden" id="btnCancelarProducao" onclick="cancelarEdicaoProducao()">Cancelar</button>
-      </div>
+      <div style="margin-top:15px;"><label class="small-note">Observações</label><textarea id="prodObs" rows="2" placeholder="Notas adicionais sobre o lote..."></textarea></div>
+      <br>
+      <button onclick="salvarLoteProducao()" id="btnSalvarProducao">Salvar no Estoque</button>
+      <button onclick="cancelarEdicaoProducao()" id="btnCancelarProducao" class="btn-danger hidden">Cancelar</button>
     </div>
 
-    <!-- Tabela de Lotes no Estoque -->
     <div class="card">
-      <h2>Lotes em Estoque (Pátio)</h2>
+      <h2>Lotes Armazenados no Pátio</h2>
       <table>
-        <thead>
-          <tr>
-            <th>Lote</th>
-            <th>Tipo</th>
-            <th>Fardos</th>
-            <th>Peso (Kg)</th>
-            <th>Posição</th>
-            <th>Data Cadastro</th>
-            <th>Usuário</th>
-            <th>Ações</th>
-          </tr>
-        </thead>
-        <tbody id="tabelaLotesEstoque">
-          <tr><td colspan="8" style="text-align:center;color:#64748b;">Carregando dados...</td></tr>
-        </tbody>
+        <thead><tr><th>Lote</th><th>Tipo</th><th>Fardos</th><th>Peso (Kg)</th><th>Posição</th><th>Emblocamento</th><th>Data Registro</th><th>Operador</th><th>Ações</th></tr></thead>
+        <tbody id="tabelaLotesEstoque"></tbody>
       </table>
     </div>
+  </div>
 
-    <!-- Módulo de Expedição -->
+  <div id="abaCroqui" class="aba-setor">
     <div class="card">
-      <h2>Expedição / Baixa de Carga</h2>
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Selecione o Lote</label>
-          <select id="expLoteSelec" onchange="atualizarDadosLoteExpedicao()">
-            <option value="">Selecione um lote...</option>
-          </select>
+      <div class="top-bar">
+        <div>
+          <h2>Mapa Físico do Pátio (YMS)</h2>
+          <p class="small-note">As áreas e posições agora são cadastradas no sistema. Você pode criar novas áreas físicas sem alterar o código.</p>
         </div>
-        <div class="form-group">
-          <label>Peso Disponível</label>
-          <input type="text" id="expPesoDisponivel" readonly disabled>
-        </div>
-        <div class="form-group">
-          <label>Cliente</label>
-          <input type="text" id="expCliente" placeholder="Nome do Destinatário">
-        </div>
-        <div class="form-group">
-          <label>Motorista</label>
-          <input type="text" id="expMotorista" placeholder="Nome do Motorista">
-        </div>
-        <div class="form-group">
-          <label>Placa do Veículo</label>
-          <input type="text" id="expCaminhao" placeholder="AAA-0000">
-        </div>
-        <div class="form-group">
-          <label>Nota Fiscal</label>
-          <input type="text" id="expNF" placeholder="Nº da NF">
+        <button class="btn-success" onclick="abrirAbaPorId('abaConfiguracaoPatio')">+ Criar Área Física</button>
+      </div>
+      <div class="legend">
+        <span>⚪ Livre</span><span>🟢 Pluma</span><span>🔵 Caroço</span><span>🟠 Fibrilha</span>
+      </div>
+
+      <div class="patio-layout" style="margin-top:15px;">
+        <div class="mapa-patio" id="containerMapaPatio"></div>
+        <div class="card split-detail" id="painelInspecaoPatio">
+          <h3 style="color:#1e3a8a;">Inspeção de Área</h3>
+          <hr style="margin:12px 0;border:0;border-top:1px solid #e2e8f0;">
+          <div id="conteudoInspecaoPatio">
+            <p style="color:#64748b;text-align:center;padding:30px 0;">Selecione uma posição no croqui.</p>
+          </div>
         </div>
       </div>
-      <div class="actions">
-        <button class="btn-primary" onclick="registrarExpedicaoCarga()">Liberar Carga / Dar Baixa</button>
-      </div>
     </div>
+  </div>
 
-    <!-- Histórico de Expedição -->
+  <div id="abaConfiguracaoPatio" class="aba-setor">
     <div class="card">
-      <h2>Histórico de Expedições</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Cliente</th>
-            <th>Lote</th>
-            <th>Tipo</th>
-            <th>Peso</th>
-            <th>Motorista</th>
-            <th>Veículo</th>
-            <th>NF</th>
-            <th>Data Saída</th>
-          </tr>
-        </thead>
-        <tbody id="tabelaHistoricoExpedicao">
-          <tr><td colspan="8" style="text-align:center;color:#64748b;">Nenhuma expedição registrada.</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Gerenciamento de Áreas do Pátio -->
-    <div class="card">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-        <h2>Configuração de Áreas do Pátio</h2>
-        <button class="btn-primary" onclick="abrirModalNovaArea()">+ Nova Área</button>
+      <div class="top-bar">
+        <div>
+          <h2>Configuração Física do Pátio</h2>
+          <p class="small-note">Crie novas áreas, defina o prefixo e a quantidade de linhas e colunas.</p>
+        </div>
+        <button class="btn-success" onclick="abrirModalNovaArea()">+ Nova Área Física</button>
       </div>
       <div id="listaAreasConfiguracao"></div>
-    </div>
-  </div>
-
-  <!-- Modal Criar Área -->
-  <div class="modal hidden" id="modalNovaArea">
-    <div class="modal-content">
-      <h2>Criar Nova Área no Pátio</h2>
-      <div class="form-group" style="margin-bottom:10px;">
-        <label>Nome da Área</label>
-        <input type="text" id="novaAreaNome" placeholder="Ex: Rua A - Pluma">
-      </div>
-      <div class="form-group" style="margin-bottom:10px;">
-        <label>Prefixo das Posições</label>
-        <input type="text" id="novaAreaPrefixo" placeholder="Ex: A">
-      </div>
-      <div class="form-grid" style="margin-bottom:15px;">
-        <div class="form-group">
-          <label>Linhas</label>
-          <input type="number" id="novaAreaLinhas" value="5">
-        </div>
-        <div class="form-group">
-          <label>Colunas</label>
-          <input type="number" id="novaAreaColunas" value="5">
-        </div>
-      </div>
-      <div class="actions">
-        <button class="btn-primary" onclick="criarNovaArea()">Gerar Posições</button>
-        <button class="btn-secondary" onclick="fecharModalNovaArea()">Fechar</button>
+      <div class="success-note">
+        As posições são salvas no Firebase em <strong>patioAreas</strong>. As posições antigas A01 até D05 são criadas automaticamente na primeira execução caso ainda não exista nenhuma configuração.
       </div>
     </div>
   </div>
 
-  <!-- Script Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, push, set, update, remove, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-    import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+  <div id="abaExpedicao" class="aba-setor">
+    <div class="card">
+      <h2>Ordem de Carregamento & Faturamento</h2>
+      <div class="grid" style="margin-top:15px;">
+        <div><label class="small-note">Cliente de Destino</label><input type="text" id="expCliente" placeholder="Nome do Cliente / Trading"></div>
+        <div><label class="small-note">Nome do Motorista</label><input type="text" id="expMotorista" placeholder="Nome completo"></div>
+        <div><label class="small-note">Placa do Caminhão</label><input type="text" id="expCaminhao" placeholder="Placa do veículo"></div>
+        <div><label class="small-note">Número da Nota Fiscal (NF)</label><input type="text" id="expNF" placeholder="Número da NF-e"></div>
+        <div><label class="small-note">Lote para Carregamento</label><select id="expLoteSelec" onchange="atualizarDadosLoteExpedicao()"><option value="">Selecione um lote disponível...</option></select></div>
+        <div><label class="small-note">Volume do Lote (KG)</label><input type="text" id="expPesoDisponivel" readonly></div>
+      </div>
+      <br>
+      <button onclick="registrarExpedicaoCarga()" class="btn-success">Autorizar Saída e Baixar Estoque</button>
+    </div>
+    <div class="card">
+      <h2>Histórico de Cargas Despachadas</h2>
+      <table>
+        <thead><tr><th>Cliente</th><th>Lote</th><th>Tipo</th><th>Peso (Kg)</th><th>Motorista</th><th>Placa</th><th>NF</th><th>Data Saída</th></tr></thead>
+        <tbody id="tabelaHistoricoExpedicao"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
 
-    // Insira as credenciais do seu projeto Firebase aqui
-    const firebaseConfig = {
-      apiKey: "SUA_API_KEY",
-      authDomain: "SEU_PROJECT.firebaseapp.com",
-      databaseURL: "https://SEU_PROJECT-default-rtdb.firebaseio.com",
-      projectId: "SEU_PROJECT",
-      storageBucket: "SEU_PROJECT.appspot.com",
-      messagingSenderId: "SEU_ID",
-      appId: "SEU_APP_ID"
+<div id="modalNovaArea" class="modal-backdrop hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Criar Nova Área Física</h3>
+      <button class="btn-dark" onclick="fecharModalNovaArea()">Fechar</button>
+    </div>
+    <div class="grid">
+      <div><label class="small-note">Nome da Área</label><input id="novaAreaNome" placeholder="Ex: Pátio Norte"></div>
+      <div><label class="small-note">Prefixo das Posições</label><input id="novaAreaPrefixo" placeholder="Ex: E" maxlength="6"></div>
+      <div><label class="small-note">Quantidade de Linhas</label><input id="novaAreaLinhas" type="number" min="1" max="30" value="2"></div>
+      <div><label class="small-note">Quantidade de Colunas</label><input id="novaAreaColunas" type="number" min="1" max="30" value="5"></div>
+    </div>
+    <p class="small-note" style="margin-top:12px;">Exemplo: prefixo <strong>E</strong>, 2 linhas e 5 colunas gera E01 até E10.</p>
+    <br>
+    <button class="btn-success" onclick="criarNovaArea()">Criar Área</button>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getDatabase, ref, push, onValue, update, remove, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyALJOAPzmil3tTmv6f3kMGYQX1Oc61t0F4",
+    authDomain: "milagro-172c5.firebaseapp.com",
+    databaseURL: "https://milagro-172c5-default-rtdb.firebaseio.com",
+    projectId: "milagro-172c5",
+    storageBucket: "milagro-172c5.firebasestorage.app",
+    messagingSenderId: "923027654375",
+    appId: "1:923027654375:web:d9e24bec8e48d304438442",
+    measurementId: "G-CVWBH7LJM5"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth(app);
+
+  let lotesEstoqueCache = {};
+  let historicoCargasCache = {};
+  let areasPatioCache = {};
+  let dadosIniciados = false;
+
+  const patioPadrao = {
+    areaA: { nome:"Área A", prefixo:"A", linhas:1, colunas:5, posicoes:{A01:{nome:"A01"},A02:{nome:"A02"},A03:{nome:"A03"},A04:{nome:"A04"},A05:{nome:"A05"}}},
+    areaB: { nome:"Área B", prefixo:"B", linhas:1, colunas:5, posicoes:{B01:{nome:"B01"},B02:{nome:"B02"},B03:{nome:"B03"},B04:{nome:"B04"},B05:{nome:"B05"}}},
+    areaC: { nome:"Área C", prefixo:"C", linhas:1, colunas:5, posicoes:{C01:{nome:"C01"},C02:{nome:"C02"},C03:{nome:"C03"},C04:{nome:"C04"},C05:{nome:"C05"}}},
+    areaD: { nome:"Área D", prefixo:"D", linhas:1, colunas:5, posicoes:{D01:{nome:"D01"},D02:{nome:"D02"},D03:{nome:"D03"},D04:{nome:"D04"},D05:{nome:"D05"}}}
+  };
+
+  function formatarNumero(num){ return new Intl.NumberFormat("pt-BR").format(num || 0); }
+  function agora(){ return new Date().toLocaleString("pt-BR"); }
+
+  function mostrarErroLogin(mensagem){
+    let el=document.getElementById("erroLogin");
+    if(!el){
+      el=document.createElement("div");
+      el.id="erroLogin";
+      el.style.cssText="margin-top:12px;padding:10px;border-radius:8px;background:#fee2e2;color:#991b1b;border:1px solid #fecaca;font-size:12px;text-align:center;";
+      document.getElementById("btnLogin").insertAdjacentElement("afterend",el);
+    }
+    el.textContent=mensagem;
+  }
+
+  function limparErroLogin(){
+    const el=document.getElementById("erroLogin");
+    if(el) el.remove();
+  }
+
+  function traduzirErroLogin(erro){
+    const codigo=erro?.code || "";
+    const mensagens={
+      "auth/invalid-credential":"E-mail ou senha inválidos.",
+      "auth/invalid-email":"Informe um e-mail válido.",
+      "auth/user-not-found":"E-mail ou senha inválidos.",
+      "auth/wrong-password":"E-mail ou senha inválidos.",
+      "auth/too-many-requests":"Muitas tentativas. Aguarde alguns minutos e tente novamente.",
+      "auth/network-request-failed":"Não foi possível conectar ao servidor. Verifique sua internet.",
+      "auth/unauthorized-domain":"Este endereço não está autorizado no Firebase Authentication.",
+      "auth/api-key-not-valid":"A API Key do Firebase foi rejeitada. Verifique as restrições da chave no Google Cloud/Firebase.",
+      "auth/operation-not-allowed":"O acesso por e-mail e senha não está habilitado.",
+      "auth/configuration-not-found":"A configuração de autenticação não foi encontrada.",
+      "auth/internal-error":"O Firebase retornou um erro interno. Tente novamente.",
+      "auth/invalid-api-key":"A API Key configurada é inválida."
     };
+    return mensagens[codigo] || "Não foi possível realizar o login. Verifique suas credenciais.";
+  }
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const auth = getAuth(app);
+  window.entrar = async function(){
+    const email=document.getElementById("emailLogin").value.trim();
+    const senha=document.getElementById("senhaLogin").value;
+    const btn=document.getElementById("btnLogin");
 
-    let lotesEstoqueCache = {};
-    let historicoCargasCache = {};
-    let areasPatioCache = {};
+    limparErroLogin();
 
-    function agora() { return new Date().toLocaleString('pt-BR'); }
-    function formatarNumero(val) { return Number(val || 0).toLocaleString('pt-BR'); }
-    function escapeHtml(str) { return String(str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
-    function loteNaPosicao(pos) { return Object.entries(lotesEstoqueCache).find(([_, item]) => item.posicaoPatio === pos); }
+    if(!email || !senha){
+      mostrarErroLogin("Informe o e-mail e a senha.");
+      return;
+    }
 
-    onValue(ref(db, "lotesAlgodoeira"), (snapshot) => {
-      lotesEstoqueCache = snapshot.val() || {};
+    try{
+      btn.disabled=true;
+      btn.innerText="Entrando...";
+      await setPersistence(auth,browserLocalPersistence);
+      await signInWithEmailAndPassword(auth,email,senha);
+    }catch(erro){
+      console.error("Firebase Authentication:",erro);
+      mostrarErroLogin(traduzirErroLogin(erro));
+      btn.disabled=false;
+      btn.innerText="Entrar no Sistema";
+    }
+  };
+
+  document.getElementById("senhaLogin").addEventListener("keydown",e=>{
+    if(e.key==="Enter") window.entrar();
+  });
+
+  window.sair=function(){ signOut(auth); };
+
+  onAuthStateChanged(auth,user=>{
+    if(user){
+      document.getElementById("loginTela").classList.add("hidden");
+      document.getElementById("sistemaTela").classList.remove("hidden");
+      document.getElementById("areaUsuario").classList.remove("hidden");
+      document.getElementById("usuarioLogado").innerText="Usuário: "+user.email;
+      atualizarSelectsPosicoes();
+      if(!dadosIniciados){ inicializarEscutasFirebase(); dadosIniciados=true; }
+    }else{
+      document.getElementById("loginTela").classList.remove("hidden");
+      document.getElementById("sistemaTela").classList.add("hidden");
+      document.getElementById("areaUsuario").classList.add("hidden");
+      // Os listeners do Firebase permanecem ativos. Não criar listeners duplicados em novo login.
+    }
+  });
+
+  window.abrirAbaSistema=function(abaId,botao){
+    document.querySelectorAll(".aba-setor").forEach(a=>a.classList.remove("ativa"));
+    document.querySelectorAll(".aba-btn").forEach(b=>b.classList.remove("ativa"));
+    const aba=document.getElementById(abaId);
+    if(aba) aba.classList.add("ativa");
+    if(botao) botao.classList.add("ativa");
+    if(abaId==="abaCroqui") renderizarCroquiPatio();
+    if(abaId==="abaProducao") atualizarSelectsPosicoes();
+    if(abaId==="abaConfiguracaoPatio") renderizarConfiguracaoAreas();
+  };
+
+  window.abrirAbaPorId=function(id){
+    document.querySelectorAll(".aba-setor").forEach(a=>a.classList.remove("ativa"));
+    const aba=document.getElementById(id);
+    if(aba) aba.classList.add("ativa");
+    document.querySelectorAll(".aba-btn").forEach(b=>b.classList.remove("ativa"));
+    const botoes=document.querySelectorAll(".aba-btn");
+    botoes.forEach(b=>{ if(b.textContent.includes("Configurar Pátio")) b.classList.add("ativa"); });
+    if(id==="abaConfiguracaoPatio") renderizarConfiguracaoAreas();
+  };
+
+  function inicializarEscutasFirebase(){
+    onValue(ref(db,"lotesAlgodoeira"),snapshot=>{
+      lotesEstoqueCache={};
+      snapshot.forEach(item=>lotesEstoqueCache[item.key]=item.val());
       atualizarTabelaEstoque();
+      atualizarSelectsPosicoes();
       atualizarSelectLotesExpedicao();
+      processarDashboardsEPatio();
     });
 
-    onValue(ref(db, "expedicaoAlgodoeira"), (snapshot) => {
-      historicoCargasCache = snapshot.val() || {};
+    onValue(ref(db,"expedicaoAlgodoeira"),snapshot=>{
+      historicoCargasCache={};
+      snapshot.forEach(item=>historicoCargasCache[item.key]=item.val());
       atualizarTabelaExpedicao();
+      processarDashboardsEPatio();
     });
 
-    onValue(ref(db, "patioAreas"), (snapshot) => {
-      areasPatioCache = snapshot.val() || {};
-      renderizarConfiguracaoAreas();
+    onValue(ref(db,"patioAreas"),async snapshot=>{
+      try{
+        if(!snapshot.exists()){
+          await set(ref(db,"patioAreas"),patioPadrao);
+          areasPatioCache=patioPadrao;
+        }else{
+          areasPatioCache=snapshot.val() || {};
+        }
+        atualizarSelectsPosicoes();
+        renderizarCroquiPatio();
+        renderizarConfiguracaoAreas();
+        processarDashboardsEPatio();
+      }catch(erro){
+        console.error("Erro ao carregar/criar áreas do pátio:",erro);
+        alert("Não foi possível carregar o mapa do pátio. Verifique as regras do Realtime Database.");
+      }
+    });
+  }
+
+  function normalizarPosicao(str){
+    return String(str||"").trim().toUpperCase();
+  }
+
+  function todasPosicoes(){
+    const lista=[];
+    Object.entries(areasPatioCache).forEach(([areaId,area])=>{
+      Object.entries(area.posicoes || {}).forEach(([posId,pos])=>{
+        const nome=normalizarPosicao(pos.nome || posId);
+        lista.push({id:posId,nome,areaId,areaNome:area.nome || areaId});
+      });
+    });
+    return lista.sort((a,b)=>a.nome.localeCompare(b.nome,undefined,{numeric:true}));
+  }
+
+  function loteNaPosicao(posicao){
+    const alvo=normalizarPosicao(posicao);
+    return Object.entries(lotesEstoqueCache).find(([id,l])=>
+      normalizarPosicao(l.posicaoPatio)===alvo && Number(l.peso||0)>0
+    );
+  }
+
+  function loteComMesmoNome(nome, ignorarId=""){
+    const alvo=String(nome||"").trim().toUpperCase();
+    return Object.entries(lotesEstoqueCache).find(([id,l])=>
+      id!==ignorarId && String(l.lote||"").trim().toUpperCase()===alvo && Number(l.peso||0)>0
+    );
+  }
+
+  function posicaoExiste(posicao){
+    return todasPosicoes().some(p=>p.nome===normalizarPosicao(posicao));
+  }
+
+  function processarDashboardsEPatio(){
+    let fardosPluma=0,fardosCaroco=0,fardosFibrilha=0;
+    let pesoPluma=0,pesoCaroco=0,pesoFibrilha=0;
+    let prontos=0,pendentes=0;
+    const posicoes=todasPosicoes();
+    const ocupadas=new Set();
+
+    Object.values(lotesEstoqueCache).forEach(lote=>{
+      if(Number(lote.peso||0)>0){
+        const f=Number(lote.fardos||0), p=Number(lote.peso||0);
+        if(lote.posicaoPatio) ocupadas.add(normalizarPosicao(lote.posicaoPatio));
+        if(lote.tipo==="Pluma"){fardosPluma+=f;pesoPluma+=p;}
+        else if(lote.tipo==="Caroço"){fardosCaroco+=f;pesoCaroco+=p;}
+        else if(lote.tipo==="Fibrilha"){fardosFibrilha+=f;pesoFibrilha+=p;}
+
+        if(lote.tipo==="Caroço" || lote.statusEmblocamento==="Concluído") prontos++;
+        else pendentes++;
+      }
     });
 
-    window.tratarAlteracaoTipoProduto = function() {
-      const tipo = document.getElementById("prodTipo").value;
-      const containerFardos = document.getElementById("containerProdFardos");
-      if (tipo === "Caroço") {
-        containerFardos.classList.add("hidden");
-        document.getElementById("prodFardos").value = "";
-      } else {
-        containerFardos.classList.remove("hidden");
-      }
-    };
+    document.getElementById("dashFardosPluma").innerText=formatarNumero(fardosPluma);
+    if(document.getElementById("dashFardosCaroco")) document.getElementById("dashFardosCaroco").innerText=formatarNumero(fardosCaroco);
+    if(document.getElementById("dashFardosFibrilha")) document.getElementById("dashFardosFibrilha").innerText=formatarNumero(fardosFibrilha);
+    document.getElementById("dashPesoPluma").innerText=formatarNumero(pesoPluma)+" Kg";
+    if(document.getElementById("dashPesoCaroco")) document.getElementById("dashPesoCaroco").innerText=formatarNumero(pesoCaroco)+" Kg";
+    if(document.getElementById("dashPesoFibrilha")) document.getElementById("dashPesoFibrilha").innerText=formatarNumero(pesoFibrilha)+" Kg";
 
-    window.salvarLoteProducao = async function() {
-      const idEdicao = document.getElementById("idEdicaoProducao").value;
-      const loteStr = document.getElementById("prodLote").value.trim();
-      const tipo = document.getElementById("prodTipo").value;
-      const fardos = Number(document.getElementById("prodFardos").value || 0);
-      const pesoStr = document.getElementById("prodPeso").value;
-      const posicaoBruta = document.getElementById("prodPosicaoPatio").value;
-      const observacao = document.getElementById("prodObs").value.trim();
+    const total=posicoes.length;
+    const ocupadasQtd=posicoes.filter(p=>ocupadas.has(p.nome)).length;
+    document.getElementById("dashOcupacaoPatio").innerText=(total?Math.round(ocupadasQtd/total*100):0)+"%";
+    document.getElementById("dashPosicoesLivres").innerText=formatarNumero(Math.max(0,total-ocupadasQtd));
+    if(document.getElementById("dashLotesProntos")) document.getElementById("dashLotesProntos").innerText=formatarNumero(prontos);
+    if(document.getElementById("dashLotesPendentes")) document.getElementById("dashLotesPendentes").innerText=formatarNumero(pendentes);
+    renderizarCroquiPatio();
+  }
 
-      const peso = parseFloat(pesoStr.replace(/\./g, "").replace(",", ".")) || 0;
-      const posicao = posicaoBruta ? posicaoBruta.split(" - ")[0].trim() : "";
+  function renderizarCroquiPatio(){
+    const container=document.getElementById("containerMapaPatio");
+    if(!container) return;
+    container.innerHTML="";
 
-      if (!loteStr || !posicao || peso <= 0) {
-        alert("Preencha a Identificação do Lote, a Posição e o Peso Líquido.");
-        return;
-      }
-
-      if (tipo !== "Caroço" && fardos <= 0) {
-        alert("Informe a quantidade de fardos para Pluma ou Fibrilha.");
-        return;
-      }
-
-      const ocupante = loteNaPosicao(posicao);
-      if (ocupante && ocupante[0] !== idEdicao) {
-        alert(`A posição ${posicao} já está ocupada pelo Lote ${ocupante[1].lote}.`);
-        return;
-      }
-
-      const dadosLote = {
-        lote: loteStr,
-        tipo: tipo,
-        fardos: fardos,
-        peso: peso,
-        posicaoPatio: posicao,
-        observacao: observacao,
-        usuarioCadastro: auth.currentUser?.email || "Sistema",
-        dataCadastro: idEdicao && lotesEstoqueCache[idEdicao] ? lotesEstoqueCache[idEdicao].dataCadastro : agora()
-      };
-
-      try {
-        if (idEdicao) {
-          await update(ref(db, `lotesAlgodoeira/${idEdicao}`), {
-            ...dadosLote,
-            usuarioAtualizacao: auth.currentUser?.email || "Sistema",
-            dataAtualizacao: agora()
-          });
-          alert("Lote atualizado com sucesso!");
-        } else {
-          await push(ref(db, "lotesAlgodoeira"), dadosLote);
-          alert("Lote cadastrado no pátio!");
-        }
-        limparFormularioProducao();
-      } catch (erro) {
-        alert("Erro ao salvar: " + erro.message);
-      }
-    };
-
-    window.limparFormularioProducao = function() {
-      document.getElementById("idEdicaoProducao").value = "";
-      document.getElementById("prodLote").value = "";
-      document.getElementById("prodTipo").value = "Pluma";
-      document.getElementById("prodFardos").value = "";
-      document.getElementById("prodPeso").value = "";
-      document.getElementById("prodPosicaoPatio").value = "";
-      document.getElementById("prodObs").value = "";
-      document.getElementById("tituloFormProducao").innerText = "Registrar Lote Produzido";
-      document.getElementById("btnSalvarProducao").innerText = "Salvar no Estoque";
-      document.getElementById("btnCancelarProducao").classList.add("hidden");
-      tratarAlteracaoTipoProduto();
-    };
-
-    window.cancelarEdicaoProducao = function() { limparFormularioProducao(); };
-
-    window.editarLoteProducao = function(id) {
-      const lote = lotesEstoqueCache[id];
-      if (!lote) return;
-
-      document.getElementById("idEdicaoProducao").value = id;
-      document.getElementById("prodLote").value = lote.lote || "";
-      document.getElementById("prodTipo").value = lote.tipo || "Pluma";
-      document.getElementById("prodFardos").value = lote.fardos || "";
-      document.getElementById("prodPeso").value = lote.peso || "";
-      document.getElementById("prodPosicaoPatio").value = lote.posicaoPatio || "";
-      document.getElementById("prodObs").value = lote.observacao || "";
-      
-      tratarAlteracaoTipoProduto();
-
-      document.getElementById("tituloFormProducao").innerText = "Editar Lote Produzido";
-      document.getElementById("btnSalvarProducao").innerText = "Atualizar Lote";
-      document.getElementById("btnCancelarProducao").classList.remove("hidden");
-
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    window.excluirLoteProducao = async function(id) {
-      const lote = lotesEstoqueCache[id];
-      if (!lote) return;
-      if (confirm(`Remover Lote ${lote.lote}?`)) {
-        await remove(ref(db, `lotesAlgodoeira/${id}`));
-      }
-    };
-
-    function atualizarTabelaEstoque() {
-      const tbody = document.getElementById("tabelaLotesEstoque");
-      if (!tbody) return;
-      tbody.innerHTML = "";
-
-      const entradas = Object.entries(lotesEstoqueCache);
-      if (!entradas.length) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;">Nenhum lote cadastrado no pátio.</td></tr>';
-        return;
-      }
-
-      entradas.forEach(([id, l]) => {
-        const tr = document.createElement("tr");
-        const fardosTxt = l.tipo === "Caroço" ? "-" : formatarNumero(l.fardos);
-
-        tr.innerHTML = `
-          <td><strong>${escapeHtml(l.lote)}</strong></td>
-          <td><span class="status ${(l.tipo||"").toLowerCase()}">${escapeHtml(l.tipo)}</span></td>
-          <td>${fardosTxt}</td>
-          <td>${formatarNumero(l.peso)}</td>
-          <td><span class="badge">${escapeHtml(l.posicaoPatio||"-")}</span></td>
-          <td>${escapeHtml(l.dataCadastro||"-")}</td>
-          <td>${escapeHtml(l.usuarioCadastro||"-")}</td>
-          <td>
-            <button class="btn-edit" onclick="editarLoteProducao('${id}')">Editar</button>
-            <button class="btn-danger" onclick="excluirLoteProducao('${id}')">Excluir</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
+    const entries=Object.entries(areasPatioCache);
+    if(!entries.length){
+      container.innerHTML='<div style="text-align:center;padding:60px;color:#64748b;">Nenhuma área cadastrada. Use <strong>Configurar Pátio</strong> para criar a primeira.</div>';
+      return;
     }
 
-    function atualizarSelectLotesExpedicao() {
-      const select = document.getElementById("expLoteSelec");
-      if (!select) return;
+    entries.forEach(([areaId,area])=>{
+      const areaDiv=document.createElement("div");
+      areaDiv.className="area-patio";
 
-      const valorAtual = select.value;
-      select.innerHTML = '<option value="">Selecione um lote...</option>';
+      const posicoes=Object.entries(area.posicoes || {});
+      const colunas=Math.max(1,Number(area.colunas||5));
 
-      Object.entries(lotesEstoqueCache).forEach(([id, l]) => {
-        if (Number(l.peso || 0) > 0) {
-          const option = document.createElement("option");
-          option.value = id;
-          option.textContent = `Lote: ${l.lote} | Tipo: ${l.tipo} | Posição: ${l.posicaoPatio} | Peso: ${formatarNumero(l.peso)} Kg`;
-          select.appendChild(option);
+      areaDiv.innerHTML=`
+        <div class="area-header">
+          <div>
+            <div class="area-titulo">${escapeHtml(area.nome || areaId)}</div>
+            <div class="area-info">Prefixo: ${escapeHtml(area.prefixo||"")} · ${posicoes.length} posições · ${area.linhas||1} linha(s) x ${area.colunas||colunas} coluna(s)</div>
+          </div>
+          <button class="btn-edit" onclick="abrirConfiguracaoArea('${areaId}')">Editar área</button>
+        </div>
+      `;
+
+      const grid=document.createElement("div");
+      grid.className="posicoes-grid";
+      grid.style.gridTemplateColumns=`repeat(${colunas},minmax(90px,1fr))`;
+
+      posicoes.forEach(([posId,pos])=>{
+        const ocupante=loteNaPosicao(pos.nome||posId);
+        const el=document.createElement("div");
+        el.className="bloco-patio";
+
+        if(ocupante){
+          const lote=ocupante[1];
+          let classe="p-pluma";
+          if(lote.tipo==="Caroço") classe="p-caroco";
+          if(lote.tipo==="Fibrilha") classe="p-fibrilha";
+          el.classList.add(classe);
+          el.innerHTML=`
+            <span class="bloco-nome">${escapeHtml(pos.nome||posId)}</span>
+            <span class="bloco-meta"><strong>${escapeHtml(lote.lote||"")}</strong></span><br>
+            <span class="bloco-meta">${formatarNumero(lote.peso)} Kg · ${lote.fardos||0} fds</span><br>
+            <span class="bloco-meta">${escapeHtml(lote.statusEmblocamento||"Pendente")}</span>
+          `;
+          el.onclick=()=>inspecionarPosicaoPatio(ocupante[0],pos.nome||posId);
+        }else{
+          el.classList.add("p-livre");
+          el.innerHTML=`
+            <span class="bloco-nome">${escapeHtml(pos.nome||posId)}</span>
+            <span class="bloco-meta">Livre</span>
+          `;
+          el.onclick=()=>exibirPosicaoVazia(pos.nome||posId,area.nome||areaId);
         }
+        grid.appendChild(el);
       });
 
-      select.value = valorAtual;
-      atualizarDadosLoteExpedicao();
+      areaDiv.appendChild(grid);
+      container.appendChild(areaDiv);
+    });
+  }
+
+  function escapeHtml(valor){
+    return String(valor??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+  }
+
+  function inspecionarPosicaoPatio(idLote,posicao){
+    const lote=lotesEstoqueCache[idLote];
+    const painel=document.getElementById("conteudoInspecaoPatio");
+    if(!lote){ painel.innerHTML="<p>Lote não encontrado.</p>"; return; }
+
+    painel.innerHTML=`
+      <div style="font-size:13.5px;line-height:1.7;">
+        <p><strong>Posição:</strong> <span class="badge" style="background:#1e3a8a;color:white;">${escapeHtml(posicao)}</span></p>
+        <p><strong>Lote/Bloco:</strong> ${escapeHtml(lote.lote)}</p>
+        <p><strong>Produto:</strong> <span class="status ${(lote.tipo||"").toLowerCase()}">${escapeHtml(lote.tipo)}</span></p>
+        <p><strong>Fardos:</strong> ${lote.fardos||0}</p>
+        <p><strong>Peso:</strong> ${formatarNumero(lote.peso)} Kg</p>
+        <p><strong>Emblocamento:</strong> <span class="badge-status">${escapeHtml(lote.statusEmblocamento||"Pendente")}</span></p>
+        <p><strong>Entrada:</strong> ${escapeHtml(lote.dataCadastro||"N/D")}</p>
+        <p><strong>Última atualização:</strong> ${escapeHtml(lote.dataAtualizacao||"N/D")}</p>
+        <hr style="margin:12px 0;border:0;border-top:1px solid #e2e8f0;">
+        <h4 style="color:#1e3a8a;margin-bottom:8px;">Remanejamento</h4>
+        <select id="remanejarNovaPosicao" style="margin-bottom:8px;">
+          ${todasPosicoes().map(p=>`<option value="${escapeHtml(p.nome)}" ${p.nome===posicao?"disabled":""}>${escapeHtml(p.nome)} - ${escapeHtml(p.areaNome)}</option>`).join("")}
+        </select>
+        <button style="width:100%" onclick="executarRemanejamentoFisico('${idLote}','${escapeHtml(posicao)}')">Confirmar Movimentação</button>
+      </div>
+    `;
+  }
+
+  function exibirPosicaoVazia(posicao,areaNome){
+    document.getElementById("conteudoInspecaoPatio").innerHTML=`
+      <div style="text-align:center;padding:15px 0;">
+        <h3 style="color:#94a3b8;font-size:18px;">${escapeHtml(posicao)}</h3>
+        <p style="font-size:13px;margin-top:8px;color:#64748b;">Área: ${escapeHtml(areaNome)}</p>
+        <p style="font-size:13px;margin-top:8px;color:#64748b;">Posição livre para receber novo lote/emblocamento.</p>
+        <button class="btn-success" style="margin-top:12px" onclick="abrirAbaPorId('abaProducao')">Registrar lote nesta posição</button>
+      </div>
+    `;
+  }
+
+  window.executarRemanejamentoFisico=async function(idLote,posicaoAntiga){
+    const novaPosicao=document.getElementById("remanejarNovaPosicao").value;
+    if(!novaPosicao) return;
+    if(loteNaPosicao(novaPosicao)){
+      alert(`A posição ${novaPosicao} já está ocupada.`);
+      return;
     }
-
-    window.atualizarDadosLoteExpedicao = function() {
-      const id = document.getElementById("expLoteSelec").value;
-      const inputPeso = document.getElementById("expPesoDisponivel");
-      if (id && lotesEstoqueCache[id]) {
-        inputPeso.value = `${formatarNumero(lotesEstoqueCache[id].peso)} Kg`;
-      } else {
-        inputPeso.value = "";
-      }
-    };
-
-    window.registrarExpedicaoCarga = async function() {
-      const idLote = document.getElementById("expLoteSelec").value;
-      const cliente = document.getElementById("expCliente").value.trim();
-      const motorista = document.getElementById("expMotorista").value.trim();
-      const caminhao = document.getElementById("expCaminhao").value.trim();
-      const nf = document.getElementById("expNF").value.trim();
-
-      if (!idLote || !cliente || !motorista || !caminhao) {
-        alert("Preencha o Lote, Cliente, Motorista e Placa.");
-        return;
-      }
-
-      const lote = lotesEstoqueCache[idLote];
-      if (!lote) return;
-
-      if (confirm(`Confirmar saída do Lote ${lote.lote}?`)) {
-        const dadosExpedicao = {
-          idLoteOriginal: idLote,
-          lote: lote.lote,
-          tipo: lote.tipo,
-          fardos: lote.fardos || 0,
-          peso: lote.peso,
-          posicaoOrigem: lote.posicaoPatio,
-          cliente: cliente,
-          motorista: motorista,
-          caminhao: caminhao,
-          nf: nf,
-          dataSaida: agora(),
-          usuarioExpedicao: auth.currentUser?.email || "Sistema"
-        };
-
-        try {
-          await push(ref(db, "expedicaoAlgodoeira"), dadosExpedicao);
-          await remove(ref(db, `lotesAlgodoeira/${idLote}`));
-          alert("Carga liberada!");
-
-          document.getElementById("expCliente").value = "";
-          document.getElementById("expMotorista").value = "";
-          document.getElementById("expCaminhao").value = "";
-          document.getElementById("expNF").value = "";
-          document.getElementById("expLoteSelec").value = "";
-          atualizarDadosLoteExpedicao();
-        } catch (erro) {
-          alert("Erro: " + erro.message);
-        }
-      }
-    };
-
-    function atualizarTabelaExpedicao() {
-      const tbody = document.getElementById("tabelaHistoricoExpedicao");
-      if (!tbody) return;
-      tbody.innerHTML = "";
-
-      const entradas = Object.entries(historicoCargasCache);
-      if (!entradas.length) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748b;">Nenhuma expedição registrada.</td></tr>';
-        return;
-      }
-
-      entradas.reverse().forEach(([id, exp]) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td><strong>${escapeHtml(exp.cliente)}</strong></td>
-          <td>${escapeHtml(exp.lote)}</td>
-          <td><span class="status ${(exp.tipo||"").toLowerCase()}">${escapeHtml(exp.tipo)}</span></td>
-          <td>${formatarNumero(exp.peso)} Kg</td>
-          <td>${escapeHtml(exp.motorista)}</td>
-          <td>${escapeHtml(exp.caminhao)}</td>
-          <td>${escapeHtml(exp.nf||"-")}</td>
-          <td>${escapeHtml(exp.dataSaida)}</td>
-        `;
-        tbody.appendChild(tr);
+    if(confirm(`Confirmar a movimentação de ${posicaoAntiga} para ${novaPosicao}?`)){
+      await update(ref(db,`lotesAlgodoeira/${idLote}`),{
+        posicaoPatio:novaPosicao,
+        usuarioAtualizacao:auth.currentUser?.email||"Sistema",
+        dataAtualizacao:agora()
       });
+      alert("Movimentação registrada.");
+    }
+  };
+
+  window.salvarLoteProducao=async function(){
+    const idEdicao=document.getElementById("idEdicaoProducao").value;
+    const loteStr=document.getElementById("prodLote").value.trim();
+    const tipo=document.getElementById("prodTipo").value;
+    const fardos=tipo==="Caroço"?0:Number(document.getElementById("prodFardos").value||0);
+    const pesoRaw=document.getElementById("prodPeso").value;
+    const posicaoPatio=normalizarPosicao(document.getElementById("prodPosicaoPatio").value);
+    const observacao=document.getElementById("prodObs").value.trim();
+    const statusEmblocamento=tipo==="Caroço" ? "Concluído" : document.getElementById("prodStatusEmblocamento").value;
+    const peso=Number(String(pesoRaw).replace(/\./g,"").replace(",",".")||0);
+
+    if(!loteStr){alert("Preencha a identificação do lote.");return;}
+    if(loteComMesmoNome(loteStr,idEdicao)){alert("Já existe outro lote com essa identificação no estoque.");return;}
+    if(tipo!=="Caroço" && fardos<=0){alert("Informe uma quantidade válida de fardos.");return;}
+    if(peso<=0){alert("Informe um peso válido.");return;}
+    if(!posicaoPatio || !posicaoExiste(posicaoPatio)){alert("Selecione uma posição válida do pátio.");return;}
+
+    const ocupada=loteNaPosicao(posicaoPatio);
+    if(ocupada && ocupada[0]!==idEdicao){alert(`A posição ${posicaoPatio} já está ocupada pelo lote ${ocupada[1].lote}.`);return;}
+
+    const dados={
+      lote:loteStr,tipo,fardos,peso,posicaoPatio,statusEmblocamento,observacao,
+      usuarioAtualizacao:auth.currentUser?.email||"Sistema",dataAtualizacao:agora()
+    };
+
+    try{
+      if(idEdicao){
+        await update(ref(db,"lotesAlgodoeira/"+idEdicao),dados);
+        alert("Lote atualizado com sucesso.");
+        cancelarEdicaoProducao();
+      }else{
+        dados.usuarioCadastro=auth.currentUser?.email||"Sistema";
+        dados.dataCadastro=agora();
+        await push(ref(db,"lotesAlgodoeira"),dados);
+        alert("Novo lote registrado no pátio.");
+        limparCamposProducao();
+      }
+    }catch(e){
+      console.error(e);
+      alert("Erro ao salvar o lote: "+e.message);
+    }
+  };
+
+  window.editarLote=function(id){
+    const lote=lotesEstoqueCache[id]; if(!lote)return;
+    document.getElementById("idEdicaoProducao").value=id;
+    document.getElementById("prodLote").value=lote.lote||"";
+    document.getElementById("prodTipo").value=lote.tipo||"Pluma";
+    document.getElementById("prodFardos").value=lote.fardos||"";
+    document.getElementById("prodPeso").value=lote.peso||"";
+    document.getElementById("prodPosicaoPatio").value=lote.posicaoPatio||"";
+    if(document.getElementById("prodStatusEmblocamento")) document.getElementById("prodStatusEmblocamento").value=lote.statusEmblocamento || (lote.tipo==="Caroço" ? "Concluído" : "Pendente");
+    document.getElementById("prodObs").value=lote.observacao||"";
+    document.getElementById("tituloFormProducao").innerText="Editar Parâmetros do Lote";
+    document.getElementById("btnCancelarProducao").classList.remove("hidden");
+  };
+
+  window.excluirLote=function(id){
+    if(confirm("Deseja excluir permanentemente este lote?")){
+      remove(ref(db,"lotesAlgodoeira/"+id)).then(()=>alert("Registro removido."));
+    }
+  };
+
+  window.cancelarEdicaoProducao=function(){limparCamposProducao();document.getElementById("tituloFormProducao").innerText="Registrar Lote Produzido";document.getElementById("btnCancelarProducao").classList.add("hidden");};
+  function limparCamposProducao(){
+    ["idEdicaoProducao","prodLote","prodFardos","prodPeso","prodObs","prodPosicaoPatio"].forEach(id=>document.getElementById(id).value="");
+    if(document.getElementById("prodStatusEmblocamento")) document.getElementById("prodStatusEmblocamento").value="Pendente";
+    document.getElementById("prodTipo").value="Pluma";
+  }
+
+  function atualizarTabelaEstoque(){
+    const tbody=document.getElementById("tabelaLotesEstoque"); if(!tbody)return;
+    tbody.innerHTML="";
+    Object.entries(lotesEstoqueCache).forEach(([id,lote])=>{
+      if(Number(lote.peso||0)<=0)return;
+      tbody.innerHTML+=`
+        <tr>
+          <td><strong>${escapeHtml(lote.lote||"")}</strong></td>
+          <td><span class="status ${(lote.tipo||"").toLowerCase()}">${escapeHtml(lote.tipo||"")}</span></td>
+          <td>${lote.fardos||0} fds</td>
+          <td>${formatarNumero(lote.peso||0)}</td>
+          <td><span class="badge">${escapeHtml(lote.posicaoPatio||"N/A")}</span></td>
+          <td><span class="badge-status">${escapeHtml(lote.statusEmblocamento||"Pendente")}</span></td>
+          <td>${escapeHtml(lote.dataCadastro||"")}</td>
+          <td>${escapeHtml(lote.usuarioCadastro||"")}</td>
+          <td><button class="btn-edit" onclick="editarLote('${id}')">Editar</button> <button class="btn-danger" onclick="excluirLote('${id}')">Excluir</button></td>
+        </tr>`;
+    });
+  }
+
+  function atualizarSelectsPosicoes(){
+    const select=document.getElementById("prodPosicaoPatio"); if(!select)return;
+    const atual=select.value;
+    select.innerHTML='<option value="">Selecione uma posição...</option>';
+    todasPosicoes().forEach(p=>{
+      const ocupada=!!loteNaPosicao(p.nome);
+      select.innerHTML+=`<option value="${escapeHtml(p.nome)}" ${ocupada?"disabled":""}>${escapeHtml(p.nome)} - ${escapeHtml(p.areaNome)} ${ocupada?"(Ocupado)":"(Livre)"}</option>`;
+    });
+    if(atual)select.value=atual;
+  }
+
+  function atualizarSelectLotesExpedicao(){
+    const select=document.getElementById("expLoteSelec"); if(!select)return;
+    select.innerHTML='<option value="">Selecione um lote disponível...</option>';
+    Object.entries(lotesEstoqueCache).forEach(([id,lote])=>{
+      if(Number(lote.peso||0)>0 && (lote.tipo==="Caroço" || lote.statusEmblocamento==="Concluído")){
+        select.innerHTML+=`<option value="${id}">${escapeHtml(lote.lote)} (${escapeHtml(lote.tipo)}) | ${escapeHtml(lote.posicaoPatio||"Sem posição")}</option>`;
+      }
+    });
+  }
+
+  window.atualizarDadosLoteExpedicao=function(){
+    const id=document.getElementById("expLoteSelec").value;
+    document.getElementById("expPesoDisponivel").value="";
+    if(id && lotesEstoqueCache[id]){
+      const l=lotesEstoqueCache[id];
+      document.getElementById("expPesoDisponivel").value=`${formatarNumero(l.peso)} Kg (${l.fardos} Fardos)`;
+    }
+  };
+
+  window.registrarExpedicaoCarga=async function(){
+    const cliente=document.getElementById("expCliente").value.trim();
+    const motorista=document.getElementById("expMotorista").value.trim();
+    const caminhao=document.getElementById("expCaminhao").value.trim().toUpperCase();
+    const nf=document.getElementById("expNF").value.trim();
+    const idLote=document.getElementById("expLoteSelec").value;
+
+    if(!cliente||!motorista||!caminhao||!nf||!idLote){alert("Preencha todos os campos.");return;}
+    const lote=lotesEstoqueCache[idLote];
+    if(!lote){alert("Lote não encontrado.");return;}
+    if(lote.tipo!=="Caroço" && lote.statusEmblocamento!=="Concluído"){
+      alert("Este lote ainda não está com o emblocamento concluído.");
+      return;
     }
 
-    function renderizarConfiguracaoAreas() {
-      const container = document.getElementById("listaAreasConfiguracao");
-      if (!container) return;
-      container.innerHTML = "";
+    if(!confirm(`Confirmar carregamento do lote ${lote.lote}? A posição ${lote.posicaoPatio||"sem posição"} será liberada.`))return;
 
-      const entradas = Object.entries(areasPatioCache);
-      if (!entradas.length) {
-        container.innerHTML = '<p style="color:#64748b;">Nenhuma área configurada.</p>';
-        return;
-      }
+    const cargaRef=push(ref(db,"expedicaoAlgodoeira"));
+    const carga={
+      cliente,lote:lote.lote,tipo:lote.tipo,fardos:Number(lote.fardos||0),peso:Number(lote.peso||0),
+      motorista,caminhao,nf,posicaoPatio:lote.posicaoPatio||"",
+      statusEmblocamento:lote.statusEmblocamento||"Concluído",
+      dataSaida:agora(),operador:auth.currentUser?.email||"Sistema"
+    };
 
-      entradas.forEach(([areaId, area]) => {
-        const div = document.createElement("div");
-        div.className = "card";
-        div.style.marginBottom = "10px";
+    try{
+      await set(cargaRef,carga);
+      await update(ref(db,`lotesAlgodoeira/${idLote}`),{
+        peso:0,fardos:0,posicaoAnterior:lote.posicaoPatio||"",posicaoPatio:"",
+        statusEmblocamento:"Expedido",
+        usuarioAtualizacao:auth.currentUser?.email||"Sistema",dataAtualizacao:agora()
+      });
+      alert("Carga despachada com sucesso.");
+      limparCamposExpedicao();
+    }catch(e){
+      console.error(e);
+      // Se a gravação do histórico ocorreu e a baixa falhou, não criamos outro histórico.
+      alert("A expedição não foi concluída. Verifique o histórico e o estoque antes de repetir.");
+    }
+  };
 
-        const totalPosicoes = Object.keys(area.posicoes || {}).length;
+  function limparCamposExpedicao(){
+    ["expCliente","expMotorista","expCaminhao","expNF","expLoteSelec","expPesoDisponivel"].forEach(id=>document.getElementById(id).value="");
+  }
 
-        div.innerHTML = `
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <h4 style="color:var(--primary);font-size:15px;">${escapeHtml(area.nome || areaId)}</h4>
-              <p style="font-size:12px;color:var(--text-muted);margin-top:4px;">
-                Prefixo: <strong>${escapeHtml(area.prefixo)}</strong> | Posições Geradas: ${totalPosicoes}
-              </p>
-            </div>
+  function atualizarTabelaExpedicao(){
+    const tbody=document.getElementById("tabelaHistoricoExpedicao"); if(!tbody)return;
+    tbody.innerHTML="";
+    Object.values(historicoCargasCache).reverse().forEach(carga=>{
+      tbody.innerHTML+=`
+        <tr><td>${escapeHtml(carga.cliente||"")}</td><td><strong>${escapeHtml(carga.lote||"")}</strong></td>
+        <td><span class="status carregado">${escapeHtml(carga.tipo||"")}</span></td><td>${formatarNumero(carga.peso||0)} Kg</td>
+        <td>${escapeHtml(carga.motorista||"")}</td><td>${escapeHtml(carga.caminhao||"")}</td><td>${escapeHtml(carga.nf||"")}</td><td>${escapeHtml(carga.dataSaida||"")}</td></tr>`;
+    });
+  }
+
+  function renderizarConfiguracaoAreas(){
+    const container=document.getElementById("listaAreasConfiguracao"); if(!container)return;
+    container.innerHTML="";
+    const entries=Object.entries(areasPatioCache);
+    if(!entries.length){container.innerHTML="<p class='small-note'>Nenhuma área cadastrada.</p>";return;}
+
+    entries.forEach(([areaId,area])=>{
+      const posicoes=Object.keys(area.posicoes||{});
+      const ocupadas=posicoes.filter(p=>!!loteNaPosicao(p)).length;
+      const div=document.createElement("div");
+      div.className="area-admin";
+      div.innerHTML=`
+        <div class="top-bar">
+          <div><h4>${escapeHtml(area.nome||areaId)}</h4><div class="small-note">Prefixo: ${escapeHtml(area.prefixo||"")} · ${posicoes.length} posições · ${ocupadas} ocupadas · ${posicoes.length-ocupadas} livres</div></div>
+          <div>
+            <button class="btn-edit" onclick="abrirConfiguracaoArea('${areaId}')">Editar</button>
             <button class="btn-danger" onclick="excluirAreaPatio('${areaId}')">Excluir</button>
           </div>
-        `;
-        container.appendChild(div);
-      });
+        </div>`;
+      container.appendChild(div);
+    });
+  }
+
+  window.abrirModalNovaArea=function(){
+    document.getElementById("novaAreaNome").value="";
+    document.getElementById("novaAreaPrefixo").value="";
+    document.getElementById("novaAreaLinhas").value=2;
+    document.getElementById("novaAreaColunas").value=5;
+    document.getElementById("modalNovaArea").classList.remove("hidden");
+  };
+  window.fecharModalNovaArea=function(){document.getElementById("modalNovaArea").classList.add("hidden");};
+
+  window.criarNovaArea=async function(){
+    const nome=document.getElementById("novaAreaNome").value.trim();
+    const prefixo=document.getElementById("novaAreaPrefixo").value.trim().toUpperCase();
+    const linhas=Math.max(1,Number(document.getElementById("novaAreaLinhas").value||1));
+    const colunas=Math.max(1,Number(document.getElementById("novaAreaColunas").value||1));
+
+    if(!nome||!prefixo){alert("Informe o nome e o prefixo da nova área.");return;}
+    if(prefixo.length>6){alert("O prefixo pode ter no máximo 6 caracteres.");return;}
+    if(Object.values(areasPatioCache).some(a=>normalizarPosicao(a.prefixo)===prefixo)){
+      alert("Já existe uma área usando esse prefixo. Escolha outro.");
+      return;
     }
 
-    window.abrirModalNovaArea = function() { document.getElementById("modalNovaArea").classList.remove("hidden"); };
-    window.fecharModalNovaArea = function() { document.getElementById("modalNovaArea").classList.add("hidden"); };
-
-    window.criarNovaArea = async function() {
-      const nome = document.getElementById("novaAreaNome").value.trim();
-      const prefixo = document.getElementById("novaAreaPrefixo").value.trim().toUpperCase();
-      const linhas = Number(document.getElementById("novaAreaLinhas").value || 1);
-      const colunas = Number(document.getElementById("novaAreaColunas").value || 1);
-
-      if (!nome || !prefixo) {
-        alert("Preencha Nome e Prefixo.");
-        return;
+    const posicoes={};
+    let numero=1;
+    for(let r=0;r<linhas;r++){
+      for(let c=0;c<colunas;c++){
+        const nomePos=`${prefixo}${String(numero).padStart(2,"0")}`;
+        posicoes[nomePos]={nome:nomePos};
+        numero++;
       }
+    }
 
-      const areaKey = "area_" + Date.now();
-      const posicoesObj = {};
+    const novaRef=push(ref(db,"patioAreas"));
+    await set(novaRef,{nome,prefixo,linhas,colunas,posicoes,criadoPor:auth.currentUser?.email||"Sistema",criadoEm:agora()});
+    fecharModalNovaArea();
+    alert(`Área "${nome}" criada com ${Object.keys(posicoes).length} posições.`);
+  };
 
-      let contador = 1;
-      for (let r = 0; r < linhas; r++) {
-        for (let c = 0; c < colunas; c++) {
-          const numFmt = String(contador).padStart(2, '0');
-          const codePos = `${prefixo}${numFmt}`;
-          posicoesObj[codePos] = { nome: codePos };
-          contador++;
-        }
+  window.abrirConfiguracaoArea=function(areaId){
+    const area=areasPatioCache[areaId]; if(!area)return;
+    const novasColunas=prompt(`Quantidade de colunas para "${area.nome}"`,area.colunas||5);
+    if(novasColunas===null)return;
+    const novasLinhas=prompt(`Quantidade de linhas para "${area.nome}"`,area.linhas||1);
+    if(novasLinhas===null)return;
+    const colunas=Math.max(1,Math.min(30,Number(novasColunas)));
+    const linhas=Math.max(1,Math.min(30,Number(novasLinhas)));
+
+    const quantidadeNova=linhas*colunas;
+    const antigas=Object.keys(area.posicoes||{});
+    const ocupadas=antigas.filter(p=>!!loteNaPosicao(p));
+
+    const posicoes={};
+    for(let i=1;i<=quantidadeNova;i++){
+      const nomePos=`${normalizarPosicao(area.prefixo||"P")}${String(i).padStart(2,"0")}`;
+      posicoes[nomePos]={nome:nomePos};
+    }
+
+    const removidas=ocupadas.filter(p=>!posicoes[p]);
+    if(removidas.length){
+      alert("Não é possível remover posições que possuem lotes: "+removidas.join(", "));
+      return;
+    }
+
+    if(confirm(`Atualizar "${area.nome}" para ${linhas} × ${colunas} (${quantidadeNova} posições)?`)){
+      try{
+        await update(ref(db,`patioAreas/${areaId}`),{
+          linhas,colunas,posicoes,
+          atualizadoPor:auth.currentUser?.email||"Sistema",
+          atualizadoEm:agora()
+        });
+        alert("Área atualizada.");
+      }catch(e){
+        console.error(e);
+        alert("Erro ao atualizar a área: "+e.message);
       }
+    }
+  };
 
-      try {
-        await set(ref(db, `patioAreas/${areaKey}`), { nome, prefixo, linhas, colunas, posicoes: posicoesObj });
-        alert("Área gerada!");
-        fecharModalNovaArea();
-      } catch (erro) {
-        alert("Erro ao criar área: " + erro.message);
-      }
-    };
+  window.excluirAreaPatio=async function(areaId){
+    const area=areasPatioCache[areaId]; if(!area)return;
+    const ocupadas=Object.keys(area.posicoes||{}).filter(p=>!!loteNaPosicao(p));
+    if(ocupadas.length){
+      alert(`Não é possível excluir "${area.nome}". Existem ${ocupadas.length} posições ocupadas.`);
+      return;
+    }
+    if(!confirm(`Excluir a área "${area.nome}" e todas as suas posições?`))return;
+    try{
+      await remove(ref(db,`patioAreas/${areaId}`));
+      alert("Área excluída.");
+    }catch(e){
+      console.error(e);
+      alert("Erro ao excluir a área: "+e.message);
+    }
+  };
 
-    window.excluirAreaPatio = async function(areaId) {
-      if (confirm("Deseja excluir esta área?")) {
-        await remove(ref(db, `patioAreas/${areaId}`));
-      }
-    };
-  </script>
+  document.getElementById("modalNovaArea").addEventListener("click",e=>{
+    if(e.target.id==="modalNovaArea") fecharModalNovaArea();
+  });
+  document.addEventListener("keydown",e=>{
+    if(e.key==="Escape") fecharModalNovaArea();
+  });
+
+  atualizarSelectsPosicoes();
+</script>
 </body>
 </html>
