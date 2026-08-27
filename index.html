@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -60,6 +61,13 @@
     .calc-box{background:#eff6ff;border:1px solid #bfdbfe;padding:15px;border-radius:10px;margin-bottom:15px}
     .legenda{display:flex;gap:15px;margin-bottom:15px;font-size:12px;font-weight:600}
     .dot{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:5px}
+    .status-pendente{background:#fee2e2;color:#991b1b}.status-andamento{background:#fef3c7;color:#92400e}.status-concluido{background:#dcfce7;color:#166534}.badge-status{padding:4px 8px;border-radius:12px;font-size:11px;font-weight:700;display:inline-block}
+    .area-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px}
+    .modal{position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;z-index:5000;padding:20px}
+    .modal-box{background:#fff;border-radius:14px;padding:24px;max-width:520px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.2)}
+    .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+    .kpi-mini{background:#f8fafc;border-radius:10px;padding:14px;text-align:center}.kpi-mini strong{display:block;font-size:22px;color:#1e293b}.kpi-mini span{font-size:12px;color:#64748b}
+    .table-wrap{overflow-x:auto}
   </style>
 </head>
 <body>
@@ -93,7 +101,9 @@
       <div class="card-info pluma"><h3>Fardos de Pluma</h3><p id="dashFardosPluma">0</p></div>
       <div class="card-info caroco"><h3>Fardos de Caroço</h3><p id="dashFardosCaroco">0</p></div>
       <div class="card-info fibrilha"><h3>Fardos de Fibrilha</h3><p id="dashFardosFibrilha">0</p></div>
-      <div class="card-info"><h3>Ocupação do Pátio</h3><p id="dashOcupacaoPatio">0%</p></div>
+      <div class="card-info"><h3>Ocupação do Pátio</h3><p id="dashOcupacaoPatio">0%</p></div>      <div class="card-info"><h3>Posições Livres</h3><p id="dashPosicoesLivres">0</p></div>
+      <div class="card-info"><h3>Lotes Prontos</h3><p id="dashLotesProntos">0</p></div>
+      <div class="card-info"><h3>Emblocamento Pendente</h3><p id="dashLotesPendentes">0</p></div>
     </div>
     <div class="card">
       <h2>Resumo de Volumes Totais (Kg)</h2>
@@ -149,7 +159,7 @@
         <div><label class="small-note">Quantidade de Fardos</label><input type="number" id="prodFardos" placeholder="Qtd fardos"></div>
         <div><label class="small-note">Peso Líquido Balança (Kg)</label><input type="number" id="prodPeso" placeholder="Ex: 24760"></div>
         <div><label class="small-note">Endereçamento no Pátio (Croqui)</label><select id="prodPosicaoPatio"></select></div>
-        <div><label class="small-note">Status</label><select id="prodStatusEmblocamento"><option value="Concluído">Concluído</option><option value="Pendente">Pendente</option></select></div>
+        <div><label class="small-note">Status</label><select id="prodStatusEmblocamento"><option value="Pendente">Pendente</option><option value="Em andamento">Em andamento</option><option value="Concluído">Concluído</option></select></div>
       </div>
       <br>
       <button onclick="salvarLoteProducao()">Salvar e Alocar no Pátio</button>
@@ -158,7 +168,7 @@
     <div class="card">
       <h2>Lotes Armazenados no Pátio</h2>
       <table>
-        <thead><tr><th>Lote</th><th>Tipo</th><th>Fardos</th><th>Peso (Kg)</th><th>Posição no Pátio</th><th>Ações</th></tr></thead>
+        <thead><tr><th>Lote</th><th>Tipo</th><th>Fardos</th><th>Peso (Kg)</th><th>Posição</th><th>Emblocamento</th><th>Ações</th></tr></thead>
         <tbody id="tabelaLotesEstoque"></tbody>
       </table>
     </div>
@@ -168,6 +178,10 @@
     <div class="card">
       <div class="top-bar">
         <h2>Mapa Físico & Endereçamento do Pátio (YMS)</h2>
+        <div class="area-toolbar">
+          <button onclick="abrirModalNovaArea()">+ Criar Área Física</button>
+          <button class="btn-dark" onclick="carregarDadosFirebase()">Atualizar Mapa</button>
+        </div>
       </div>
       
       <div class="legenda">
@@ -184,14 +198,39 @@
   <div id="abaExpedicao" class="aba-setor">
     <div class="card">
       <h2>Ordem de Carregamento</h2>
-      <p>Módulo de saída de mercadorias e baixas de estoque.</p>
+      <p class="small-note">Somente lotes com emblocamento concluído podem ser expedidos.</p>
+      <div class="grid" style="margin-top:15px;">
+        <div><label class="small-note">Cliente / Destino</label><input id="expCliente"></div>
+        <div><label class="small-note">Motorista</label><input id="expMotorista"></div>
+        <div><label class="small-note">Caminhão / Placa</label><input id="expCaminhao"></div>
+        <div><label class="small-note">NF / Documento</label><input id="expNF"></div>
+        <div><label class="small-note">Lote liberado</label><select id="expLoteSelec"></select></div>
+      </div>
+      <br><button class="btn-success" onclick="registrarExpedicaoCarga()">Confirmar Carregamento / Expedição</button>
+    </div>
+    <div class="card">
+      <h2>Histórico de Expedições</h2>
+      <div class="table-wrap"><table><thead><tr><th>Data</th><th>Lote</th><th>Tipo</th><th>Peso</th><th>Cliente</th><th>Caminhão</th><th>NF</th></tr></thead><tbody id="tabelaExpedicoes"></tbody></table></div>
     </div>
   </div>
 </div>
 
+<div id="modalNovaArea" class="modal hidden">
+  <div class="modal-box">
+    <h2>Nova Área Física do Pátio</h2>
+    <p class="small-note" style="margin:8px 0 16px;">Crie uma nova área para aumentar o mapa conforme o pátio real.</p>
+    <div class="grid">
+      <div><label class="small-note">Nome da área</label><input id="novaAreaNome" placeholder="Ex: Galpão 02"></div>
+      <div><label class="small-note">Prefixo</label><input id="novaAreaPrefixo" maxlength="6" placeholder="Ex: E"></div>
+      <div><label class="small-note">Linhas</label><input id="novaAreaLinhas" type="number" min="1" max="30" value="2"></div>
+      <div><label class="small-note">Colunas / posições por linha</label><input id="novaAreaColunas" type="number" min="1" max="30" value="6"></div>
+    </div>
+    <div class="modal-actions"><button class="btn-dark" onclick="fecharModalNovaArea()">Cancelar</button><button onclick="criarNovaArea()">Criar Área</button></div>
+  </div>
+</div>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  import { getDatabase, ref, push, onValue, remove, set, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
   const firebaseConfig = {
@@ -217,6 +256,8 @@
   ];
 
   let lotesEstoqueCache = {};
+  let areasPatioCache = {};
+  let listenerIniciado = false;
 
   function formatarNumero(num){ return new Intl.NumberFormat("pt-BR").format(num || 0); }
 
@@ -287,60 +328,77 @@
   };
 
   function carregarDadosFirebase(){
+    if(listenerIniciado) return;
+    listenerIniciado=true;
     onValue(ref(db, "lotesAlgodoeira"), snapshot => {
       lotesEstoqueCache = {};
-      snapshot.forEach(item => {
-        lotesEstoqueCache[item.key] = item.val();
-      });
-      atualizarTabelaEstoque();
-      renderizarCroquiPatio();
-      atualizarSelectPosicoes();
-      atualizarDashboard();
+      snapshot.forEach(item => { lotesEstoqueCache[item.key] = item.val(); });
+      atualizarTabelaEstoque(); renderizarCroquiPatio(); atualizarSelectPosicoes(); atualizarDashboard(); atualizarSelectExpedicao();
     });
+    onValue(ref(db, "patioAreas"), snapshot => {
+      areasPatioCache={};
+      snapshot.forEach(item => { areasPatioCache[item.key]=item.val(); });
+      renderizarCroquiPatio(); atualizarSelectPosicoes(); atualizarDashboard();
+    });
+    onValue(ref(db, "expedicaoAlgodoeira"), snapshot => {
+      const tbody=document.getElementById("tabelaExpedicoes"); tbody.innerHTML="";
+      const arr=[]; snapshot.forEach(item=>arr.push({id:item.key,...item.val()}));
+      arr.reverse().forEach(e=>tbody.innerHTML+=`<tr><td>${escapeHtml(e.dataSaida||"")}</td><td><b>${escapeHtml(e.lote||"")}</b></td><td>${escapeHtml(e.tipo||"")}</td><td>${formatarNumero(e.peso)} Kg</td><td>${escapeHtml(e.cliente||"")}</td><td>${escapeHtml(e.caminhao||"")}</td><td>${escapeHtml(e.nf||"")}</td></tr>`);
+    });
+    garantirAreasPadrao();
+  }
+
+  async function garantirAreasPadrao(){
+    const snap = await new Promise(resolve=>onValue(ref(db,"patioAreas"),resolve,{onlyOnce:true}));
+    if(snap.exists()) return;
+    const base={};
+    ESTRUTURA_PATIO.forEach((r,idx)=>{
+      const posicoes={}; for(let i=1;i<=r.blocos;i++){const n=`${r.prefixo}-${String(i).padStart(2,"0")}`; posicoes[n]={nome:n};}
+      base["area"+idx]={nome:r.rua,prefixo:r.prefixo,linhas:1,colunas:r.blocos,posicoes};
+    });
+    await set(ref(db,"patioAreas"),base);
+  }
+
+  function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
+  function agora(){return new Date().toLocaleString("pt-BR");}
+  function normalizarPosicao(v){return String(v||"").trim().toUpperCase();}
+  function todasPosicoes(){
+    const out=[];
+    Object.entries(areasPatioCache).forEach(([areaId,a])=>Object.entries(a.posicoes||{}).forEach(([id,pos])=>out.push({id,nome:normalizarPosicao(pos.nome||id),areaId,areaNome:a.nome||areaId})));
+    return out.sort((a,b)=>a.nome.localeCompare(b.nome,undefined,{numeric:true}));
+  }
+  function loteNaPosicao(pos){
+    const alvo=normalizarPosicao(pos);
+    return Object.entries(lotesEstoqueCache).find(([id,l])=>normalizarPosicao(l.posicaoPatio||l.posicao)===alvo && Number(l.peso||0)>0);
   }
 
   // Preenche o campo Select com as posições livres do pátio
   function atualizarSelectPosicoes(){
-    const select = document.getElementById("prodPosicaoPatio");
-    select.innerHTML = "";
-
-    // Identifica posições ocupadas
-    const ocupadas = Object.values(lotesEstoqueCache).map(l => l.posicao);
-
-    ESTRUTURA_PATIO.forEach(r => {
-      for(let i = 1; i <= r.blocos; i++){
-        const posCod = `${r.prefixo}-${i < 10 ? '0'+i : i}`;
-        const estaOcupada = ocupadas.includes(posCod);
-        const option = document.createElement("option");
-        option.value = posCod;
-        option.textContent = `${posCod} ${estaOcupada ? '(Ocupado)' : '(Livre)'}`;
-        if(estaOcupada) option.disabled = true;
-        select.appendChild(option);
-      }
+    const select=document.getElementById("prodPosicaoPatio"); if(!select)return;
+    const atual=select.value; select.innerHTML='<option value="">Selecione uma posição...</option>';
+    const ocupadas=new Set(Object.values(lotesEstoqueCache).filter(l=>Number(l.peso||0)>0).map(l=>normalizarPosicao(l.posicaoPatio||l.posicao)));
+    todasPosicoes().forEach(p=>{
+      const o=document.createElement("option"); o.value=p.nome; o.textContent=`${p.nome} — ${ocupadas.has(p.nome)?"Ocupado":"Livre"} (${p.areaNome})`;
+      o.disabled=ocupadas.has(p.nome); select.appendChild(o);
     });
+    if([...select.options].some(o=>o.value===atual && !o.disabled)) select.value=atual;
   }
 
   window.salvarLoteProducao = async function(){
-    const lote = document.getElementById("prodLote").value.trim();
-    const tipo = document.getElementById("prodTipo").value;
-    const fardos = Number(document.getElementById("prodFardos").value) || 0;
-    const peso = Number(document.getElementById("prodPeso").value) || 0;
-    const posicao = document.getElementById("prodPosicaoPatio").value;
-
-    if(!lote || peso <= 0 || !posicao){
-      alert("Preencha o identificador do lote, peso e selecione uma posição no pátio.");
-      return;
-    }
-
-    await push(ref(db, "lotesAlgodoeira"), {
-      lote, tipo, fardos, peso, posicao,
-      dataCadastro: new Date().toLocaleString("pt-BR")
-    });
-
-    alert("Lote cadastrado e alocado no Pátio!");
-    document.getElementById("prodLote").value = "";
-    document.getElementById("prodPeso").value = "";
-    document.getElementById("prodFardos").value = "";
+    const lote=document.getElementById("prodLote").value.trim();
+    const tipo=document.getElementById("prodTipo").value;
+    const fardos=Number(document.getElementById("prodFardos").value)||0;
+    const peso=Number(document.getElementById("prodPeso").value)||0;
+    const posicao=normalizarPosicao(document.getElementById("prodPosicaoPatio").value);
+    const status=document.getElementById("prodStatusEmblocamento").value;
+    if(!lote||peso<=0||!posicao){alert("Preencha lote, peso e posição.");return;}
+    if(!todasPosicoes().some(p=>p.nome===posicao)){alert("A posição selecionada não existe no pátio.");return;}
+    if(loteNaPosicao(posicao)){alert("Esta posição já está ocupada.");return;}
+    const duplicado=Object.values(lotesEstoqueCache).some(l=>String(l.lote||"").trim().toUpperCase()===lote.toUpperCase()&&Number(l.peso||0)>0);
+    if(duplicado){alert("Já existe um lote ativo com essa identificação.");return;}
+    await push(ref(db,"lotesAlgodoeira"),{lote,tipo,fardos,peso,posicaoPatio:posicao,posicao,statusEmblocamento:tipo==="Caroço"?"Concluído":status,dataCadastro:agora(),usuarioCadastro:auth.currentUser?.email||""});
+    alert("Lote cadastrado e alocado no pátio!");
+    ["prodLote","prodPeso","prodFardos"].forEach(id=>document.getElementById(id).value="");
   };
 
   window.excluirLote = async function(key){
@@ -350,97 +408,92 @@
   };
 
   function atualizarTabelaEstoque(){
-    const tbody = document.getElementById("tabelaLotesEstoque");
-    tbody.innerHTML = "";
-    Object.entries(lotesEstoqueCache).forEach(([key, l]) => {
-      tbody.innerHTML += `<tr>
-        <td><b>${l.lote}</b></td>
-        <td><span class="status ${l.tipo.toLowerCase()}">${l.tipo}</span></td>
-        <td>${l.fardos}</td>
-        <td>${formatarNumero(l.peso)} Kg</td>
-        <td><b>${l.posicao || 'Não definida'}</b></td>
-        <td><button class="btn-danger" style="padding:4px 8px;font-size:12px" onclick="excluirLote('${key}')">Baixa / Excluir</button></td>
-      </tr>`;
+    const tbody=document.getElementById("tabelaLotesEstoque"); tbody.innerHTML="";
+    Object.entries(lotesEstoqueCache).filter(([k,l])=>Number(l.peso||0)>0).forEach(([key,l])=>{
+      const st=l.statusEmblocamento||"Pendente";
+      const cls=st==="Concluído"?"status-concluido":st==="Em andamento"?"status-andamento":"status-pendente";
+      tbody.innerHTML+=`<tr><td><b>${escapeHtml(l.lote)}</b></td><td><span class="status ${String(l.tipo||"").toLowerCase()}">${escapeHtml(l.tipo)}</span></td><td>${formatarNumero(l.fardos)}</td><td>${formatarNumero(l.peso)} Kg</td><td><b>${escapeHtml(l.posicaoPatio||l.posicao||"Não definida")}</b></td><td><span class="badge-status ${cls}">${escapeHtml(st)}</span></td><td><button class="btn-danger" style="padding:4px 8px;font-size:12px" onclick="excluirLote('${key}')">Baixa / Excluir</button></td></tr>`;
     });
   }
 
   // DESENHA O CROQUI VISUAL DO PÁTIO
   function renderizarCroquiPatio(){
-    const container = document.getElementById("containerMapaPatio");
-    container.innerHTML = "";
-
-    // Mapeia posições ocupadas
-    const mapaOcupacao = {};
-    Object.values(lotesEstoqueCache).forEach(l => {
-      if(l.posicao) mapaOcupacao[l.posicao] = l;
-    });
-
-    ESTRUTURA_PATIO.forEach(r => {
-      const divRua = document.createElement("div");
-      divRua.className = "rua-patio";
-
-      let blocosHTML = "";
-      for(let i = 1; i <= r.blocos; i++){
-        const posCod = `${r.prefixo}-${i < 10 ? '0'+i : i}`;
-        const loteAlocado = mapaOcupacao[posCod];
-
-        if(loteAlocado){
-          const classeCor = `p-${loteAlocado.tipo.toLowerCase()}`;
-          blocosHTML += `
-            <div class="bloco-patio ${classeCor}">
-              <span class="bloco-cod">${posCod}</span>
-              <div class="bloco-info">${loteAlocado.lote}</div>
-              <div class="small-note">${loteAlocado.tipo} | ${formatarNumero(loteAlocado.peso)} Kg</div>
-            </div>
-          `;
-        }else{
-          blocosHTML += `
-            <div class="bloco-patio p-livre">
-              <span class="bloco-cod">${posCod}</span>
-              <span style="font-size:12px;margin-top:10px;">Vazio</span>
-            </div>
-          `;
-        }
-      }
-
-      divRua.innerHTML = `
-        <div class="rua-header">
-          <span class="rua-titulo">${r.rua}</span>
-        </div>
-        <div class="posicoes-grid">${blocosHTML}</div>
-      `;
-
-      container.appendChild(divRua);
+    const container=document.getElementById("containerMapaPatio"); if(!container)return; container.innerHTML="";
+    const mapa={}; Object.entries(lotesEstoqueCache).forEach(([id,l])=>{if(Number(l.peso||0)>0&&(l.posicaoPatio||l.posicao)) mapa[normalizarPosicao(l.posicaoPatio||l.posicao)]={id,...l};});
+    const areas=Object.entries(areasPatioCache);
+    if(!areas.length){container.innerHTML="<p class='small-note'>Nenhuma área cadastrada.</p>";return;}
+    areas.forEach(([areaId,a])=>{
+      const rua=document.createElement("div"); rua.className="rua-patio";
+      const botoes=`<button class="btn-edit" onclick="editarArea('${areaId}')">Editar área</button> <button class="btn-danger" onclick="excluirArea('${areaId}')">Excluir</button>`;
+      let html=`<div class="rua-header"><span class="rua-titulo">${escapeHtml(a.nome||areaId)}</span><span>${botoes}</span></div><div class="posicoes-grid">`;
+      Object.entries(a.posicoes||{}).forEach(([id,p])=>{
+        const cod=normalizarPosicao(p.nome||id), l=mapa[cod];
+        if(l){
+          const classe=`p-${String(l.tipo||"").toLowerCase()}`, st=l.statusEmblocamento||"Pendente";
+          html+=`<div class="bloco-patio ${classe}" title="Clique para ver detalhes" onclick="inspecionarLote('${escapeHtml(l.id)}')"><span class="bloco-cod">${escapeHtml(cod)}</span><div class="bloco-info">${escapeHtml(l.lote)}</div><div class="small-note">${escapeHtml(l.tipo)} | ${formatarNumero(l.peso)} Kg</div><span class="badge-status ${st==="Concluído"?"status-concluido":st==="Em andamento"?"status-andamento":"status-pendente"}">${escapeHtml(st)}</span></div>`;
+        }else html+=`<div class="bloco-patio p-livre"><span class="bloco-cod">${escapeHtml(cod)}</span><span style="font-size:12px;margin-top:10px;">Livre</span></div>`;
+      });
+      html+="</div>"; rua.innerHTML=html; container.appendChild(rua);
     });
   }
+
+  window.inspecionarLote=function(id){
+    const l=lotesEstoqueCache[id]; if(!l)return;
+    alert(`LOTE: ${l.lote}\nTIPO: ${l.tipo}\nPESO: ${formatarNumero(l.peso)} Kg\nFARDOS: ${formatarNumero(l.fardos)}\nPOSIÇÃO: ${l.posicaoPatio||l.posicao||"N/D"}\nEMBLOCAMENTO: ${l.statusEmblocamento||"Pendente"}\nCADASTRADO: ${l.dataCadastro||"N/D"}`);
+  };
 
   function atualizarDashboard(){
-    let pPluma = 0, pCaroco = 0, pFibrilha = 0;
-    let fPluma = 0, fCaroco = 0, fFibrilha = 0;
-    let posicoesOcupadas = 0;
-
-    const totalPosicoes = ESTRUTURA_PATIO.reduce((acc, r) => acc + r.blocos, 0);
-
-    Object.values(lotesEstoqueCache).forEach(l => {
-      const p = Number(l.peso || 0);
-      const f = Number(l.fardos || 0);
-      if(l.tipo === "Pluma"){ pPluma += p; fPluma += f; }
-      else if(l.tipo === "Caroço"){ pCaroco += p; fCaroco += f; }
-      else if(l.tipo === "Fibrilha"){ pFibrilha += p; fFibrilha += f; }
-
-      if(l.posicao) posicoesOcupadas++;
+    let pPluma=0,pCaroco=0,pFibrilha=0,fPluma=0,fCaroco=0,fFibrilha=0,ocupadas=0,prontos=0,pendentes=0;
+    const posicoes=todasPosicoes(), setOcup=new Set();
+    Object.values(lotesEstoqueCache).forEach(l=>{
+      if(Number(l.peso||0)<=0)return;
+      const p=Number(l.peso||0),f=Number(l.fardos||0),tipo=l.tipo;
+      if(tipo==="Pluma"){pPluma+=p;fPluma+=f}else if(tipo==="Caroço"){pCaroco+=p;fCaroco+=f}else if(tipo==="Fibrilha"){pFibrilha+=p;fFibrilha+=f}
+      const pos=normalizarPosicao(l.posicaoPatio||l.posicao); if(pos)setOcup.add(pos);
+      if(tipo==="Caroço"||l.statusEmblocamento==="Concluído")prontos++;else pendentes++;
     });
-
-    const taxaOcupacao = totalPosicoes > 0 ? Math.round((posicoesOcupadas / totalPosicoes) * 100) : 0;
-
-    document.getElementById("dashPesoPluma").innerText = formatarNumero(pPluma) + " Kg";
-    document.getElementById("dashPesoCaroco").innerText = formatarNumero(pCaroco) + " Kg";
-    document.getElementById("dashPesoFibrilha").innerText = formatarNumero(pFibrilha) + " Kg";
-    document.getElementById("dashFardosPluma").innerText = formatarNumero(fPluma);
-    document.getElementById("dashFardosCaroco").innerText = formatarNumero(fCaroco);
-    document.getElementById("dashFardosFibrilha").innerText = formatarNumero(fFibrilha);
-    document.getElementById("dashOcupacaoPatio").innerText = taxaOcupacao + "%";
+    ocupadas=posicoes.filter(p=>setOcup.has(p.nome)).length;
+    const total=posicoes.length, taxa=total?Math.round(ocupadas/total*100):0;
+    document.getElementById("dashPesoPluma").innerText=formatarNumero(pPluma)+" Kg"; document.getElementById("dashPesoCaroco").innerText=formatarNumero(pCaroco)+" Kg"; document.getElementById("dashPesoFibrilha").innerText=formatarNumero(pFibrilha)+" Kg";
+    document.getElementById("dashFardosPluma").innerText=formatarNumero(fPluma); document.getElementById("dashFardosCaroco").innerText=formatarNumero(fCaroco); document.getElementById("dashFardosFibrilha").innerText=formatarNumero(fFibrilha);
+    document.getElementById("dashOcupacaoPatio").innerText=taxa+"%"; document.getElementById("dashPosicoesLivres").innerText=formatarNumero(Math.max(0,total-ocupadas)); document.getElementById("dashLotesProntos").innerText=formatarNumero(prontos); document.getElementById("dashLotesPendentes").innerText=formatarNumero(pendentes);
   }
+
+  window.abrirModalNovaArea=function(){document.getElementById("modalNovaArea").classList.remove("hidden");}
+  window.fecharModalNovaArea=function(){document.getElementById("modalNovaArea").classList.add("hidden");}
+  window.criarNovaArea=async function(){
+    const nome=document.getElementById("novaAreaNome").value.trim(), prefixo=normalizarPosicao(document.getElementById("novaAreaPrefixo").value), linhas=Math.max(1,Math.min(30,Number(document.getElementById("novaAreaLinhas").value)||1)), colunas=Math.max(1,Math.min(30,Number(document.getElementById("novaAreaColunas").value)||1));
+    if(!nome||!prefixo){alert("Informe nome e prefixo.");return;}
+    if(Object.values(areasPatioCache).some(a=>normalizarPosicao(a.prefixo)===prefixo)){alert("Esse prefixo já existe.");return;}
+    const posicoes={}; for(let i=1;i<=linhas*colunas;i++){const cod=`${prefixo}-${String(i).padStart(2,"0")}`;posicoes[cod]={nome:cod};}
+    await push(ref(db,"patioAreas"),{nome,prefixo,linhas,colunas,posicoes,criadoEm:agora(),criadoPor:auth.currentUser?.email||""});
+    fecharModalNovaArea(); ["novaAreaNome","novaAreaPrefixo"].forEach(id=>document.getElementById(id).value=""); alert("Área criada com sucesso.");
+  }
+  window.editarArea=async function(id){
+    const a=areasPatioCache[id];if(!a)return;
+    const linhas=Number(prompt("Quantidade de linhas:",a.linhas||1)),colunas=Number(prompt("Quantidade de colunas:",a.colunas||6));if(!linhas||!colunas)return;
+    const antiga=Object.keys(a.posicoes||{}), ocupadas=antiga.filter(p=>!!loteNaPosicao(p)), nova={}; for(let i=1;i<=linhas*colunas;i++){const cod=`${normalizarPosicao(a.prefixo||"A")}-${String(i).padStart(2,"0")}`;nova[cod]={nome:cod};}
+    const removidas=ocupadas.filter(p=>!nova[p]);if(removidas.length){alert("Não é possível reduzir a área removendo posições ocupadas: "+removidas.join(", "));return;}
+    await update(ref(db,`patioAreas/${id}`),{linhas,colunas,posicoes:nova,atualizadoEm:agora()}); alert("Área atualizada.");
+  }
+  window.excluirArea=async function(id){
+    const a=areasPatioCache[id];if(!a)return; const ocup=Object.keys(a.posicoes||{}).filter(p=>!!loteNaPosicao(p));if(ocup.length){alert("A área possui posições ocupadas e não pode ser excluída.");return;}if(confirm(`Excluir ${a.nome}?`))await remove(ref(db,`patioAreas/${id}`));
+  }
+  function atualizarSelectExpedicao(){
+    const s=document.getElementById("expLoteSelec");if(!s)return;s.innerHTML='<option value="">Selecione...</option>';
+    Object.entries(lotesEstoqueCache).filter(([id,l])=>Number(l.peso||0)>0&&(l.tipo==="Caroço"||l.statusEmblocamento==="Concluído")).forEach(([id,l])=>{s.innerHTML+=`<option value="${id}">${escapeHtml(l.lote)} | ${escapeHtml(l.tipo)} | ${formatarNumero(l.peso)} Kg | ${escapeHtml(l.posicaoPatio||l.posicao||"Sem posição")}</option>`});
+  }
+  window.registrarExpedicaoCarga=async function(){
+    const cliente=document.getElementById("expCliente").value.trim(),motorista=document.getElementById("expMotorista").value.trim(),caminhao=document.getElementById("expCaminhao").value.trim().toUpperCase(),nf=document.getElementById("expNF").value.trim(),id=document.getElementById("expLoteSelec").value,l=lotesEstoqueCache[id];
+    if(!cliente||!motorista||!caminhao||!nf||!id||!l){alert("Preencha todos os campos.");return;}
+    if(l.tipo!=="Caroço"&&l.statusEmblocamento!=="Concluído"){alert("O emblocamento ainda não está concluído.");return;}
+    if(!confirm(`Confirmar expedição do lote ${l.lote}?`))return;
+    const cargaRef=push(ref(db,"expedicaoAlgodoeira")); await set(cargaRef,{cliente,lote:l.lote,tipo:l.tipo,fardos:Number(l.fardos||0),peso:Number(l.peso||0),motorista,caminhao,nf,posicaoPatio:l.posicaoPatio||l.posicao||"",dataSaida:agora(),operador:auth.currentUser?.email||""});
+    await update(ref(db,`lotesAlgodoeira/${id}`),{peso:0,fardos:0,posicaoPatio:"",posicao:"",statusEmblocamento:"Expedido",dataAtualizacao:agora()});
+    alert("Carga expedida e posição liberada."); ["expCliente","expMotorista","expCaminhao","expNF"].forEach(x=>document.getElementById(x).value=""); document.getElementById("expLoteSelec").value="";
+  }
+  document.getElementById("modalNovaArea").addEventListener("click",e=>{if(e.target.id==="modalNovaArea")fecharModalNovaArea()});
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")fecharModalNovaArea()});
 </script>
 </body>
 </html>
