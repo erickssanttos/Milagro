@@ -41,18 +41,25 @@
     .menu-abas{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 25px;background:white;padding:12px;border-radius:14px;position:sticky;top:0;z-index:100}
     .aba-btn{background:#f1f5f9;color:#475569;border:1px solid #e2e8f0}.aba-btn:hover,.aba-btn.ativa{background:#1e3a8a;color:white;border-color:#1e3a8a}
     .aba-setor{display:none}.aba-setor.ativa{display:block}
-    .patio-layout{display:grid;grid-template-columns:3fr 1fr;gap:20px;align-items:start}
+    
+    /* ESTILOS DO CROQUI E MAPA DO PÁTIO */
     .mapa-patio{background:#eef2f7;padding:20px;border-radius:14px;border:1px dashed #cbd5e1;min-height:450px}
-    .area-patio{background:#fff;border:2px solid #cbd5e1;border-radius:14px;padding:14px;margin-bottom:18px}
-    .area-header{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}
-    .area-titulo{font-weight:800;color:#1e3a8a;font-size:16px}
-    .posicoes-grid{display:grid;gap:10px}
-    .bloco-patio{min-height:82px;background:white;border:2px solid #e2e8f0;border-radius:10px;padding:12px;text-align:center;cursor:pointer}
-    .bloco-patio.p-pluma{border-color:#10b981;background:#f0fdf4}.bloco-patio.p-caroco{border-color:#3b82f6;background:#eff6ff}.bloco-patio.p-fibrilha{border-color:#f59e0b;background:#fffbeb}
-    .bloco-patio.p-livre{border-color:#cbd5e1;background:#fafafa;color:#94a3b8}
-    .bloco-nome{font-weight:bold;font-size:15px;color:#1e293b;display:block}
+    .rua-patio{background:#fff;border:2px solid #cbd5e1;border-radius:14px;padding:14px;margin-bottom:18px}
+    .rua-header{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px;border-bottom:1px dashed #cbd5e1;padding-bottom:8px}
+    .rua-titulo{font-weight:800;color:#1e3a8a;font-size:16px}
+    .posicoes-grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));gap:12px}
+    .bloco-patio{min-height:95px;background:white;border:2px solid #e2e8f0;border-radius:10px;padding:10px;text-align:center;display:flex;flex-direction:column;justify-content:space-between;transition:transform 0.1s;box-shadow: 0 2px 4px rgba(0,0,0,0.02)}
+    .bloco-patio:hover{transform:scale(1.02)}
+    .bloco-patio.p-pluma{border-color:#10b981;background:#f0fdf4}
+    .bloco-patio.p-caroco{border-color:#3b82f6;background:#eff6ff}
+    .bloco-patio.p-fibrilha{border-color:#f59e0b;background:#fffbeb}
+    .bloco-patio.p-livre{border-color:#cbd5e1;background:#fafafa;color:#94a3b8;border-style:dashed}
+    .bloco-cod{font-weight:800;font-size:13px;color:#475569;display:block}
+    .bloco-info{font-size:11px;font-weight:bold;margin-top:4px}
     .small-note{font-size:12px;color:#64748b}
     .calc-box{background:#eff6ff;border:1px solid #bfdbfe;padding:15px;border-radius:10px;margin-bottom:15px}
+    .legenda{display:flex;gap:15px;margin-bottom:15px;font-size:12px;font-weight:600}
+    .dot{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:5px}
   </style>
 </head>
 <body>
@@ -122,11 +129,11 @@
           <input type="text" id="calcEstPluma" readonly>
         </div>
         <div>
-          <label class="small-note">Caroço Limpo (55%)</label>
+          <label class="small-note">Caroço Limpo (58%)</label>
           <input type="text" id="calcEstCaroco" readonly>
         </div>
         <div>
-          <label class="small-note">Fibrilha / Impurezas (5%)</label>
+          <label class="small-note">Fibrilha / Impurezas (2%)</label>
           <input type="text" id="calcEstResiduo" readonly>
         </div>
       </div>
@@ -141,17 +148,17 @@
         </div>
         <div><label class="small-note">Quantidade de Fardos</label><input type="number" id="prodFardos" placeholder="Qtd fardos"></div>
         <div><label class="small-note">Peso Líquido Balança (Kg)</label><input type="number" id="prodPeso" placeholder="Ex: 24760"></div>
-        <div><label class="small-note">Posição no Pátio</label><select id="prodPosicaoPatio"></select></div>
+        <div><label class="small-note">Endereçamento no Pátio (Croqui)</label><select id="prodPosicaoPatio"></select></div>
         <div><label class="small-note">Status</label><select id="prodStatusEmblocamento"><option value="Concluído">Concluído</option><option value="Pendente">Pendente</option></select></div>
       </div>
       <br>
-      <button onclick="salvarLoteProducao()">Salvar no Estoque</button>
+      <button onclick="salvarLoteProducao()">Salvar e Alocar no Pátio</button>
     </div>
 
     <div class="card">
       <h2>Lotes Armazenados no Pátio</h2>
       <table>
-        <thead><tr><th>Lote</th><th>Tipo</th><th>Fardos</th><th>Peso (Kg)</th><th>Posição</th><th>Status</th></tr></thead>
+        <thead><tr><th>Lote</th><th>Tipo</th><th>Fardos</th><th>Peso (Kg)</th><th>Posição no Pátio</th><th>Ações</th></tr></thead>
         <tbody id="tabelaLotesEstoque"></tbody>
       </table>
     </div>
@@ -159,8 +166,18 @@
 
   <div id="abaCroqui" class="aba-setor">
     <div class="card">
-      <h2>Mapa Físico do Pátio (YMS)</h2>
-      <div class="mapa-patio" id="containerMapaPatio" style="margin-top:15px;"></div>
+      <div class="top-bar">
+        <h2>Mapa Físico & Endereçamento do Pátio (YMS)</h2>
+      </div>
+      
+      <div class="legenda">
+        <span><span class="dot" style="background:#cbd5e1;"></span> Livre</span>
+        <span><span class="dot" style="background:#10b981;"></span> Pluma</span>
+        <span><span class="dot" style="background:#3b82f6;"></span> Caroço</span>
+        <span><span class="dot" style="background:#f59e0b;"></span> Fibrilha</span>
+      </div>
+
+      <div class="mapa-patio" id="containerMapaPatio"></div>
     </div>
   </div>
 
@@ -174,7 +191,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getDatabase, ref, push, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
   import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
   const firebaseConfig = {
@@ -191,11 +208,18 @@
   const db = getDatabase(app);
   const auth = getAuth(app);
 
+  // Configuração Estrutural do Pátio (4 Ruas x 6 Blocos/Pilhas)
+  const ESTRUTURA_PATIO = [
+    { rua: "Rua A (Pluma)", prefixo: "A", blocos: 6 },
+    { rua: "Rua B (Pluma)", prefixo: "B", blocos: 6 },
+    { rua: "Rua C (Caroço)", prefixo: "C", blocos: 6 },
+    { rua: "Rua D (Fibrilha/Geral)", prefixo: "D", blocos: 6 }
+  ];
+
   let lotesEstoqueCache = {};
 
   function formatarNumero(num){ return new Intl.NumberFormat("pt-BR").format(num || 0); }
 
-  // CALCULADORA DE PROPORÇÕES DE BENEFICIAMENTO
   window.calcularProporcoesBeneficiamento = function(){
     const entrada = parseFloat(document.getElementById("calcEntradaBruta").value) || 0;
     if(entrada <= 0){
@@ -205,11 +229,13 @@
       return;
     }
 
-    const pluma = entrada * 0.40;   // ~40% Pluma
-    const caroco = entrada * 0.55;  // ~55% Caroço de algodão
-    const residuo = entrada * 0.05; // ~5% Fibrilha / Impurezas
+    const pluma = entrada * 0.40;   
+    const caroco = entrada * 0.58;  
+    const residuo = entrada * 0.02; 
 
-    document.getElementById("calcEstPluma").value = formatarNumero(pluma) + " Kg (" + Math.round(pluma / 220) + " fardos est.)";
+    const fardosEstimados = Math.round(pluma / 220);
+
+    document.getElementById("calcEstPluma").value = formatarNumero(pluma) + " Kg (~" + formatarNumero(fardosEstimados) + " fardos)";
     document.getElementById("calcEstCaroco").value = formatarNumero(caroco) + " Kg";
     document.getElementById("calcEstResiduo").value = formatarNumero(residuo) + " Kg";
   };
@@ -263,52 +289,137 @@
   function carregarDadosFirebase(){
     onValue(ref(db, "lotesAlgodoeira"), snapshot => {
       lotesEstoqueCache = {};
-      snapshot.forEach(item => lotesEstoqueCache[item.key] = item.val());
+      snapshot.forEach(item => {
+        lotesEstoqueCache[item.key] = item.val();
+      });
       atualizarTabelaEstoque();
+      renderizarCroquiPatio();
+      atualizarSelectPosicoes();
       atualizarDashboard();
     });
   }
 
+  // Preenche o campo Select com as posições livres do pátio
+  function atualizarSelectPosicoes(){
+    const select = document.getElementById("prodPosicaoPatio");
+    select.innerHTML = "";
+
+    // Identifica posições ocupadas
+    const ocupadas = Object.values(lotesEstoqueCache).map(l => l.posicao);
+
+    ESTRUTURA_PATIO.forEach(r => {
+      for(let i = 1; i <= r.blocos; i++){
+        const posCod = `${r.prefixo}-${i < 10 ? '0'+i : i}`;
+        const estaOcupada = ocupadas.includes(posCod);
+        const option = document.createElement("option");
+        option.value = posCod;
+        option.textContent = `${posCod} ${estaOcupada ? '(Ocupado)' : '(Livre)'}`;
+        if(estaOcupada) option.disabled = true;
+        select.appendChild(option);
+      }
+    });
+  }
+
   window.salvarLoteProducao = async function(){
-    const lote = document.getElementById("prodLote").value;
+    const lote = document.getElementById("prodLote").value.trim();
     const tipo = document.getElementById("prodTipo").value;
     const fardos = Number(document.getElementById("prodFardos").value) || 0;
     const peso = Number(document.getElementById("prodPeso").value) || 0;
+    const posicao = document.getElementById("prodPosicaoPatio").value;
 
-    if(!lote || peso <= 0){
-      alert("Preencha o lote e o peso corretamente.");
+    if(!lote || peso <= 0 || !posicao){
+      alert("Preencha o identificador do lote, peso e selecione uma posição no pátio.");
       return;
     }
 
     await push(ref(db, "lotesAlgodoeira"), {
-      lote, tipo, fardos, peso,
+      lote, tipo, fardos, peso, posicao,
       dataCadastro: new Date().toLocaleString("pt-BR")
     });
 
-    alert("Lote cadastrado com sucesso!");
+    alert("Lote cadastrado e alocado no Pátio!");
     document.getElementById("prodLote").value = "";
     document.getElementById("prodPeso").value = "";
     document.getElementById("prodFardos").value = "";
   };
 
+  window.excluirLote = async function(key){
+    if(confirm("Deseja realmente remover este lote e liberar o espaço no pátio?")){
+      await remove(ref(db, `lotesAlgodoeira/${key}`));
+    }
+  };
+
   function atualizarTabelaEstoque(){
     const tbody = document.getElementById("tabelaLotesEstoque");
     tbody.innerHTML = "";
-    Object.values(lotesEstoqueCache).forEach(l => {
+    Object.entries(lotesEstoqueCache).forEach(([key, l]) => {
       tbody.innerHTML += `<tr>
-        <td>${l.lote}</td>
+        <td><b>${l.lote}</b></td>
         <td><span class="status ${l.tipo.toLowerCase()}">${l.tipo}</span></td>
         <td>${l.fardos}</td>
         <td>${formatarNumero(l.peso)} Kg</td>
-        <td>Pátio A</td>
-        <td>Concluído</td>
+        <td><b>${l.posicao || 'Não definida'}</b></td>
+        <td><button class="btn-danger" style="padding:4px 8px;font-size:12px" onclick="excluirLote('${key}')">Baixa / Excluir</button></td>
       </tr>`;
+    });
+  }
+
+  // DESENHA O CROQUI VISUAL DO PÁTIO
+  function renderizarCroquiPatio(){
+    const container = document.getElementById("containerMapaPatio");
+    container.innerHTML = "";
+
+    // Mapeia posições ocupadas
+    const mapaOcupacao = {};
+    Object.values(lotesEstoqueCache).forEach(l => {
+      if(l.posicao) mapaOcupacao[l.posicao] = l;
+    });
+
+    ESTRUTURA_PATIO.forEach(r => {
+      const divRua = document.createElement("div");
+      divRua.className = "rua-patio";
+
+      let blocosHTML = "";
+      for(let i = 1; i <= r.blocos; i++){
+        const posCod = `${r.prefixo}-${i < 10 ? '0'+i : i}`;
+        const loteAlocado = mapaOcupacao[posCod];
+
+        if(loteAlocado){
+          const classeCor = `p-${loteAlocado.tipo.toLowerCase()}`;
+          blocosHTML += `
+            <div class="bloco-patio ${classeCor}">
+              <span class="bloco-cod">${posCod}</span>
+              <div class="bloco-info">${loteAlocado.lote}</div>
+              <div class="small-note">${loteAlocado.tipo} | ${formatarNumero(loteAlocado.peso)} Kg</div>
+            </div>
+          `;
+        }else{
+          blocosHTML += `
+            <div class="bloco-patio p-livre">
+              <span class="bloco-cod">${posCod}</span>
+              <span style="font-size:12px;margin-top:10px;">Vazio</span>
+            </div>
+          `;
+        }
+      }
+
+      divRua.innerHTML = `
+        <div class="rua-header">
+          <span class="rua-titulo">${r.rua}</span>
+        </div>
+        <div class="posicoes-grid">${blocosHTML}</div>
+      `;
+
+      container.appendChild(divRua);
     });
   }
 
   function atualizarDashboard(){
     let pPluma = 0, pCaroco = 0, pFibrilha = 0;
     let fPluma = 0, fCaroco = 0, fFibrilha = 0;
+    let posicoesOcupadas = 0;
+
+    const totalPosicoes = ESTRUTURA_PATIO.reduce((acc, r) => acc + r.blocos, 0);
 
     Object.values(lotesEstoqueCache).forEach(l => {
       const p = Number(l.peso || 0);
@@ -316,7 +427,11 @@
       if(l.tipo === "Pluma"){ pPluma += p; fPluma += f; }
       else if(l.tipo === "Caroço"){ pCaroco += p; fCaroco += f; }
       else if(l.tipo === "Fibrilha"){ pFibrilha += p; fFibrilha += f; }
+
+      if(l.posicao) posicoesOcupadas++;
     });
+
+    const taxaOcupacao = totalPosicoes > 0 ? Math.round((posicoesOcupadas / totalPosicoes) * 100) : 0;
 
     document.getElementById("dashPesoPluma").innerText = formatarNumero(pPluma) + " Kg";
     document.getElementById("dashPesoCaroco").innerText = formatarNumero(pCaroco) + " Kg";
@@ -324,6 +439,7 @@
     document.getElementById("dashFardosPluma").innerText = formatarNumero(fPluma);
     document.getElementById("dashFardosCaroco").innerText = formatarNumero(fCaroco);
     document.getElementById("dashFardosFibrilha").innerText = formatarNumero(fFibrilha);
+    document.getElementById("dashOcupacaoPatio").innerText = taxaOcupacao + "%";
   }
 </script>
 </body>
